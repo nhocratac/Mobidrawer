@@ -1,28 +1,27 @@
+import  {env} from '~/config/environment'
+import  {MongoClient,ServerApiVersion} from 'mongodb'
+let demowebclient = null
+const mongoClienInstance = new MongoClient(env.MONGODB_URI, {
+    serverApi: ServerApiVersion.v1,
+    // strict: true,
+    // deprecationErrors: true,
+}) 
 
-require('dotenv').config();
-const mongoose = require('mongoose');
-
-const dbState = [{
-    value: 0,
-    label: "Disconnected"
-},
-{
-    value: 1,
-    label: "Connected"
-},
-{
-    value: 2,
-    label: "Connecting"
-},
-{
-    value: 3,
-    label: "Disconnecting"
-}];
-
-
-const connection = async () => {
-    await mongoose.connect(process.env.MONGO_DB_URL);
-    const state = Number(mongoose.connection.readyState);
-    console.log(dbState.find(f => f.value === state).label, "to database"); // connected to db
+export const CONNECT_DB = async () => {
+    try{
+            await mongoClienInstance.connect()
+              return demowebclient = mongoClienInstance.db(env.DATABASE_NAME)
+    } catch {
+        throw new Error('Connect DB fail')
+    }
 }
-module.exports = connection;
+
+export  const  GET_DB =  () => {
+    if (demowebclient)
+        return demowebclient
+    throw new Error('DB not connected, must connect first')
+}
+
+export const CLOSE_DB = async () => {
+    await mongoClienInstance.close()
+}

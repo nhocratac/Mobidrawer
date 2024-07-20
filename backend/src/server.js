@@ -1,34 +1,42 @@
-require('dotenv').config();
-const express = require('express'); //commonjs
-const configViewEngine = require('./config/viewEngine');
-const apiRoutes = require('./routes/api');
-const connection = require('./config/database');
-const { getHomepage } = require('./controllers/homeController');
+import express from 'express'
+import cors from 'cors'
+import exitHook from "async-exit-hook"
 
-const app = express();
-const port = process.env.PORT || 8888;
+import { corsOptions } from '~/config/cors'
+import { env } from '~/config/environment'
+import { CONNECT_DB, CLOSE_DB } from '~/config/database'
+import routerAPI from '~/routes'
 
-//config req.body
-app.use(express.json()) // for json
-app.use(express.urlencoded({ extended: true })) // for form data
-
-//config template engine
-configViewEngine(app);
-
-//khai báo route
-app.use('/v1/api/', apiRoutes);
-app.use('/', getHomepage);
-
-
-(async () => {
-    try {
-        //using mongoose
-        // await connection();
-
-        app.listen(port, () => {
-            console.log(`Backend Nodejs App listening on port ${port}`)
-        })
-    } catch (error) {
-        console.log(">>> Error connect to DB: ", error)
-    }
-})()
+const app = express()
+const port = env.APP_PORT
+const host = env.APP_HOST
+const START_SERVER = () => {
+  app.use(cors(corsOptions))
+  // enable use of req.body
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: true }))
+  app.use('/api', routerAPI)
+  app.listen(port, host, () => {
+    console.log(`http://${host}:${port}`)
+  })
+  exitHook(() => {
+    CLOSE_DB();
+    console.log("Disconnected from server");
+  })
+}
+(
+  () => {
+    CONNECT_DB()
+      .then((demowebclient) => {
+        if (demowebclient)
+          console.log('Connect DB success')
+      })
+      .then(() => {
+        START_SERVER()
+      })
+      .catch((err) => {
+        console.log(err)
+        process.exit(1)
+      })
+  }
+)()
