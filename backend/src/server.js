@@ -5,7 +5,7 @@ import exitHook from "async-exit-hook"
 import { corsOptions } from '~/config/cors'
 import { env } from '~/config/environment'
 import { CONNECT_DB, CLOSE_DB } from '~/config/database'
-import routerAPI from '~/routes'
+import {APIs_V1} from '~/routes'
 
 const app = express()
 const port = env.APP_PORT
@@ -15,7 +15,8 @@ const START_SERVER = () => {
   // enable use of req.body
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
-  app.use('/api', routerAPI)
+  // use APIs_V1 for all routes starting with /api
+  app.use('/api', APIs_V1)
   app.listen(port, host, () => {
     console.log(`http://${host}:${port}`)
   })
