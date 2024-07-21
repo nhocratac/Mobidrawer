@@ -10,11 +10,10 @@ const  UserRouter= express.Router()
 // } = require('../controllers/apiController')
 
  UserRouter.get('/', (req, res) => {
-    res.status(StatusCodes.OK).json({'message': 'get success'})
+    res.status(StatusCodes.OK).json({'message': 'get success user'})
 })  
  UserRouter.get('/status', (req, res) => {
     res.status(StatusCodes.OK).json({message: 'api are ready to use'})
 })
-UserRouter.post('/register',
-    userValidate.CreateNewUser, userControll.CreateNewUser)
+UserRouter.route('/register').post(userValidate.CreateNewUser, userControll.CreateNewUser)
 export  const UserRoute =  UserRouter

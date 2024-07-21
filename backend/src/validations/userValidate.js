@@ -18,7 +18,6 @@ const  CreateNewUser = async (req, res, next) => {
     try {
         const a = await correctCondition.validateAsync(req.body)
         //next()
-        console.log(a)
         res.status(StatusCode.CREATED).json({ message: 'Create new user success'})
         
     } catch (error) {

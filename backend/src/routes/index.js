@@ -1,11 +1,7 @@
-import  express, { Router } from 'express'
+import  express from 'express'
+import { UserRoute } from './userRoutes'
 
 const routerAPI = express.Router()
-
-// const { getUsersAPI, postCreateUserAPI,
-//     putUpdateUserAPI, deleteUserAPI
-
-// } = require('../controllers/apiController')
 
 routerAPI.get('/', (req, res) => {
     res.status(200).json({'message': 'get success'})
@@ -13,8 +9,5 @@ routerAPI.get('/', (req, res) => {
 routerAPI.get('/status', (req, res) => {
     res.status(200).json({message: 'api are ready to use'})
 })
-routerAPI.post('/register', (req, res) => {
-    console.log(req.body)
-    res.status(200).json({'message': 'register success nè'})
-})
+routerAPI.use('/user', UserRoute)
 export  const APIs_V1 = routerAPI
