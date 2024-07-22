@@ -17,13 +17,26 @@ const  CreateNewUser = async (req, res, next) => {
     })
     try {
         const a = await correctCondition.validateAsync(req.body)
-        //next()
-        res.status(StatusCode.CREATED).json({ message: 'Create new user success'})
-        
+        next()
     } catch (error) {
         console.log(error)
         res.status(StatusCode.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
     }
 }
 
+const LoginUser = async (req, res, next) => {
+    const correctCondition=  Joi.object({
+        email: Joi.string().email().required().strict(),
+        password: Joi.string().required(),
+    })
+    try {
+        const a = await correctCondition.validateAsync(req.body)
+        //next()
+        res.status(StatusCode.OK).json({ message: 'Login success'})
+        
+    } catch (error) {
+        console.log(error)
+        res.status(StatusCode.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
+    }
+}
 export { CreateNewUser }

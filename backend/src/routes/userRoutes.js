@@ -16,4 +16,5 @@ const  UserRouter= express.Router()
     res.status(StatusCodes.OK).json({message: 'api are ready to use'})
 })
 UserRouter.route('/register').post(userValidate.CreateNewUser, userControll.CreateNewUser)
+//UserRouter.route('/login'.post(userValidate.LoginUser, userControll.LoginUser))
 export  const UserRoute =  UserRouter
