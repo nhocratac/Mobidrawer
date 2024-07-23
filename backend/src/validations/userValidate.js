@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import StatusCode from 'http-status-codes'
-
+import ApiError from '../utils/ApiError'
 
 const  CreateNewUser = async (req, res, next) => {
     const correctCondition=  Joi.object({
@@ -19,8 +19,8 @@ const  CreateNewUser = async (req, res, next) => {
         const a = await correctCondition.validateAsync(req.body)
         next()
     } catch (error) {
-        console.log(error)
-        res.status(StatusCode.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
+        console.log(error.message)
+        next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, new Error(error.message).message))
     }
 }
 

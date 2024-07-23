@@ -6,6 +6,7 @@ import { corsOptions } from '~/config/cors'
 import { env } from '~/config/environment'
 import { CONNECT_DB, CLOSE_DB } from '~/config/database'
 import {APIs_V1} from '~/routes'
+import errorHandling from './middlewares/errorHandling'
 
 const app = express()
 const port = env.APP_PORT
@@ -17,6 +18,11 @@ const START_SERVER = () => {
   app.use(express.urlencoded({ extended: true }))
   // use APIs_V1 for all routes starting with /api
   app.use('/api', APIs_V1)
+
+  // middleware to handle errors or finish requests
+  app.use(errorHandling)
+
+  // bật server
   app.listen(port, host, () => {
     console.log(`http://${host}:${port}`)
   })
