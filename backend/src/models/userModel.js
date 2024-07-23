@@ -1,5 +1,6 @@
 import  mongoose  from 'mongoose';
 import Joi from 'joi';
+import { OBJECT_ID_RULE,OBJECT_ID_RULE_MESSAGE } from '~/utils/validator';
 
 const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
@@ -12,6 +13,8 @@ const USER_COLLECTION_SCHEMA = Joi.object({
     // verificationToken: Joi.string().required(),
     // passwordResetToken: Joi.string().required(),
     // passwordResetExpires: Joi.date().required(),
+    avatar: Joi.string().uri().required(),
+    friend: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
     createdAt: Joi.date().timestamp('javascript').default(Date.now()),
     updatedAt: Joi.date().timestamp('javascript').default(null),
     destroy: Joi.boolean().default(false)
