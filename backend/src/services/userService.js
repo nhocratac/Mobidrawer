@@ -1,17 +1,10 @@
-
+import {GET_DB} from '~/config/database';
+import {userModel} from '../models/userModel';
 const CreateNewUser = async (user) => {
     try {
-        const response = await fetch('http://localhost:3000/api/user/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(user),
-        })
-        return response.json()
+        return await userModel.CreateNewUser(user)
     } catch (error) {
-        console.error('Error:', error)
     }
 }
 
-export { CreateNewUser }
+export const userService= { CreateNewUser }
