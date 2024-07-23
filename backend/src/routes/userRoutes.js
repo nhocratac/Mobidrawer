@@ -1,7 +1,7 @@
 import  express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import * as userValidate from '../validations/userValidate'
-import* as userControll from '../controllers/userControll'
+import  {userValidate} from '../validations/userValidate'
+import  {userController} from '../controllers/userControll'
 const  UserRouter= express.Router()
 
 // const { getUsersAPI, postCreateUserAPI,
@@ -15,6 +15,7 @@ const  UserRouter= express.Router()
  UserRouter.get('/status', (req, res) => {
     res.status(StatusCodes.OK).json({message: 'api are ready to use'})
 })
-UserRouter.route('/register').post(userValidate.CreateNewUser, userControll.CreateNewUser)
+UserRouter.route('/register').post(userValidate.CreateNewUser, userController.CreateNewUser)
+UserRouter.route('/findUserByEmail/:email').get(userValidate.findUserByEmail, userController.findUserByEmail)
 //UserRouter.route('/login'.post(userValidate.LoginUser, userControll.LoginUser))
 export  const UserRoute =  UserRouter

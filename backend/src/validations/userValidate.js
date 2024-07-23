@@ -39,4 +39,22 @@ const LoginUser = async (req, res, next) => {
         res.status(StatusCode.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
     }
 }
-export { CreateNewUser }
+
+const findUserByEmail = async (req, res, next) => {
+    const correctCondition=  Joi.object({
+        email: Joi.string().email().required().strict(),
+    })
+    try {
+        const a = await correctCondition.validateAsync(req.params)
+        next()
+    } catch (error) {
+        next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, new Error(error).message))
+    }
+
+}
+export  const userValidate = 
+{
+    CreateNewUser,
+    LoginUser,
+    findUserByEmail
+}

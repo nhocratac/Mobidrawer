@@ -15,4 +15,34 @@ const CreateNewUser = async (req, res,next) => {
     }
 }
 
-export { CreateNewUser }
+const findUserByEmail = async (req, res,next) => {
+    try {
+        const email = req.params.email
+        const user = await userService.findUserByEmail(email)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'User found', data: user })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const findUserByID = async (req, res,next) => {
+    try {
+        const id = req.params.id
+        const user = await userService.findUserByID(id)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'User found', data: user })
+    }
+    catch (error) {
+        next(error)
+    }
+}
+export const userController = { 
+    CreateNewUser,
+    findUserByEmail,
+    findUserByID,
+}
