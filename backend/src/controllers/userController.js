@@ -1,11 +1,9 @@
 import StatusCode from 'http-status-codes'
 import ApiError from '../utils/ApiError'
 import { userService } from '../services/userService'
-
 const CreateNewUser = async (req, res,next) => {
     try {
-        const user = req.body
-        const newUser = await userService.CreateNewUser(user)
+        const {newUser} = await userService.CreateNewUser(req.body)
         if (!newUser) {
             throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, 'Failed to create new user')
         }
@@ -45,10 +43,12 @@ const findUserByID = async (req, res,next) => {
 const LoginUser = async (req, res, next ) => {
     const {email , password} = req.body
     try{
-        const user = await userService.LoginUser(email)
-        if(! user)
-            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
-
+        const  {userData,accessToken} = await userService.loginUser(email, password)
+        if (!userData) {
+            throw new ApiError(StatusCode.UNAUTHORIZED, 'Invalid email or password')
+        }
+        res.setHeader('Authorization', `Bearer ${accessToken}`)
+        res.status(StatusCode.OK).json({ message: 'User logged in successfully', data: userData })
     } catch (error) {
         next(error)
     }

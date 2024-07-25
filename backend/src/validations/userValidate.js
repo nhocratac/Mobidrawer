@@ -31,11 +31,8 @@ const LoginUser = async (req, res, next) => {
     })
     try {
         const a = await correctCondition.validateAsync(req.body)
-        //next()
-        res.status(StatusCode.OK).json({ message: 'Login success'})
-        
+        next()        
     } catch (error) {
-        console.log(error)
         res.status(StatusCode.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
     }
 }

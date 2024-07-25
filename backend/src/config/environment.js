@@ -7,7 +7,11 @@ export const env = {
   APP_HOST: process.env.APP_HOST,
   APP_PORT: process.env.APP_PORT,
 
+  SECRECT_KEY: process.env.SECRECT_KEY,
+  EXPIRED_API_KEY: process.env.EXPIRED_API_KEY,
+
   BUILD_MODE: process.env.BUILD_MODE,
+
 
   CLOUDINARY: {
     cloud_name: 'dcyws1o4f',

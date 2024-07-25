@@ -1,17 +1,32 @@
 import {userModel} from '../models/userModel';
-import bcrypt from 'bcrypt'
+import { StatusCodes } from 'http-status-codes';
+import ApiError from '~/utils/ApiError';
+import { webToken } from '../utils/webToken';
+import {hashPassword,comparePassword} from '../utils/hashPassword'
+
 const CreateNewUser = async (user) => {
     try {
-        return await userModel.CreateNewUser(user)
+        const checkuser = await userModel.findUserByEmail(user.email)
+        if (checkuser) {
+            throw new ApiError(StatusCodes.CONFLICT, 'User already exists')
+        }
+        user.password = await hashPassword(user.password)
+        const newUser = await userModel.CreateNewUser(user)
+        if (!newUser) {
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error in creating user')
+        }
+        return {newUser}
     } catch (error) {
+        throw error
     }
 }
 
 const findUserByEmail = async (email) => {
     try {
-        return await userModel.findUserByEmail(email)
+        const user=  await userModel.findUserByEmail(email)
+        return user
     } catch (error) {
-        throw new Error('error in findUserByEmail')
+        throw error
     }
 }
 
@@ -19,16 +34,26 @@ const findUserByID = async (id) => {
     try {
         return await userModel.findUserByID(id)
     } catch (error) {
-        throw new Error('error in findUserByEmail')
+        throw new ApiError(StatusCodes.NOT_FOUND, 'error in findUserByID')
     }
 }
 
-const LoginUser = async (email,password) => {
+const loginUser = async (email, password) => {
     try {
-
+        const user = await userModel.findUserByEmail(email)
+        if(!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+        }
+        const isMatch = await comparePassword(password, user.password)
+        console.log(isMatch)
+        if(!isMatch) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
+        }
+        const { password: userPassword, ...userData } = user
+        const accessToken = webToken.generateToken({userData})
+        return {accessToken, userData}
     } catch (error) {
-
+        throw error
     }
 }
-
-export const userService= { CreateNewUser, findUserByEmail, findUserByID, LoginUser }
+export const userService= { CreateNewUser, findUserByEmail, findUserByID ,loginUser}
