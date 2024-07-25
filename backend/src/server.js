@@ -26,6 +26,7 @@ const START_SERVER = () => {
   app.listen(port, host, () => {
     console.log(`http://${host}:${port}`)
   })
+  
   exitHook(() => {
     CLOSE_DB();
     console.log("Disconnected from server");

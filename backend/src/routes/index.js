@@ -1,7 +1,10 @@
 import  express from 'express'
 import { UserRoute } from './userRoutes'
+import requireToken from '~/middlewares/requireToken'
 
 const routerAPI = express.Router()
+
+routerAPI.all('*', requireToken)
 
 routerAPI.get('/', (req, res) => {
     res.status(200).json({'message': 'get success'})

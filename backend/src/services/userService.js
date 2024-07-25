@@ -45,7 +45,6 @@ const loginUser = async (email, password) => {
             throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
         }
         const isMatch = await comparePassword(password, user.password)
-        console.log(isMatch)
         if(!isMatch) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
         }
