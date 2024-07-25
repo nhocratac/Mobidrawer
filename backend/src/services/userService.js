@@ -1,4 +1,5 @@
 import {userModel} from '../models/userModel';
+import bcrypt from 'bcrypt'
 const CreateNewUser = async (user) => {
     try {
         return await userModel.CreateNewUser(user)
@@ -22,4 +23,12 @@ const findUserByID = async (id) => {
     }
 }
 
-export const userService= { CreateNewUser, findUserByEmail, findUserByID }
+const LoginUser = async (email,password) => {
+    try {
+
+    } catch (error) {
+
+    }
+}
+
+export const userService= { CreateNewUser, findUserByEmail, findUserByID, LoginUser }

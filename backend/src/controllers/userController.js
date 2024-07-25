@@ -41,8 +41,21 @@ const findUserByID = async (req, res,next) => {
         next(error)
     }
 }
+
+const LoginUser = async (req, res, next ) => {
+    const {email , password} = req.body
+    try{
+        const user = await userService.LoginUser(email)
+        if(! user)
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+
+    } catch (error) {
+        next(error)
+    }
+}
 export const userController = { 
     CreateNewUser,
     findUserByEmail,
     findUserByID,
+    LoginUser,
 }

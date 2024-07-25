@@ -1,13 +1,14 @@
 import  express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import  {userValidate} from '../validations/userValidate'
-import  {userController} from '../controllers/userControll'
+import  {userController} from '../controllers/userController'
 const  UserRouter= express.Router()
 
 // const { getUsersAPI, postCreateUserAPI,
 //     putUpdateUserAPI, deleteUserAPI
 
 // } = require('../controllers/apiController')
+
 
  UserRouter.get('/', (req, res) => {
     res.status(StatusCodes.OK).json({'message': 'get success user'})
@@ -17,5 +18,5 @@ const  UserRouter= express.Router()
 })
 UserRouter.route('/register').post(userValidate.CreateNewUser, userController.CreateNewUser)
 UserRouter.route('/findUserByEmail/:email').get(userValidate.findUserByEmail, userController.findUserByEmail)
-//UserRouter.route('/login'.post(userValidate.LoginUser, userControll.LoginUser))
+UserRouter.route('/login').post(userValidate.LoginUser, userController.LoginUser)
 export  const UserRoute =  UserRouter
