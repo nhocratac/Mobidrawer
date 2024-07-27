@@ -25,6 +25,7 @@ const USER_COLLECTION_SCHEMA = Joi.object({
 const CreateNewUser = async (user_data) => {
     try {
         const USER_COLLECTION = GET_DB().collection(USER_COLLECTION_NAME)
+        user_data.insertAt = new Date();
         const newUSer = await  USER_COLLECTION.insertOne(user_data)
         return USER_COLLECTION.findOne({ _id: newUSer.insertedId })
     } catch (error) {
