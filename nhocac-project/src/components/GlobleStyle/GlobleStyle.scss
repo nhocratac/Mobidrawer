@@ -1,0 +1,29 @@
+$text-color: #333;
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$background-color: #ecf0f1;
+
+
+ *   {
+    margin: 0;
+    padding:0 ;
+    box-sizing: border-box;
+ }
+
+ html {
+    // font-family: 'Roboto', sans-serif;
+    font-size: 62.5%;
+ }
+
+ body {
+    color:$text-color
+ }
+
+ a, nav {
+    text-decoration: none;
+    color: $text-color;
+ }
+
+ button {
+    cursor: pointer;
+ }

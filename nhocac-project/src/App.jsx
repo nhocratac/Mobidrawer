@@ -7,13 +7,14 @@ function App() {
     <>
       <Routes>
         {PublicRoute.map((route, index) => {
+          const Layout = route.layout || DeFaultLayout
           return (
             <Route
               key={index}
               path={route.path}
-              element={<DeFaultLayout>
+              element={<Layout>
                 <route.component />
-              </DeFaultLayout>}
+              </Layout>}
             />
           )
         })}

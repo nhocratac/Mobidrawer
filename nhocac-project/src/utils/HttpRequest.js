@@ -1,46 +1,42 @@
-import axios from 'axios';
+import instance from "./axios.customize"
 
-const HttpRequest = axios.create({
-    baseURL: 'http://localhost:3000',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
 
-const get = async (url) => {
+const get = async (url,config) => {
     try {
-        const response = await HttpRequest.get(url);
-        return response.data;
+        const response = await instance.get(url,config)
+        return response
     } catch (error) {
-        return error;
+        return error
     }
 }
 
-const  post = async (url, data) => {
+const  post = async (url, data,config) => {
     try {
-        const response = await HttpRequest.post(url, data);
-        return response.data;
+        const response = await instance.post(url, data,config)
+        return response
     } catch (error) {
-        return error;
+        return error
     }
 }
 
 const put = async (url, data) => {
     try {
-        const response = await HttpRequest.put(url, data);
-        return response.data;
+        const response = await instance.put(url, data)
+        return response
     } catch (error) {
-        return error;
+        return error
     }
 }
 
-const remove = async (url) => {
+const remove = async (url,config) => {
     try {
-        const response = await HttpRequest.delete(url);
-        return response.data;
+        const response = await instance.delete(url,config)
+        return response
     } catch (error) {
-        return error;
+        return error
     }
 }
 
-export { get, post, put, remove };
+const   httpRequest={ get, post, put, remove }
+
+export default httpRequest
