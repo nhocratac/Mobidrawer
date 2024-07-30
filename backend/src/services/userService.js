@@ -55,4 +55,23 @@ const loginUser = async (email, password) => {
         throw error
     }
 }
-export const userService= { CreateNewUser, findUserByEmail, findUserByID ,loginUser}
+
+const setUserOnline = async (id) => {
+    try {
+        return await userModel.setUserOnline(id)
+    } catch (error) {
+        throw error
+    }
+}
+
+const setUserOffline = async (id) => {
+    try {
+        return await userModel.setUserOffline(id)
+    } catch (error) {
+        throw error
+    }
+}
+export const userService= { CreateNewUser, findUserByEmail, findUserByID ,loginUser
+    ,setUserOnline,
+    setUserOffline,
+}

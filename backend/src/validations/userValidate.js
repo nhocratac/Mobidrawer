@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import StatusCode from 'http-status-codes'
 import ApiError from '../utils/ApiError'
+import { webToken } from '../utils/webToken'
 
 const  CreateNewUser = async (req, res, next) => {
     const correctCondition=  Joi.object({
@@ -49,9 +50,47 @@ const findUserByEmail = async (req, res, next) => {
     }
 
 }
+
+const setUserOnline = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    const id = req.params.id
+    const correctCondition = Joi.object({
+        id: Joi.string().required(),
+    })
+    try {
+        if (id !== decodeToken.userData._id) {
+            throw new ApiError(StatusCode.UNAUTHORIZED, 'You are not authorized to perform this action')
+        }
+        await correctCondition.validateAsync(req.params)
+        next()
+    } catch (error) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
+
+const setUserOffline = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    const id = req.params.id
+    const correctCondition = Joi.object({
+        id: Joi.string().required(),
+    })
+    try {
+        if (id !== decodeToken.userData._id) {
+            throw new ApiError(StatusCode.UNAUTHORIZED, 'You are not authorized to perform this action')
+        }
+        await correctCondition.validateAsync(req.params)
+        next()
+    } catch (error) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
+
+
 export  const userValidate = 
 {
     CreateNewUser,
     LoginUser,
-    findUserByEmail
+    findUserByEmail,
+    setUserOnline,
+    setUserOffline,
 }

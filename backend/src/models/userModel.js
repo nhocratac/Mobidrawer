@@ -17,7 +17,8 @@ const USER_COLLECTION_SCHEMA = Joi.object({
     friend: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
     createdAt: Joi.date().timestamp('javascript').default(Date.now()),
     updatedAt: Joi.date().timestamp('javascript').default(null),
-    destroy: Joi.boolean().default(false)
+    destroy: Joi.boolean().default(false),
+    online: Joi.boolean().default(false)
 })
 
 
@@ -51,10 +52,30 @@ const findUserByEmail = async (emailUser) => {
     }
 }
 
+const setUserOnline = async (id) => {
+    try {
+        const USER_COLLECTION = GET_DB().collection(USER_COLLECTION_NAME)
+        return USER_COLLECTION.findOneAndUpdate({ _id: id }, { $set: { online: true } })
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
+const setUserOffline = async (id) => {
+    try {
+        const USER_COLLECTION = GET_DB().collection(USER_COLLECTION_NAME)
+        return USER_COLLECTION.findOneAndUpdate({ _id: id }, { $set: { online: false } })
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
 export const userModel = {
     CreateNewUser,
     findUserByEmail,
     findUserByID,
+    setUserOnline,
+    setUserOffline,
     USER_COLLECTION_SCHEMA,
     USER_COLLECTION_NAME
 }

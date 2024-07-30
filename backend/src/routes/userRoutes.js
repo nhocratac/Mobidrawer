@@ -15,5 +15,7 @@ const  UserRouter= express.Router()
 UserRouter.route('/register').post(userValidate.CreateNewUser, userController.CreateNewUser)
 UserRouter.route('/findUserByEmail/:email').get(userValidate.findUserByEmail, userController.findUserByEmail)
 UserRouter.route('/login').post(userValidate.LoginUser, userController.LoginUser)
+UserRouter.route('/setUserOnline/:id').put(userValidate.setUserOnline, userController.setUserOnline)
+UserRouter.route('/setUserOffline/:id').put(userValidate.setUserOffline, userController.setUserOffline)
 
 export  const UserRoute =  UserRouter

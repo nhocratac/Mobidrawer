@@ -1,13 +1,14 @@
 import { Routes,Route } from "react-router-dom"
 import  {PublicRoute} from './routeConfig/route'
-import  DeFaultLayout from './components/Layout/Defautlayout'
+import  {DefaultLayout} from './Layout'
+import { Fragment } from "./pages"
 
 function App() {
   return (
     <>
       <Routes>
         {PublicRoute.map((route, index) => {
-          const Layout = route.layout || DeFaultLayout
+          const Layout = route.layout || DefaultLayout
           return (
             <Route
               key={index}
@@ -18,6 +19,7 @@ function App() {
             />
           )
         })}
+        <Route path="*" element={<Fragment/>} />
       </Routes>
     </>
   )

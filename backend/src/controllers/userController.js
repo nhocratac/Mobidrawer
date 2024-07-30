@@ -47,8 +47,33 @@ const LoginUser = async (req, res, next ) => {
         if (!userData) {
             throw new ApiError(StatusCode.UNAUTHORIZED, 'Invalid email or password')
         }
-        res.setHeader('Authorization', `Bearer ${accessToken}`)
-        res.status(StatusCode.OK).json({ message: 'User logged in successfully', data: userData })
+        res.status(StatusCode.OK).json({ message: 'User logged in successfully', data: userData , accessToken})
+    } catch (error) {
+        next(error)
+    }
+}
+
+const setUserOnline = (req, res, next) => {
+    const id = req.params.id
+    try {
+        const user = userService.setUserOnline(id)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'User is online' })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const setUserOffline = async (req, res, next) => {
+    const id = req.params.id
+    try {
+        const user = userService.setUserOffline(id)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'User is offline' })
     } catch (error) {
         next(error)
     }
@@ -58,4 +83,6 @@ export const userController = {
     findUserByEmail,
     findUserByID,
     LoginUser,
+    setUserOnline,
+    setUserOffline,
 }

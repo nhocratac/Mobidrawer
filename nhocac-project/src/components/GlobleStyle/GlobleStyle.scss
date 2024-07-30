@@ -1,7 +1,8 @@
-$text-color: #333;
+$text-color: white;
 $primary-color: #3498db;
 $secondary-color: #2ecc71;
 $background-color: #ecf0f1;
+$white-color: #FFF;
 
 
  *   {
@@ -16,7 +17,16 @@ $background-color: #ecf0f1;
  }
 
  body {
-    color:$text-color
+   font-family: 'Roboto', sans-serif;
+    color:$text-color;
+    line-height: 1.6em;
+    text-rendering: optimizeSpeed;
+ }
+
+ #root {
+   height: 100vh;
+   background-color: #333;
+ //  height: 100vh;
  }
 
  a, nav {
@@ -24,6 +34,11 @@ $background-color: #ecf0f1;
     color: $text-color;
  }
 
+ li, ul ,ol {
+   list-style-type: none;
+ }
+
  button {
     cursor: pointer;
  }
+

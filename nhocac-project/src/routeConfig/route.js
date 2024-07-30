@@ -1,6 +1,6 @@
 import  routePath from './path'
 import {Home,Register,Login} from '../pages'
-import { LoginLayout } from '../components/Layout';
+import { LoginLayout } from '../Layout';
 const PublicRoute = [
     {path: routePath.home , component: Home},
     {path: routePath.login , component: Login,layout: LoginLayout},
