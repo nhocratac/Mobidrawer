@@ -102,7 +102,6 @@ const sendRequestFriend = async (req, res, next) => {
 }
 const acceptRequestFriend = async (req, res, next) => {
     const decodeToken = req.decodeToken
-    console.log(decodeToken)
     if( decodeToken.userData?._id !== req.body.id && decodeToken.userData?._id === req.body.friendId){
         return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot accept a friend request to yourself'))
     }

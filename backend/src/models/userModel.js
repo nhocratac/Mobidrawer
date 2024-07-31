@@ -171,7 +171,7 @@ const acceptRequestFriend = async (id, idFriend) => { // đồng ý kết bạn 
             content: `${user.name} accepted your friend request.`
         })
         if (!noti) {
-            console.log('Error create notification')
+            return true
         }
         return noti
     } catch (error) {
