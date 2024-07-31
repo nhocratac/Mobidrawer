@@ -78,29 +78,43 @@ const sendRequestFriend = async (id, idFriend) => {
     try {
         session.startTransaction()
         const [user, friend] = await Promise.all([
-        USER_COLLECTION.findOne({ _id: new ObjectId(id), $or: [{following : idFriend}, {follower: idFriend} ,{friend: idFriend}]}),
-        USER_COLLECTION.findOne({ _id: new ObjectId(idFriend), $or: [{following: id},{follower: id}, {friend: id}]}),
+            USER_COLLECTION.findOne({ _id: new ObjectId(id) }, {
+                $or: [{
+                    friend: { $in: idFriend },
+                    follower:{ $in: idFriend },
+                    following: { $in: idFriend }
+                }]
+            }),
+            USER_COLLECTION.findOne({ _id: new ObjectId(idFriend) }, {
+                $or: [{
+                    friend: { $in: id },
+                    follower:{ $in: id },
+                    following: { $in: id }
+                }]
+            }),
         ])
-        if (user) {
+        if (!user) {
             throw new Error('You are already following this user.')
         }
-        if (friend) {
+        if (!friend) {
             throw new Error('This user is already your follower.')
         }
         // Check if the follow relationship already exists
-        const updateMe =  USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $push: { following: idFriend } }, { session })
-        const updateFriend =  USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $push: { follower: id } }, { session })
+        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $push: { following: idFriend } }, { session })
+        const updateFriend = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $push: { follower: id } }, { session })
 
-        const [Me,Friend ] =await Promise.all([updateMe, updateFriend])
-        if( !Me || !Friend) {
+        const [Me, Friend] = await Promise.all([updateMe, updateFriend])
+        if (!Me || !Friend) {
             throw new Error('User not found or already friends.')
         }
         await session.commitTransaction()
         session.endSession()
-        await notificationModel.CreateNewNotification({ 
-            receiver: idFriend, 
-            type: notificationModel.TYPE_NOTIFICATION.friend, 
-            content: `${user.name} send you a friend request.` })
+        await notificationModel.CreateNewNotification({
+            sender : id,
+            receiver: idFriend,
+            type: notificationModel.TYPE_NOTIFICATION.friend,
+            content: `${user.name} send you a friend request.`
+        })
         return Me
     } catch (error) {
         await session.abortTransaction()
@@ -116,8 +130,22 @@ const acceptRequestFriend = async (id, idFriend) => { // đồng ý kết bạn 
     try {
         session.startTransaction()
         const [user, friend] = await Promise.all([
-            USER_COLLECTION.findOne({ _id: new ObjectId(id), friends: { $ne: idFriend }, follower: { $in: [idFriend] }, following: { $ne: [idFriend] } }),
-            USER_COLLECTION.findOne({ _id: new ObjectId(idFriend), friends: { $ne: id }, following: { $in: [id] , follower: {$ne: [id]}} })
+            USER_COLLECTION.findOne({
+                _id: new ObjectId(id),
+                $and: [
+                    { friend: { $ne: idFriend } },
+                    { follower: { $in: [idFriend] } },
+                    { following: { $ne: idFriend } }
+                ]
+            }),
+            USER_COLLECTION.findOne({
+                _id: new ObjectId(idFriend),
+                $and: [
+                    { friend: { $ne: id } },
+                    { follower: { $ne: id } },
+                    { following: { $in: [id] } }
+                ]
+            })
         ])
 
         // Check if users are already friends or the friend request status
@@ -128,11 +156,24 @@ const acceptRequestFriend = async (id, idFriend) => { // đồng ý kết bạn 
             throw new Error('Friend not found, already friends, or no friend request found.')
         }
 
-        const updateMe = USER_COLLECTION.findOneAndUpdate({_id : new ObjectId(id)}, {$push: {friend: idFriend, following: idFriend}, $pull: {follower: idFriend}}, {session})
-        const updateFriend = USER_COLLECTION.findOneAndUpdate({_id : new ObjectId(idFriend)}, {$push: {friend: id} }, {session})
-        await Promise.all([updateMe, updateFriend])
+        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $push: { friend: idFriend, following: idFriend }, $pull: { follower: idFriend } }, { session })
+        const updateFriend = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $push: { friend: id } }, { session })
+        const [newMe, newFriend] = await Promise.all([updateMe, updateFriend])
+        if (!newMe || !newFriend) {
+            throw new Error('User not found or already friends.')
+        }
         await session.commitTransaction()
         session.endSession()
+        const noti =  await notificationModel.CreateNewNotification({
+            sender : id,
+            receiver: idFriend,
+            type: notificationModel.TYPE_NOTIFICATION.friend,
+            content: `${user.name} accepted your friend request.`
+        })
+        if (!noti) {
+            console.log('Error create notification')
+        }
+        return noti
     } catch (error) {
         await session.abortTransaction()
         session.endSession()
@@ -145,18 +186,32 @@ const rejectRequestFriend = async (id, idFriend) => { // từ chối kết bạn
     const session = db.client.startSession()
     try {
         const [user, friend] = await Promise.all([
-            USER_COLLECTION.findOne({ _id: new ObjectId(id), $or: [{following : idFriend}, {follower: idFriend} ,{friend: idFriend}]}),
-            USER_COLLECTION.findOne({ _id: new ObjectId(idFriend), $or: [{following: id},{follower: id}, {friend: id}]}),
-            ])
-            if (user) {
-                throw new Error('You are already following this user.')
-            }
-            if (friend) {
-                throw new Error('This user is already your follower.')
+            USER_COLLECTION.findOne({
+                _id: new ObjectId(id),
+                $and: [
+                    { friend: { $ne: idFriend } },
+                    { follower: { $in: [idFriend] } },
+                    { following: { $ne: idFriend } }
+                ]
+            }),
+            USER_COLLECTION.findOne({
+                _id: new ObjectId(idFriend),
+                $and: [
+                    { friend: { $ne: id } },
+                    { follower: { $ne: id } },
+                    { following: { $in: [id] } }
+                ]
+            })
+        ])
+        if (user) {
+            throw new Error('You are already following this user.')
+        }
+        if (friend) {
+            throw new Error('This user is already your follower.')
         }
         session.startTransaction()
-        const updateMe= USER_COLLECTION.findOneAndUpdate({_id : new ObjectId(id)}, {$pull: {follower: idFriend}}, {session})
-        const updateFriend = USER_COLLECTION.findOneAndUpdate({_id: new ObjectId(idFriend)}, {$pull: {following: id}}, {session})
+        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $pull: { follower: idFriend } }, { session })
+        const updateFriend = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $pull: { following: id } }, { session })
         await Promise.all([updateMe, updateFriend])
         await session.commitTransaction()
         session.endSession()
@@ -173,8 +228,8 @@ const unfriend = async (id, idFriend) => { // hủy kết bạn
     const session = db.client.startSession()
     try {
         session.startTransaction()
-        const updateMe =  USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $pull: { friend: idFriend , following: idFriend } }, { session })
-        const updateFriend =  USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $pull: { friend: id , following: id} }, { session })
+        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $pull: { friend: idFriend, following: idFriend } }, { session })
+        const updateFriend = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $pull: { friend: id, following: id } }, { session })
         await Promise.all([updateMe, updateFriend])
         await session.commitTransaction()
         session.endSession()
