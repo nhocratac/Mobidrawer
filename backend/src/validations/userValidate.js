@@ -85,6 +85,42 @@ const setUserOffline = async (req, res, next) => {
     }
 }
 
+const sendRequestFriend = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    if( decodeToken.userData._id === req.body.friendId){
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot send a friend request to yourself'))
+    }
+    const correctCondition = Joi.object({
+        _id: Joi.string().required(),
+        friendId: Joi.string().required(),
+    })
+    try {
+        await correctCondition.validateAsync(req.body)
+        next()
+    } catch (error) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
+const acceptRequestFriend = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    console.log(decodeToken.userData)
+    if( decodeToken.userData?._id === req.body._id){
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot accept a friend request to yourself'))
+    }
+    const correctCondition = Joi.object({
+        _id: Joi.string().required(),
+        friendId: Joi.string().required(),
+    })
+    try {
+        await correctCondition.validateAsync(req.body)
+        next()
+    } catch (error) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
+// unFriend
+// rejectRequestFriend
+
 
 export  const userValidate = 
 {
@@ -93,4 +129,6 @@ export  const userValidate =
     findUserByEmail,
     setUserOnline,
     setUserOffline,
+    sendRequestFriend,
+    acceptRequestFriend,
 }

@@ -1,4 +1,4 @@
-import {userModel} from '../models/userModel';
+import {userModel} from '../models/';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '~/utils/ApiError';
 import { webToken } from '../utils/webToken';
@@ -48,6 +48,7 @@ const loginUser = async (email, password) => {
         if(!isMatch) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
         }
+        await userModel.setUserOnline(user._id)
         const { password: userPassword, ...userData } = user
         const accessToken = webToken.generateToken({userData})
         return {accessToken, userData}
@@ -71,7 +72,24 @@ const setUserOffline = async (id) => {
         throw error
     }
 }
+const sendRequestFriend = async (id, idFriend) => {
+    try {
+        return await userModel.sendRequestFriend(id, idFriend)
+    } catch (error) {
+        throw error
+    }
+}
+
+const acceptRequestFriend = async (id, idFriend) => {
+    try {
+        return await userModel.acceptRequestFriend(id, idFriend)
+    } catch (error) {
+        throw error
+    }
+}
 export const userService= { CreateNewUser, findUserByEmail, findUserByID ,loginUser
     ,setUserOnline,
     setUserOffline,
+    sendRequestFriend,
+    acceptRequestFriend,
 }

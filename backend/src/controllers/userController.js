@@ -1,6 +1,7 @@
 import StatusCode from 'http-status-codes'
 import ApiError from '../utils/ApiError'
 import { userService } from '../services/userService'
+import { object } from 'joi'
 const CreateNewUser = async (req, res,next) => {
     try {
         const {newUser} = await userService.CreateNewUser(req.body)
@@ -53,10 +54,10 @@ const LoginUser = async (req, res, next ) => {
     }
 }
 
-const setUserOnline = (req, res, next) => {
+const setUserOnline = async (req, res, next) => {
     const id = req.params.id
     try {
-        const user = userService.setUserOnline(id)
+        const user = await userService.setUserOnline(id)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
         }
@@ -69,7 +70,7 @@ const setUserOnline = (req, res, next) => {
 const setUserOffline = async (req, res, next) => {
     const id = req.params.id
     try {
-        const user = userService.setUserOffline(id)
+        const user = await userService.setUserOffline(id)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
         }
@@ -78,6 +79,37 @@ const setUserOffline = async (req, res, next) => {
         next(error)
     }
 }
+
+const sendRequestFriend = async (req, res, next) => {
+    const {_id, friendId} = req.body
+    try{
+        const user = await userService.sendRequestFriend(_id, friendId)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'Request sent successfully' })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+const  acceptRequestFriend = async (req, res, next) => {
+    const {_id, friendId} = req.body
+    try{
+        const user = await userService.acceptRequestFriend(_id, friendId)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'Request accepted successfully' })
+
+    } catch (error) {
+        next(error)
+    }
+
+}
+
+
 export const userController = { 
     CreateNewUser,
     findUserByEmail,
@@ -85,4 +117,7 @@ export const userController = {
     LoginUser,
     setUserOnline,
     setUserOffline,
+    sendRequestFriend,
+    acceptRequestFriend,
+    
 }
