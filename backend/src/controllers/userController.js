@@ -137,6 +137,19 @@ const rejectRequestFriend = async(req, res, next ) => {
 
 }
 
+const  uploadAvatar = async (req, res, next) => { 
+    try {
+        const {_id } = req.body
+        const user = await userService.uploadAvatar(_id, req.file.path)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'Avatar uploaded successfully', data: user })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const userController = { 
     CreateNewUser,
     findUserByEmail,
@@ -148,4 +161,5 @@ export const userController = {
     acceptRequestFriend,
     unFriend,
     rejectRequestFriend,
+    uploadAvatar,
 }

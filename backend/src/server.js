@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import exitHook from "async-exit-hook"
+import bodyParser from 'body-parser'
 
 import { corsOptions } from '~/config/cors'
 import { env } from '~/config/environment'
@@ -14,8 +15,8 @@ const host = env.APP_HOST
 const START_SERVER = () => {
   app.use(cors(corsOptions))
   // enable use of req.body
-  app.use(express.json())
-  app.use(express.urlencoded({ extended: true }))
+  app.use(bodyParser.json())
+  app.use(bodyParser.urlencoded({ extended: true }))
   // use APIs_V1 for all routes starting with /api
   app.use('/api', APIs_V1)
 

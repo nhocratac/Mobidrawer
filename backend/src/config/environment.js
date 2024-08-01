@@ -9,13 +9,12 @@ export const env = {
 
   SECRECT_KEY: process.env.SECRECT_KEY,
   EXPIRED_API_KEY: process.env.EXPIRED_API_KEY,
+  APP_NAME: process.env.APP_NAME,
 
   BUILD_MODE: process.env.BUILD_MODE,
-
-
-  CLOUDINARY: {
-    cloud_name: 'dcyws1o4f',
-    api_key: '817743517582641',
-    api_secret: 'x-xI2OceZPMbjHIE1Kp0_WEe1mA',
-  }
+  cloudinary: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  },
 }

@@ -3,6 +3,8 @@ import validator from '../utils/validator'
 import { GET_DB } from '../config/database'
 import { ObjectId } from 'mongodb'
 import { notificationModel } from '.'
+import ApiError from '../utils/ApiError'
+import { StatusCodes } from 'http-status-codes'
 
 const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
@@ -84,14 +86,14 @@ const sendRequestFriend = async (id, idFriend) => {
                     follower: { $in: [idFriend] },
                     following: { $in: [idFriend] }
                 }]
-            },{ session , returnDocument: 'after' }),
+            }, { session, returnDocument: 'after' }),
             USER_COLLECTION.findOne({ _id: new ObjectId(idFriend) }, {
                 $or: [{
                     friend: { $in: [id] },
                     follower: { $in: [id] },
                     following: { $in: [id] }
                 }]
-            }, { session , returnDocument: 'after' }),
+            }, { session, returnDocument: 'after' }),
         ])
         if (!user) {
             throw new Error('You are already following this user.')
@@ -212,7 +214,7 @@ const rejectRequestFriend = async (id, idFriend) => { // từ chối kết bạn
         if (!friend) {
             throw new Error('This user is already your follower.')
         }
-        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $pull: { follower: idFriend } }, { session ,returnDocument: 'after' })
+        const updateMe = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $pull: { follower: idFriend } }, { session, returnDocument: 'after' })
         const updateFriend = USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(idFriend) }, { $pull: { following: id } }, { session, returnDocument: 'after' })
         await Promise.all([updateMe, updateFriend])
         await session.commitTransaction()
@@ -267,7 +269,7 @@ const unFriend = async (id, idFriend) => { // hủy kết bạn
         if (!newMe || !newFriend) {
             throw new Error('User not found or not friends or can process unfriend.')
         }
-         await session.commitTransaction()
+        await session.commitTransaction()
         session.endSession()
         return newMe
     } catch (error) {
@@ -277,6 +279,19 @@ const unFriend = async (id, idFriend) => { // hủy kết bạn
     }
 }
 
+const uploadAvatar = async (id, avatar) => {
+    const db = GET_DB()
+    const USER_COLLECTION = db.collection(USER_COLLECTION_NAME)
+    try {
+        const user = await USER_COLLECTION.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { avatar: avatar } }, {returnDocument:'after'})
+        if (!user) {
+            throw ApiError(StatusCodes.UNPROCESSABLE_ENTITY,`can't find user to update`)
+        }
+        return user
+    } catch (error) {
+        throw error
+    }
+}
 
 const userModel = {
     CreateNewUser,
@@ -288,6 +303,7 @@ const userModel = {
     acceptRequestFriend,
     rejectRequestFriend,
     unFriend,
+    uploadAvatar,
     USER_COLLECTION_SCHEMA,
     USER_COLLECTION_NAME
 }

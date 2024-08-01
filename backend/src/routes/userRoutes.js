@@ -2,6 +2,7 @@ import  express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import  {userValidate} from '../validations/userValidate'
 import  {userController} from '../controllers/userController'
+import uploadImage from '../utils/uploadImg'
 const  UserRouter= express.Router()
 
 
@@ -21,6 +22,7 @@ UserRouter.route('/sendRequestFriend').put(userValidate.sendRequestFriend, userC
 UserRouter.route('/acceptRequestFriend').put(userValidate.acceptRequestFriend, userController.acceptRequestFriend)
 UserRouter.route('/unFriend').put(userValidate.unFriend, userController.unFriend)
 UserRouter.route('/rejectRequestFriend').put(userValidate.rejectRequestFriend, userController.rejectRequestFriend)
+UserRouter.route('/uploadAvatar').post(uploadImage.uploadAvatar,userValidate.uploadAvatar  ,userController.uploadAvatar)
 
 
 

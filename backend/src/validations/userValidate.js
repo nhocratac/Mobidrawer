@@ -153,6 +153,21 @@ const  rejectRequestFriend = async (req, res, next) => {
     }
 }
 
+const uploadAvatar = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    if(decodeToken.userData._id !== req.body._id) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot upload avatar for another user'))
+    }
+    const correctCondition = Joi.object({
+        _id: Joi.string().required().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE),
+    })
+    try {
+        await correctCondition.validateAsync(req.body)
+        next()
+    } catch(err) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
 
 export  const userValidate = 
 {
@@ -164,5 +179,6 @@ export  const userValidate =
     sendRequestFriend,
     acceptRequestFriend,
     unFriend,
-    rejectRequestFriend
+    rejectRequestFriend,
+    uploadAvatar,
 }

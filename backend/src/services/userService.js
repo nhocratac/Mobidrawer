@@ -103,6 +103,14 @@ const rejectRequestFriend = async (id, idFriend) => {
         throw error
     }
 }
+
+const uploadAvatar = async (id, avatar) => {
+    try {
+        return await userModel.uploadAvatar(id, avatar)
+    } catch (error) {
+        throw error
+    }
+}
 export const userService = {
     CreateNewUser,
     findUserByEmail,
@@ -114,4 +122,5 @@ export const userService = {
     acceptRequestFriend,
     unFriend,
     rejectRequestFriend,
+    uploadAvatar,
 }
