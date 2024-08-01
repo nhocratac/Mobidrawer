@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validator'
+import validator from '../utils/validator'
 import { GET_DB } from '../config/database'
 import { ObjectId } from 'mongodb'
 
@@ -17,8 +17,8 @@ const TYPE_NOTIFICATION = {
 
 const NOTIFICATION_COLLECTION_NAME = 'notifications'
 const NOTIFICATION_COLLECTION_SCHEMA = Joi.object({
-    sender: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
-    receiver: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
+    sender: Joi.string().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE).required(),
+    receiver: Joi.string().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE).required(),
     type: Joi.string().required(),
     content: Joi.string().required(),
     read: Joi.boolean().default(false), // read = false => unread

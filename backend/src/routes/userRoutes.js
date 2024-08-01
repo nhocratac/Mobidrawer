@@ -17,10 +17,11 @@ UserRouter.route('/findUserByEmail/:email').get(userValidate.findUserByEmail, us
 UserRouter.route('/login').post(userValidate.LoginUser, userController.LoginUser)
 UserRouter.route('/setUserOnline/:id').put(userValidate.setUserOnline, userController.setUserOnline)
 UserRouter.route('/setUserOffline/:id').put(userValidate.setUserOffline, userController.setUserOffline)
-UserRouter.route('/sendRequestFriend').post(userValidate.sendRequestFriend, userController.sendRequestFriend)
-UserRouter.route('/acceptRequestFriend').post(userValidate.acceptRequestFriend, userController.acceptRequestFriend)
-// UserRouter.route('/unFriend').post(userValidate.unFriend, userController.unFriend)
-// UserRouter.route('rejectRequestFriend').post(userValidate.rejectRequestFriend, userController.rejectRequestFriend)
+UserRouter.route('/sendRequestFriend').put(userValidate.sendRequestFriend, userController.sendRequestFriend)
+UserRouter.route('/acceptRequestFriend').put(userValidate.acceptRequestFriend, userController.acceptRequestFriend)
+UserRouter.route('/unFriend').put(userValidate.unFriend, userController.unFriend)
+UserRouter.route('/rejectRequestFriend').put(userValidate.rejectRequestFriend, userController.rejectRequestFriend)
+
 
 
 export  const UserRoute =  UserRouter

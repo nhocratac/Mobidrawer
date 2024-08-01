@@ -2,6 +2,8 @@ import Joi from 'joi'
 import StatusCode from 'http-status-codes'
 import ApiError from '../utils/ApiError'
 import { webToken } from '../utils/webToken'
+import validator from '../utils/validator'
+import { GET_DB } from '../config/database'
 
 const  CreateNewUser = async (req, res, next) => {
     const correctCondition=  Joi.object({
@@ -86,7 +88,7 @@ const setUserOffline = async (req, res, next) => {
 
 const sendRequestFriend = async (req, res, next) => {
     const decodeToken = req.decodeToken
-    if( decodeToken.userData._id === req.body.friendId && decodeToken.userData._id === req.body._id) {
+    if( decodeToken.userData._id === req.body.friendId || decodeToken.userData._id !== req.body._id) {
         return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot send a friend request to yourself'))
     }
     const correctCondition = Joi.object({
@@ -102,7 +104,7 @@ const sendRequestFriend = async (req, res, next) => {
 }
 const acceptRequestFriend = async (req, res, next) => {
     const decodeToken = req.decodeToken
-    if( decodeToken.userData?._id !== req.body.id && decodeToken.userData?._id === req.body.friendId){
+    if( decodeToken.userData?._id !== req.body._id || decodeToken.userData?._id === req.body.friendId){
         return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot accept a friend request to yourself'))
     }
     const correctCondition = Joi.object({
@@ -116,8 +118,40 @@ const acceptRequestFriend = async (req, res, next) => {
         return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
     }
 }
-// unFriend
-// rejectRequestFriend
+const unFriend = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    if(decodeToken.userData._id === req.body.friendId || decodeToken.userData._id !== req.body._id) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot unfriend yourself'))
+    }
+    const correctCondition = Joi.object({
+        _id: Joi.string().required().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE),
+        friendId: Joi.string().required().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE),
+    })
+    try {
+        await correctCondition.validateAsync(req.body)
+        next()
+    } catch(err) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
+
+
+const  rejectRequestFriend = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    if(decodeToken.userData._id === req.body.friendId || decodeToken.userData._id !== req.body._id) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, 'You cannot reject yourself'))
+    }
+    const correctCondition = Joi.object({
+        _id: Joi.string().required().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE),
+        friendId: Joi.string().required().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE),
+    })
+    try {
+        await correctCondition.validateAsync(req.body)
+        next()
+    } catch(err) {
+        return next(new ApiError(StatusCode.UNPROCESSABLE_ENTITY, error.message))
+    }
+}
 
 
 export  const userValidate = 
@@ -129,4 +163,6 @@ export  const userValidate =
     setUserOffline,
     sendRequestFriend,
     acceptRequestFriend,
+    unFriend,
+    rejectRequestFriend
 }

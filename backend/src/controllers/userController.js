@@ -109,6 +109,33 @@ const  acceptRequestFriend = async (req, res, next) => {
 
 }
 
+const unFriend = async (req,res, next )  => {
+    try {
+        const {_id , friendId} = req.body
+        const user = await userService.unFriend(_id, friendId)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'Unfriend successfully' })
+    } catch (error) {
+        next(error)    
+    }
+}
+
+const rejectRequestFriend = async(req, res, next ) => {
+    try {
+        const {_id, friendId} = req.body
+        const user = await userService.rejectRequestFriend(_id, friendId)
+        if (!user) {
+            throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
+        }
+        res.status(StatusCode.OK).json({ message: 'Request rejected successfully'}) 
+        
+    } catch (error) {
+        next(error)
+    }
+
+}
 
 export const userController = { 
     CreateNewUser,
@@ -119,5 +146,6 @@ export const userController = {
     setUserOffline,
     sendRequestFriend,
     acceptRequestFriend,
-    
+    unFriend,
+    rejectRequestFriend,
 }

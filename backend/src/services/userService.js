@@ -1,8 +1,8 @@
-import {userModel} from '../models/';
+import { userModel } from '../models/';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '~/utils/ApiError';
 import { webToken } from '../utils/webToken';
-import {hashPassword,comparePassword} from '../utils/hashPassword'
+import { hashPassword, comparePassword } from '../utils/hashPassword'
 
 const CreateNewUser = async (user) => {
     try {
@@ -15,7 +15,7 @@ const CreateNewUser = async (user) => {
         if (!newUser) {
             throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error in creating user')
         }
-        return {newUser}
+        return { newUser }
     } catch (error) {
         throw error
     }
@@ -23,7 +23,7 @@ const CreateNewUser = async (user) => {
 
 const findUserByEmail = async (email) => {
     try {
-        const user=  await userModel.findUserByEmail(email)
+        const user = await userModel.findUserByEmail(email)
         return user
     } catch (error) {
         throw error
@@ -41,17 +41,17 @@ const findUserByID = async (id) => {
 const loginUser = async (email, password) => {
     try {
         const user = await userModel.findUserByEmail(email)
-        if(!user) {
+        if (!user) {
             throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
         }
         const isMatch = await comparePassword(password, user.password)
-        if(!isMatch) {
+        if (!isMatch) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
         }
         await userModel.setUserOnline(user._id)
         const { password: userPassword, ...userData } = user
-        const accessToken = webToken.generateToken({userData})
-        return {accessToken, userData}
+        const accessToken = webToken.generateToken({ userData })
+        return { accessToken, userData }
     } catch (error) {
         throw error
     }
@@ -87,9 +87,31 @@ const acceptRequestFriend = async (id, idFriend) => {
         throw error
     }
 }
-export const userService= { CreateNewUser, findUserByEmail, findUserByID ,loginUser
-    ,setUserOnline,
+
+const unFriend = async (id, idFriend) => {
+    try {
+        return await userModel.unFriend(id, idFriend)
+    } catch ( error) {
+        throw error
+    }
+}
+
+const rejectRequestFriend = async (id, idFriend) => {
+    try {
+        return await userModel.rejectRequestFriend(id, idFriend)
+    } catch (error) {
+        throw error
+    }
+}
+export const userService = {
+    CreateNewUser,
+    findUserByEmail,
+    findUserByID,
+    loginUser,
+    setUserOnline,
     setUserOffline,
     sendRequestFriend,
     acceptRequestFriend,
+    unFriend,
+    rejectRequestFriend,
 }
