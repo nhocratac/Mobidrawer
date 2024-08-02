@@ -1,7 +1,6 @@
 import { Routes,Route } from "react-router-dom"
 import  {PublicRoute} from './routeConfig/route'
 import  {DefaultLayout} from './Layout'
-import { Fragment } from "./pages"
 
 function App() {
   return (
@@ -19,7 +18,6 @@ function App() {
             />
           )
         })}
-        <Route path="*" element={<Fragment/>} />
       </Routes>
     </>
   )

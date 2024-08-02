@@ -15,8 +15,23 @@ const login = async (data) => {
 }
 
 
+const register = async (data) => {
+    try {
+        const {email,password,name} = data
+        const response = await HttpRequest.post('/user/register',{email,password,name})
+        if(response.status === 201){
+            return response.data
+        }
+        throw response.response
+    } catch (err) {
+        throw err
+    }
+}
+
+
 const authentic = {
     login,
+    register,
 }
 
 export default authentic

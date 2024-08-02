@@ -8,7 +8,7 @@ const routePath = {
     help: '/help',
     contact: '/contact',
     about: '/about',
-    fragment: '/fragment', // not found
+    fragment: '*', // not found
 }
 
 export default routePath
