@@ -8,6 +8,8 @@ export const env = {
   APP_PORT: process.env.APP_PORT,
 
   SECRECT_KEY: process.env.SECRECT_KEY,
+  SECRECT_KEY_REFRESH: process.env.SECRECT_KEY_REFRESH,
+  EXPIRED_REFRESH_TOKEN: process.env.EXPIRED_REFRESH_TOKEN,
   EXPIRED_API_KEY: process.env.EXPIRED_API_KEY,
   APP_NAME: process.env.APP_NAME,
 

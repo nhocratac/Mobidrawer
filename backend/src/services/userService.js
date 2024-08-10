@@ -51,7 +51,8 @@ const loginUser = async (email, password) => {
         await userModel.setUserOnline(user._id)
         const { password: userPassword, ...userData } = user
         const accessToken = webToken.generateToken({ userData })
-        return { accessToken, userData }
+        const refreshToken = webToken.generateRefreshToken({ userData })
+        return { accessToken, userData ,refreshToken}
     } catch (error) {
         throw error
     }
@@ -111,7 +112,8 @@ const uploadAvatar = async (id, avatar) => {
         throw error
     }
 }
-export const userService = {
+
+const userService = {
     CreateNewUser,
     findUserByEmail,
     findUserByID,
@@ -123,4 +125,7 @@ export const userService = {
     unFriend,
     rejectRequestFriend,
     uploadAvatar,
+
 }
+
+export default userService

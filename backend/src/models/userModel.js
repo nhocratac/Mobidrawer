@@ -10,11 +10,8 @@ const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
     name: Joi.string().required().strict().max(50),
     email: Joi.string().email().required(),
-    password: Joi.string().required().min(6).max(50).trim().strict(),
-    username: Joi.string().required().min(6).max(50).trim().strict(),
-    role: Joi.string().required(),
-    isVerifverificationTokenied: Joi.boolean().required(),
-    avatar: Joi.string().uri().required(),
+    password: Joi.string().required().trim().strict(),
+    avatar: Joi.string().uri(),
     friend: Joi.array().items(Joi.string().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE)).default([]),
     follower: Joi.array().items(Joi.string().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE)).default([]),
     following: Joi.array().items(Joi.string().pattern(validator.OBJECT_ID_RULE).message(validator.OBJECT_ID_RULE_MESSAGE)).default([]),
@@ -28,8 +25,9 @@ const USER_COLLECTION_SCHEMA = Joi.object({
 
 const CreateNewUser = async (user_data) => {
     try {
+        // validate user data
+        user_data = await USER_COLLECTION_SCHEMA.validateAsync(user_data)
         const USER_COLLECTION = GET_DB().collection(USER_COLLECTION_NAME)
-        user_data.createdAt = new Date()
         const newUSer = await USER_COLLECTION.insertOne(user_data)
         return USER_COLLECTION.findOne({ _id: newUSer.insertedId })
     } catch (error) {

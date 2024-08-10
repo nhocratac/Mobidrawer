@@ -1,0 +1,130 @@
+$font-size: 2.4rem;
+$background-color: #f5f5f5;
+$text-color: #333;
+
+.wrapper {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    color: $text-color;
+    box-shadow: 0 0 20px 20px rgba(0, 0, 0, 0.1);
+
+    .container {
+        margin-top: 40px;
+        height: 400px;
+        width: 70%;
+        background-color: $background-color;
+        display: flex;
+        flex-direction: column;
+
+    }
+}
+
+.own-content {
+    flex: 1;
+    display: flex;
+    width: 100%;
+
+    .avatar-img {
+        display: flex;
+        align-self: center;
+        width: 18.1rem;
+        justify-content: center;
+
+        img {
+            width: 15rem;
+            height: 15rem;
+            border-radius: 50%;
+            //no scale 
+            object-fit: cover;
+        }
+    }
+}
+
+.own-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+}
+
+.own-info--top {
+    display: flex;
+    height: 60px;
+    padding: 10px;
+    margin-bottom: 20PX;
+    align-items: center;
+
+    .own-info--top__name {
+        flex: 3;
+
+        h3 {
+            text-align: center;
+            font-size: $font-size;
+            font-weight: 400;
+        }
+
+    }
+
+    .own-info--top__buttons {
+        display: flex;
+        justify-content: space-evenly;
+        flex: 7;
+
+        button {
+            height: 32px;
+            padding: 0 16px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+            border: none;
+            font-size: 1.5rem;
+            margin: 0 10px;
+            display: inline-block;
+        }
+
+        button:hover {
+            background-color: #3498db;
+            color: white;
+        }
+    }
+}
+
+.own-info--bottom {
+    display: flex;
+    font-size: $font-size;
+    line-height: $font-size;
+    min-width: 45px;
+    padding: 10px;
+    justify-content: space-evenly;
+    b {
+        font-weight: 400;
+        font-size: $font-size;
+    }
+
+    .own-info--bottom__post {
+
+        font-weight: 300;
+        font-size: $font-size;
+    }
+
+    .own-info--bottom__follower {
+        font-weight: 300;
+        font-size: $font-size;
+
+    }
+
+    .own-info--bottom__following {
+        font-weight: 300;
+        font-size: $font-size;
+    }
+}
+
+
+
+.own-story {
+    background-color: aquamarine;
+    height: 175px;
+}
+
+.own-photo {}

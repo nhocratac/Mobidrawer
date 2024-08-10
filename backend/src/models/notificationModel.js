@@ -27,6 +27,7 @@ const NOTIFICATION_COLLECTION_SCHEMA = Joi.object({
 
 const CreateNewNotification = async (notification_data) => {
     try {
+        notification_data = await NOTIFICATION_COLLECTION_SCHEMA.validateAsync(notification_data)
         const NOTIFICATION_COLLECTION = GET_DB().collection(NOTIFICATION_COLLECTION_NAME)
         const newNotification = await NOTIFICATION_COLLECTION.insertOne({
             ...notification_data,
@@ -53,7 +54,6 @@ const getNotificationByReceiver = async (receiver) => {
     } catch (error) {
         throw new Error(error)
     }
-
 }
 
 

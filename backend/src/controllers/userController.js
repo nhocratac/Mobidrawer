@@ -1,10 +1,11 @@
 import StatusCode from 'http-status-codes'
+import { env } from '../config/environment'
 import ApiError from '../utils/ApiError'
-import { userService } from '../services/userService'
-import { object } from 'joi'
-const CreateNewUser = async (req, res,next) => {
+import userService from '../services/userService'
+import refreshTokenService from '../services/refreshTokenService'
+const CreateNewUser = async (req, res, next) => {
     try {
-        const {newUser} = await userService.CreateNewUser(req.body)
+        const { newUser } = await userService.CreateNewUser(req.body)
         if (!newUser) {
             throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, 'Failed to create new user')
         }
@@ -14,7 +15,7 @@ const CreateNewUser = async (req, res,next) => {
     }
 }
 
-const findUserByEmail = async (req, res,next) => {
+const findUserByEmail = async (req, res, next) => {
     try {
         const email = req.params.email
         const user = await userService.findUserByEmail(email)
@@ -27,7 +28,7 @@ const findUserByEmail = async (req, res,next) => {
     }
 }
 
-const findUserByID = async (req, res,next) => {
+const findUserByID = async (req, res, next) => {
     try {
         const id = req.params.id
         const user = await userService.findUserByID(id)
@@ -41,14 +42,30 @@ const findUserByID = async (req, res,next) => {
     }
 }
 
-const LoginUser = async (req, res, next ) => {
-    const {email , password} = req.body
-    try{
-        const  {userData,accessToken} = await userService.loginUser(email, password)
+const LoginUser = async (req, res, next) => {
+    const { email, password } = req.body
+    try {
+        const { userData, accessToken, refreshToken } = await userService.loginUser(email, password)
         if (!userData) {
             throw new ApiError(StatusCode.UNAUTHORIZED, 'Invalid email or password')
         }
-        res.status(StatusCode.OK).json({ message: 'User logged in successfully', data: userData , accessToken})
+        if (!accessToken || !refreshToken) {
+            throw new ApiError(StatusCode.UNAUTHORIZED, 'Failed to login, your token can not be generated')
+        }
+        await refreshTokenService.CreateNew(
+            {
+                refreshToken,
+                userId: userData._id.toString(),
+                expiredAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+            })
+        res.cookie(`${env.APP_NAME}_refreshToken`, refreshToken,
+            {
+                httpOnly: true,
+                secure: env.BUILD_MODE === 'production',
+                sameSite: 'Strict',
+                maxAge: 24 * 60 * 60 * 1000,
+            })
+        res.status(StatusCode.OK).json({ message: 'User logged in successfully', data: userData, accessToken })
     } catch (error) {
         next(error)
     }
@@ -81,8 +98,8 @@ const setUserOffline = async (req, res, next) => {
 }
 
 const sendRequestFriend = async (req, res, next) => {
-    const {_id, friendId} = req.body
-    try{
+    const { _id, friendId } = req.body
+    try {
         const user = await userService.sendRequestFriend(_id, friendId)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
@@ -94,9 +111,9 @@ const sendRequestFriend = async (req, res, next) => {
     }
 }
 
-const  acceptRequestFriend = async (req, res, next) => {
-    const {_id, friendId} = req.body
-    try{
+const acceptRequestFriend = async (req, res, next) => {
+    const { _id, friendId } = req.body
+    try {
         const user = await userService.acceptRequestFriend(_id, friendId)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
@@ -109,37 +126,37 @@ const  acceptRequestFriend = async (req, res, next) => {
 
 }
 
-const unFriend = async (req,res, next )  => {
+const unFriend = async (req, res, next) => {
     try {
-        const {_id , friendId} = req.body
+        const { _id, friendId } = req.body
         const user = await userService.unFriend(_id, friendId)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
         }
         res.status(StatusCode.OK).json({ message: 'Unfriend successfully' })
     } catch (error) {
-        next(error)    
+        next(error)
     }
 }
 
-const rejectRequestFriend = async(req, res, next ) => {
+const rejectRequestFriend = async (req, res, next) => {
     try {
-        const {_id, friendId} = req.body
+        const { _id, friendId } = req.body
         const user = await userService.rejectRequestFriend(_id, friendId)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
         }
-        res.status(StatusCode.OK).json({ message: 'Request rejected successfully'}) 
-        
+        res.status(StatusCode.OK).json({ message: 'Request rejected successfully' })
+
     } catch (error) {
         next(error)
     }
 
 }
 
-const  uploadAvatar = async (req, res, next) => { 
+const uploadAvatar = async (req, res, next) => {
     try {
-        const {_id } = req.body
+        const { _id } = req.body
         const user = await userService.uploadAvatar(_id, req.file.path)
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
@@ -150,7 +167,7 @@ const  uploadAvatar = async (req, res, next) => {
     }
 }
 
-export const userController = { 
+const userController = {
     CreateNewUser,
     findUserByEmail,
     findUserByID,
@@ -163,3 +180,5 @@ export const userController = {
     rejectRequestFriend,
     uploadAvatar,
 }
+
+export default userController

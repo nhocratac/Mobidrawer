@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import exitHook from "async-exit-hook"
 import bodyParser from 'body-parser'
+import cookiePaser from 'cookie-parser'
 
 import { corsOptions } from '~/config/cors'
 import { env } from '~/config/environment'
@@ -17,6 +18,7 @@ const START_SERVER = () => {
   // enable use of req.body
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
+  app.use(cookiePaser())
   // use APIs_V1 for all routes starting with /api
   app.use('/api', APIs_V1)
 

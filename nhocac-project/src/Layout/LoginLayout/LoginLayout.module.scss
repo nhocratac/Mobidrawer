@@ -1,0 +1,39 @@
+@import '../../components/GlobleStyle/GlobleStyle.scss';
+.wrapper{
+    display: flex;
+    flex-direction:column ;
+    height: 100vh;
+    .footer {
+        background-color: $primary-color;
+        height: 10%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+.container{
+    max-width: 100%;
+    //width: ;
+    display: flex;
+    height: 100%;
+    background-color: aqua;
+    .image {
+        //background-image: url('../assets/LoginImage.svg');
+        background-image: url('../assets/LoginImage.svg');
+        width: 50%;
+       // background-color: $secondary-color;
+        height: 100%;
+    }
+    .content{
+        flex:1 ;
+        background-color: $white-color ;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    
+    }
+}
+    
+
+

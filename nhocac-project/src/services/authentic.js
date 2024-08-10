@@ -1,10 +1,13 @@
 import HttpRequest from "../utils/HttpRequest"
+import { manageToken } from "../hook"
 
 const login = async (data) => {
     try {
         const {email,password} = data
         const response = await HttpRequest.post('/user/login',{email,password})
         if(response.status === 200){
+            // save token
+            manageToken.saveToken(response.data.accessToken)
             return response.data
         }
         throw response.response

@@ -17,6 +17,7 @@ const  CreateNewUser = async (req, res, next) => {
     }
 }
 
+
 const LoginUser = async (req, res, next) => {
     const correctCondition=  Joi.object({
         email: Joi.string().email().required().strict(),
@@ -30,6 +31,16 @@ const LoginUser = async (req, res, next) => {
     }
 }
 
+const logout = async (req, res, next) => {
+    const decodeToken = req.decodeToken
+    try {
+        if (decodeToken.userData._id !== req.body._id) {
+            throw new ApiError(StatusCode.UNAUTHORIZED, 'You are not authorized to perform this action')
+        }
+    } catch (error) {
+      next(error)  
+    } 
+}
 const findUserByEmail = async (req, res, next) => {
     const correctCondition=  Joi.object({
         email: Joi.string().email().required().strict(),
@@ -61,6 +72,7 @@ const setUserOnline = async (req, res, next) => {
 }
 
 const setUserOffline = async (req, res, next) => {
+    console.log('say hello set offline')
     const decodeToken = req.decodeToken
     const id = req.params.id
     const correctCondition = Joi.object({
@@ -160,7 +172,7 @@ const uploadAvatar = async (req, res, next) => {
     }
 }
 
-export  const userValidate = 
+ const userValidate = 
 {
     CreateNewUser,
     LoginUser,
@@ -173,3 +185,5 @@ export  const userValidate =
     rejectRequestFriend,
     uploadAvatar,
 }
+
+export default userValidate

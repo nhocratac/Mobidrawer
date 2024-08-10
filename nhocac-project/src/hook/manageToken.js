@@ -12,6 +12,7 @@ const removeToken = () => {
     localStorage.removeItem(`${env.APP_NAME}-token`)
 }
 
+
 const updateToken = (token) => {
     removeToken()
     saveToken(token)

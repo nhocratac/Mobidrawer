@@ -1,27 +1,40 @@
 import { webToken } from '~/utils/webToken'
 import StatusCodes from 'http-status-codes'
+import { env } from '../config/environment'
 
-const whiteList = ['/user/login', '/user/register']
+const whiteList = ['/user/login', '/user/register','/auth/refreshToken']
 
 const requireToken = (req, res, next) => {
-    if (!whiteList.includes(req.path) && !req.headers.authorization) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
-    }
+    const BearerToken = req.headers.authorization
     if (!whiteList.includes(req.path)) {
-        try {
-            const token = req.headers.authorization
-            if (!token) {
-                return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'token is Required' })
+        if (!BearerToken)
+            return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token is required' })
+        webToken.verifyToken(BearerToken, (err, decode) => {
+            if (err) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token is invalid' })
             }
-            const decodedToken = webToken.verifyToken(token)
-            if (!decodedToken) {
-                return res.status(StatusCodes.FORBIDDEN).json({ message: 'you must be authenticated' })
-            }
-            req.decodeToken = decodedToken
-        } catch (error) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
-        }
+            req.decodeToken = decode
+        })
     }
     next()
 }
+const refreshToken = async (req, res, next) => {
+    try {
+        const refreshToken = `Bearer ${req.cookies[`${env.APP_NAME}_refreshToken`]}`
+        if (!refreshToken) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token is required' })
+        }
+        webToken.verifyRefreshToken(refreshToken, (err, decode) => {
+            if (err||!decode) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token is invalid' })
+            }
+            if(decode)
+                req.decodeRefreshToken = decode
+            next()
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+export {refreshToken}
 export default requireToken

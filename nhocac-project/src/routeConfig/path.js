@@ -3,6 +3,7 @@ const routePath = {
     login: '/login',
     register: '/register',
     account: '/account',
+    profile: '/profile',
     logout: '/logout',
     page: '/page',
     help: '/help',

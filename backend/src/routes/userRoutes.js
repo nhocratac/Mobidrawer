@@ -1,7 +1,7 @@
 import  express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import  {userValidate} from '../validations/userValidate'
-import  {userController} from '../controllers/userController'
+import  userController from '../controllers/userController'
 import uploadImage from '../utils/uploadImg'
 const  UserRouter= express.Router()
 
