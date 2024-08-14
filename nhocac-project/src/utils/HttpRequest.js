@@ -1,9 +1,10 @@
 import instance from "./axios.customize"
 
 
+
 const get = async (url,config) => {
     try {
-        const response = await instance.get(url,config)
+        const response = await instance.instance.get(url,config)
         return response
     } catch (error) {
         return error
@@ -12,7 +13,7 @@ const get = async (url,config) => {
 
 const  post = async (url, data,config) => {
     try {
-        const response = await instance.post(url, data,config)
+        const response = await instance.instance.post(url, data,config)
         return response
     } catch (error) {
         return error
@@ -21,7 +22,7 @@ const  post = async (url, data,config) => {
 
 const put = async (url, data) => {
     try {
-        const response = await instance.put(url, data)
+        const response = await instance.instance.put(url, data)
         return response
     } catch (error) {
         return error
@@ -30,12 +31,13 @@ const put = async (url, data) => {
 
 const remove = async (url,config) => {
     try {
-        const response = await instance.delete(url,config)
+        const response = await instance.instance.delete(url,config)
         return response
     } catch (error) {
         return error
     }
 }
+
 
 const   httpRequest={ get, post, put, remove }
 

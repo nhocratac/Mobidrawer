@@ -18,6 +18,13 @@ const updateToken = (token) => {
     saveToken(token)
 }
 
-const manageToken = { saveToken, getToken, removeToken, updateToken }
+const isTokenExpired = (token) => {
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  const exp = payload.exp
+  const now = Date.now() / 1000
+  return now > exp
+}
+
+const manageToken = { saveToken, getToken, removeToken, updateToken,isTokenExpired }
 
 export default manageToken

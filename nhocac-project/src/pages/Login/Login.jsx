@@ -4,13 +4,15 @@ import EmailIcon from '@mui/icons-material/Email'
 import LockIcon from '@mui/icons-material/Lock'
 import GoogleIcon from '@mui/icons-material/Google';
 import { useNavigate, } from 'react-router-dom'
+import {useDispatch} from 'react-redux'
 
-import authentic from '~/services/authentic'
+import authentic from '../../services/authentic';
+
 import styles from './Login.module.scss'
-import { manageToken } from '../../hook'
 
 const cx = classNames.bind(styles)
 const Login = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate()
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -19,28 +21,7 @@ const Login = () => {
       email: e.target.email.value,
       password: e.target.password.value
     }
-    authentic.login(data)
-      .then(res => {
-        alert('thành công')
-        // save token
-        manageToken.saveToken(res.accessToken)
-        // chuyển hướng về home
-        // neu khong phai trang login thi 0 dung navigate
-        if(window.location.pathname !== '/login') {
-            window.location.reload()
-        }
-        else 
-          navigate('/')
-      })
-      .catch(err => {
-        if(err.status === 404) {
-          document.querySelector('#form-message-error').innerHTML = 'User not found'
-        }
-        if(err.status === 401) {
-          alert('Invalid email or password')
-          document.querySelector('#form-message-error').innerHTML = 'Invalid email or password'
-        }
-      })
+    authentic.loginAuth(data,dispatch,navigate)
   }
   return (
     <div className={cx('wrapper')}>

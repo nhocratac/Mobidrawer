@@ -2,7 +2,7 @@ import { webToken } from '~/utils/webToken'
 import StatusCodes from 'http-status-codes'
 import { env } from '../config/environment'
 
-const whiteList = ['/user/login', '/user/register','/auth/refreshToken']
+const whiteList = ['/user/login', '/user/register','/auth/login', '/auth/register','/auth/refreshToken']
 
 const requireToken = (req, res, next) => {
     const BearerToken = req.headers.authorization
@@ -26,6 +26,7 @@ const refreshToken = async (req, res, next) => {
         }
         webToken.verifyRefreshToken(refreshToken, (err, decode) => {
             if (err||!decode) {
+                console.log(err)
                 return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token is invalid' })
             }
             if(decode)

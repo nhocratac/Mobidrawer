@@ -22,7 +22,8 @@ const findUserByEmail = async (req, res, next) => {
         if (!user) {
             throw new ApiError(StatusCode.NOT_FOUND, 'User not found')
         }
-        res.status(StatusCode.OK).json({ message: 'User found', data: user })
+        const { password, ...userData } = user
+        res.status(StatusCode.OK).json({ message: 'User found', data: userData })
     } catch (error) {
         next(error)
     }

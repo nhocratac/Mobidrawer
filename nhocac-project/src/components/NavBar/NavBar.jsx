@@ -2,11 +2,13 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import routePath from '../../routeConfig/path'
 import styles from './NavBar.module.scss'
+import { useSelector } from 'react-redux'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import classNames from 'classnames/bind'
 const cx = classNames.bind(styles)
+
 const NavBar = ({ ...props }) => {
-    const [user, setUser] = useState({username: 'admin'})
+    const user = useSelector(state => state.auth.user)
     return (
         <nav  {...props}>
             <ul className={styles['nav--list']}>
@@ -18,10 +20,9 @@ const NavBar = ({ ...props }) => {
                     More <span><ExpandMoreIcon /></span>
                     <ul className={styles['dropdown']}>
                         {(user)
-                            ? <Link to={routePath.profile}><li className={styles['dropdown-item']}>Profile</li></Link>
+                            ? <Link to={routePath.profile}><li className={styles['dropdown-item']}>{user?.name}</li></Link>
                             : <Link to={routePath.login}><li className={styles['dropdown-item']}>Login</li></Link>}
                         <Link to={routePath.logout}><li className={styles['dropdown-item']}>Logout</li></Link>
-                        <Link to={routePath.account}><li className={styles['dropdown-item']}>My Account</li></Link>
                     </ul>
                 </li>
             </ul>

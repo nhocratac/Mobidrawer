@@ -49,5 +49,17 @@ const setOffline = async (data) => {
     }
 }
 
-const userServices = { setOnline, setOffline }
+const seachUser = async (data) => {
+    try {
+        const response = await httpRequest.get(`user/findUserByEmail/${data}`)
+        if(response.status === 200){
+            return response.data
+        }
+        throw response.response
+    } catch (err) {
+        throw err
+    }
+}
+
+const userServices = { setOnline, setOffline ,seachUser}
 export default userServices
