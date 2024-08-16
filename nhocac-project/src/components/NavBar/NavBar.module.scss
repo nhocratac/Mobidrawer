@@ -17,7 +17,6 @@
     .nav--item__more {
         display: flex;
         align-items: center;
-        cursor: pointer;
         /* Thay đổi con trỏ khi hover */
     }
 
@@ -29,7 +28,7 @@
         display: none;
         /* Ẩn danh sách phụ */
         position: absolute;
-        top: 100%;
+        top:100%;
         /* Hiển thị dưới mục "More" */
         left: 0;
         background-color: #444;
