@@ -6,7 +6,7 @@ const Layout = ({ children }: ILayoutProps) => {
   return (
     <div className="relative w-full h-full">
       {/* Sidebar */}
-      <div className="fixed top-1/2 left-2 transform -translate-y-1/2 h-fit bg-gray-800 flex flex-col items-center py-4 gap-y-1 justify-center w-[60px] z-50">
+      <div className="fixed top-1/2 left-2 transform -translate-y-1/2 h-fit bg-gray-800 flex flex-col items-center   gap-y-1 justify-center w-fit z-50">
         <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
         <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
         <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
