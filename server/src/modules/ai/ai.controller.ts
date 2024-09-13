@@ -59,11 +59,25 @@ export class AiController {
     @Post('inPaint')
     async getImageInPaint(
         @Res() res: Response,
-        @Body() body: { image: string } // Assuming the body contains a field 'image'
+        @Body() body: { image:string,maskString:string , prompt:string } // Assuming the body contains a field 'image'
     ): Promise<void> {
         // Log the data received from the client
         console.log('Received data from client:', body);
-
+        const resp = await fetch('https://api.limewire.com/api/image/inpainting',{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Api-Version': 'v1',
+              Accept: 'application/json',
+              Authorization: 'Bearer <YOUR_lmwr_sk_*_HERE>'
+            },
+            body: JSON.stringify({
+              image_asset_id: '116a972f-666a-44a1-a3df-c9c28a1f56c0',
+              prompt: 'A cute baby sloth'
+            })
+        })
+        const data = await resp.json();
+        console.log("Inpainting response: " + data);
         // For demonstration, responding with a static image URL
         res.status(200).json({ imageUrl: "http://localhost:4000/path/to/processed/image.png" });
     }

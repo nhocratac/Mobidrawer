@@ -41,7 +41,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ image: imageUrl }), // Send base64 data or raw image data
+                body: JSON.stringify({ image: imageUrl, prompt:"remove it " }), // Send base64 data or raw image data
             });
 
             if (!response.ok) {

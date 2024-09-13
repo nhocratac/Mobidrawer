@@ -1,22 +1,28 @@
 interface ILayoutProps {
-    children: React.ReactNode;
-  }
-  
-  const Layout = ({ children }: ILayoutProps) => {
-    return (
-      <div className="flex">
-        <div className="h-screen w-16 bg-gray-800 flex flex-col items-center py-4">
-          <div className="text-white mb-6">Tool 1</div>
-          <div className="text-white mb-6">Tool 2</div>
-          <div className="text-white mb-6">Tool 3</div>
-          <div className="text-white">Tool 4</div>
-        </div>
-        <div className="flex-1 p-4">
-          {children}
-        </div>
+  children: React.ReactNode;
+}
+
+const Layout = ({ children }: ILayoutProps) => {
+  return (
+    <div className="relative w-full h-full">
+      {/* Sidebar */}
+      <div className="fixed top-1/2 left-2 transform -translate-y-1/2 h-fit bg-gray-800 flex flex-col items-center py-4 gap-y-1 justify-center w-[60px] z-50">
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
+        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
       </div>
-    );
-  };
-  
-  export default Layout;
-  
+
+
+      {/* Main content area */}
+      <div className="relative w-full h-full p-4 z-10">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default Layout;
