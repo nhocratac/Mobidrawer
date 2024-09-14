@@ -10,9 +10,9 @@ export default function layout({
                 <SideBar />
             </aside>
             <div className="w-6 hidden lg:block"></div>
-            <div className="bg-red-400 flex-1">
+            <div className="bg-red-400 flex-1 ">
                 <HeaderDefault />
-                <main>
+                <main className="">
                     {children}
                 </main>
             </div>
