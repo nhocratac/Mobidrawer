@@ -1,8 +1,4 @@
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable"
+import ListBoardThumbnail from "@/app/(user)/dashboard/ListBoardThumbnail";
 
 export default function page() {
   return (
@@ -20,8 +16,8 @@ export default function page() {
           </button>
         </div>
       </div>
-      <div className="mx-[24px] h-[140px] bg-slate-300 p-[25px]">
-
+      <div className="mx-[24px] h-auto max-h-[200px] bg-[#f1f2f5] p-[25px]">
+        <ListBoardThumbnail />
       </div>
     </div>
   )
