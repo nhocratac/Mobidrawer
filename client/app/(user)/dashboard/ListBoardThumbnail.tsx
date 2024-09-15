@@ -1,5 +1,10 @@
 
-import FlowchartThumb from "@/asset/Flowchart-thumb";
+import BrainwritingThumb from "@/asses/Thumbnail/BrainwritingThumb";
+import FlowchartThumb from "@/asses/Thumbnail/FlowchartThumb";
+import IntelligentTemplate from "@/asses/Thumbnail/IntelligentTemplate";
+import KanbanFrameworkThumb from "@/asses/Thumbnail/KanbanFrameworkThumb";
+import MindMapThumb from "@/asses/Thumbnail/MindMapThumb";
+import QuickRetrospective from "@/asses/Thumbnail/QuickRetrospective";
 import BoardThumbnail from "@/components/BoardThumbnail/BoardThumbnail";
 export default function ListBoardThumbnail() {
     return (
@@ -15,46 +20,46 @@ export default function ListBoardThumbnail() {
             </div>
             <div className="h-full md:block">
                 <BoardThumbnail
-                    title="FlowChart"
+                    title="Brainwriting"
                     size="small"
                     Thumbnail={() =>
-                        <FlowchartThumb />
+                        <BrainwritingThumb />
                     }
                 />
             </div>
             <div className="h-full hidden md:block">
                 <BoardThumbnail
-                    title="FlowChart"
+                    title="Intelligent Templates"
                     size="small"
                     Thumbnail={() =>
-                        <FlowchartThumb />
+                        <IntelligentTemplate />
                     }
                 />
             </div>
             <div className="h-full  md:block">
                 <BoardThumbnail
-                    title="FlowChart"
+                    title="Kanban Framework"
                     size="small"
                     Thumbnail={() =>
-                        <FlowchartThumb />
+                        <KanbanFrameworkThumb />
                     }
                 />
             </div>
             <div className="h-full  md:block">
                 <BoardThumbnail
-                    title="FlowChart"
+                    title="Mind Map"
                     size="small"
                     Thumbnail={() =>
-                        <FlowchartThumb />
+                        <MindMapThumb />
                     }
                 />
             </div>
             <div className="h-full hidden md:block">
                 <BoardThumbnail
-                    title="FlowChart"
+                    title="Quick Retrospective"
                     size="small"
                     Thumbnail={() =>
-                        <FlowchartThumb />
+                        <QuickRetrospective />
                     }
                 />
             </div>
