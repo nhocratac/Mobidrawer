@@ -1,13 +1,8 @@
+import FiltersAndView from "@/app/(user)/dashboard/FiltersAndViews";
 import ListBoardThumbnail from "@/app/(user)/dashboard/ListBoardThumbnail";
 import { Button } from "@/components/ui/button";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+
 
 
 export default function page() {
@@ -26,28 +21,10 @@ export default function page() {
           </Button>
         </div>
       </div>
-      <div className="mx-[24px] h-auto max-h-[200px] bg-[#f1f2f5] p-[25px]">
+      <div className="mx-[24px] h-auto max-h-[300px] bg-[#f1f2f5] p-[25px]">
         <ListBoardThumbnail />
       </div>
-      <div className="mt-12 flex justify-between w-full">
-        <div className="flex w-full gap-4 text-[1.4rem]">
-          <p >
-            Filter by
-          </p>
-          <Select>
-            <SelectTrigger className="min-w-[100px] w-1/5">
-              <SelectValue placeholder="Board" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">
-           <p className="text-[1.4rem]">                  
-                  All
-           </p>              </SelectItem>
-              <SelectItem value="NotIn">Not in space</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <FiltersAndView/>  
     </div>
   )
 }

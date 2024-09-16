@@ -8,7 +8,7 @@ import QuickRetrospective from "@/asses/Thumbnail/QuickRetrospective";
 import BoardThumbnail from "@/components/BoardThumbnail/BoardThumbnail";
 export default function ListBoardThumbnail() {
     return (
-        <div className="h-full  grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3">
+        <div className="h-full  grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3 flex-wrap">
             <div className="h-full">
                 <BoardThumbnail
                     title="FlowChart"
