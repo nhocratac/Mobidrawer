@@ -1,26 +1,89 @@
+"use client";
+import { CursorArrowRaysIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/16/solid";
+import { GiArrowCursor } from "react-icons/gi";
+import { HiMiniSparkles } from "react-icons/hi2";
+import { RiText } from "react-icons/ri";
+import { FaRegStickyNote } from "react-icons/fa";
+import { LuShapes } from "react-icons/lu";
+import { ImArrowUpRight2 } from "react-icons/im";
+import { FaPen } from "react-icons/fa";
+import { useState } from "react";
+import AIGenerationPopup from "@/app/_components/AIGenerationPopup"
+import BoardHeader from "@/app/_components/BoardHeader"
+import ToolBarBtn from "@/app/_components/LeftToolBarBtn"
+import ResizableDraggableBox from "@/app/_components/DraggableResizableBox"
 interface ILayoutProps {
   children: React.ReactNode;
 }
 
-const Layout = ({ children }: ILayoutProps) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
+  const [textItemCount, setTextItemCount] = useState(0);
+  const onClickAIButton = () => {
+    setIsPopupVisible(!isAIGenerationPopupVisible);
+  };
+
+  const onClickCursorButton = () => {
+
+  }
+  const onClickTextButton = () => {
+    console.log("click create text");
+    setTextItemCount(textItemCount+1);
+
+  }
+
+  const onClickStickyNoteButton = () => {
+
+  }
+
+
+  const onClickShapeButton = () => {
+
+  }
+
+  const onClicConnectionLineButton = () => {
+
+  }
+
+  const onClickPenButton = () => {
+
+  }
+
+
+
+
+
   return (
     <div className="relative w-full h-full">
-      {/* Sidebar */}
-      <div className="fixed top-1/2 left-2 transform -translate-y-1/2 h-fit bg-gray-800 flex flex-col items-center   gap-y-1 justify-center w-fit z-50">
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-        <button className="bg-white w-[40px] h-[40px] p-2 hover:bg-teal-500 hover:border hover:rounded-md"></button>
-      </div>
+      {/* Header */}
+      <BoardHeader />
+
+      <div
+        className={`fixed top-[60px] w-[300px] h-full bg-slate-800 flex flex-row items-center gap-[10px] text-white transform ${isAIGenerationPopupVisible ? "translate-x-0" : "-translate-x-full"
+          } transition-transform duration-300 ease-in-out z-40`}
+      >
 
 
-      {/* Main content area */}
-      <div className="relative w-full h-full p-4 z-10">
-        {children}
+        <AIGenerationPopup togglePopup={onClickAIButton} />
+        {/* toolbar container */}
+        <div className=" bg-red-900 w-0 h-fit transform translate-x-full ">
+          <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
+          <ToolBarBtn onclick={onClickCursorButton} icon={GiArrowCursor} />
+          <ToolBarBtn onclick={onClickTextButton} icon={RiText} />
+          <ToolBarBtn onclick={onClickStickyNoteButton} icon={FaRegStickyNote} />
+          <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
+          <ToolBarBtn onclick={onClicConnectionLineButton} icon={ImArrowUpRight2} />
+          <ToolBarBtn onclick={onClickPenButton} icon={FaPen} />
+
+          
+        </div>
       </div>
+      {/* spawned item container */}
+   
+
+
+      {/* Main Content */}
+      <div className="relative w-full h-full p-4 z-10">{children}</div>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 'use client';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DrawingCanvas from "@/app/_components/InPaintMask";
 import ResizableDraggableBox from "@/app/_components/DraggableResizableBox"
 import { getMaskData } from '@/app/_components/InPaintMask';
+import ZoomableGrid from '@/app/_components/ZoomableGrid';
 interface IPLayGroundProps {
     params: {
         playgroundID: string;
@@ -10,10 +11,18 @@ interface IPLayGroundProps {
 }
 
 const PlayGroundPage = ({ params }: IPLayGroundProps) => {
+
+    useEffect(() => {
+        // Disable scrolling
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.height = '100%';
+    });
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
-
+const[scale,setScale] = useState(1);
 
     const onSubmitAIGeneration = async (text: string) => {
         setLoading(true);
@@ -41,7 +50,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ image: imageUrl, prompt:"remove it " }), // Send base64 data or raw image data
+                body: JSON.stringify({ image: imageUrl, prompt: "remove it " }), // Send base64 data or raw image data
             });
 
             if (!response.ok) {
@@ -53,7 +62,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         } catch (error) {
             console.log("err" + error)
         }
-     
+
     };
 
     // use to check if it return correct image mask
@@ -75,11 +84,13 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         return imageUrl;
     };
 
-
+const setScaleHanle = (s:number)=>{
+    setScale(s)
+}
 
     return (
-        <div className="bg-transparent w-full h-screen flex flex-col gap-4">
-            <h1 className="text-white">PLAYGROUND PAGE {params.playgroundID}</h1>
+        <div className="bg-transparent w-screen h-screen bg-slate-500 " >
+            {/* <h1 className="text-white">PLAYGROUND PAGE {params.playgroundID}</h1>
             <div className="flex flex-row gap-5" >
                 <input
                     className="text-black"
@@ -96,15 +107,21 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
                 </button>
 
 
-            </div>
+            </div> */}
 
             {/* this use for showing image Generation result */}
-            <ResizableDraggableBox imageUrl={imageUrl} />
-
+            {/* <ResizableDraggableBox imageUrl={imageUrl} /> */}
+            {/* {Array.from({ length: 1 }).map((_, index) => (
+          
+      ))} */}
 
             {/* this use for inPaint image */}
             {/* <DrawingCanvas imgUrl={"http://localhost:4000/test.png"} width={200} height={200} />
             <button onClick={onSubmitInPaint}>SUBMIT</button> */}
+            <ZoomableGrid onSetScale={setScaleHanle}>
+            <ResizableDraggableBox imageUrl={""} parentScale={scale} />
+            </ZoomableGrid>
+          
         </div>
     );
 };

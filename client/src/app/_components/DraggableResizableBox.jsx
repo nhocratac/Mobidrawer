@@ -76,28 +76,22 @@ const Box = ({imageUrl}) => (
   </div>
 );
 
-const ResizableDraggableBox = ({imageUrl}) => (
-  <div
-    style={{
-      width: '100px',
-      height: '100px',
-      position: 'relative', // Required for positioning handles
-    }}
-  >
-    <Rnd
+const ResizableDraggableBox = ({imageUrl, parentScale}) => (
+<Rnd
       default={{
         x: 150,
         y: 205,
         width: 100,
         height: 100,
       }}
+      bounds="window"
       minWidth={100}
       minHeight={100}
-      bounds="window"
       style={{
         border: '2px solid black',
         position: 'relative', // Required for positioning handles
       }}
+      scale={parentScale}
       handleStyles={handleStyles}
       enableResizing={{
         top: true,
@@ -119,7 +113,9 @@ const ResizableDraggableBox = ({imageUrl}) => (
       
       </div>
     </Rnd>
-  </div>
+  
 );
 
 export default ResizableDraggableBox;
+
+
