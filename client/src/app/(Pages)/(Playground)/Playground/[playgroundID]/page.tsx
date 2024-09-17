@@ -4,6 +4,8 @@ import DrawingCanvas from "@/app/_components/InPaintMask";
 import ResizableDraggableBox from "@/app/_components/DraggableResizableBox"
 import { getMaskData } from '@/app/_components/InPaintMask';
 import ZoomableGrid from '@/app/_components/ZoomableGrid';
+import RNDText from '@/app/_components/RNDText'
+import LeftToolBar from '@/app/_components/LeftToolBar'
 interface IPLayGroundProps {
     params: {
         playgroundID: string;
@@ -22,7 +24,9 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
-const[scale,setScale] = useState(1);
+    const [scale, setScale] = useState(1);
+
+    const [textItemCount, setTextItemCount] = useState(0);
 
     const onSubmitAIGeneration = async (text: string) => {
         setLoading(true);
@@ -84,44 +88,31 @@ const[scale,setScale] = useState(1);
         return imageUrl;
     };
 
-const setScaleHanle = (s:number)=>{
-    setScale(s)
-}
+    const setScaleHanle = (s: number) => {
+        setScale(s)
+    }
+
+    const createTextItem = ()=>{
+setTextItemCount(textItemCount+1);
+    }
+
+ 
+
 
     return (
-        <div className="bg-transparent w-screen h-screen bg-slate-500 " >
-            {/* <h1 className="text-white">PLAYGROUND PAGE {params.playgroundID}</h1>
-            <div className="flex flex-row gap-5" >
-                <input
-                    className="text-black"
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                />
-                <button
-                    className="border border-solid rounded-5"
-                    onClick={() => onSubmitAIGeneration(inputText)}
-                    disabled={loading}
-                >
-                    {loading ? 'Generating...' : 'Submit'}
-                </button>
-
-
-            </div> */}
-
-            {/* this use for showing image Generation result */}
-            {/* <ResizableDraggableBox imageUrl={imageUrl} /> */}
-            {/* {Array.from({ length: 1 }).map((_, index) => (
-          
-      ))} */}
-
-            {/* this use for inPaint image */}
-            {/* <DrawingCanvas imgUrl={"http://localhost:4000/test.png"} width={200} height={200} />
-            <button onClick={onSubmitInPaint}>SUBMIT</button> */}
+        <div className=" w-screen h-screen bg-slate-500 " >
+           
+            <LeftToolBar onClickTextButton={createTextItem}/>
+           
             <ZoomableGrid onSetScale={setScaleHanle}>
-            <ResizableDraggableBox imageUrl={""} parentScale={scale} />
+               
+                {Array.from({ length: textItemCount }).map((_, index) => (
+
+                    <RNDText key={index} parentScale={scale} />
+
+                ))}
             </ZoomableGrid>
-          
+
         </div>
     );
 };

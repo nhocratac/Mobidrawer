@@ -95,13 +95,15 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       />
 
 
-        <div className='absolute w-fit h-fit top-0 bg-red-600' 
-        style={getTransformedStyle()}>
-        {children}
+        <div className='absolute top-0 bg-red-600' 
+        //style={getTransformedStyle()}
+        >
+          {children}
         </div>
 
       
     </div>
+    
   );
 };
 
