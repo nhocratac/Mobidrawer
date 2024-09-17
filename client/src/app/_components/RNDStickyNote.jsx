@@ -8,28 +8,27 @@ const handleStyles = {
   bottomRight: 'cursor-se-resize w-[10px] h-[10px] absolute bg-white border-2 border-black rounded-full bottom-[-5px] right-[-5px]',
 };
 
-const Box = () => (
-  <div className="box m-0 w-full h-full p-0 flex justify-center items-center overflow-hidden">
-    <textarea 
-    className="w-fit h-fit bg-transparent text-center text-[16px]"
-    defaultValue={"type here"}
-    >
-
-    </textarea>
-  </div>
-);
-
-const RNDText = ({ parentScale }) => (
+const Box = ({ colorString = 'bg-transparent' }) => (
+    <div className="box m-0 w-full h-full p-0 flex justify-center items-center overflow-hidden">
+      <textarea
+        className={`w-full h-full text-center text-[16px] ${colorString}`}
+        defaultValue={"type here"}
+      >
+      </textarea>
+    </div>
+  );
+  
+const RNDStickyNote = ({ parentScale,colorString }) => (
   <Rnd
     default={{
       x: 0,
       y: 0,
       width: 200,
-      height: 30,
+      height: 200,
     }}
     bounds="window"
-    minWidth={20}
-    minHeight={40}
+    minWidth={200}
+    minHeight={200}
     className="border-2 border-black relative"
     scale={parentScale}
     enableResizing={{
@@ -43,7 +42,7 @@ const RNDText = ({ parentScale }) => (
       topLeft: true,
     }}
   >
-    <Box />
+    <Box colorString={colorString} />
     <div className="resize-handles">
       <div className={handleStyles.topLeft}></div>
       <div className={handleStyles.topRight}></div>
@@ -53,4 +52,4 @@ const RNDText = ({ parentScale }) => (
   </Rnd>
 );
 
-export default RNDText;
+export default RNDStickyNote;

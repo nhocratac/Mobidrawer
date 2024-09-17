@@ -5,6 +5,7 @@ import ResizableDraggableBox from "@/app/_components/DraggableResizableBox"
 import { getMaskData } from '@/app/_components/InPaintMask';
 import ZoomableGrid from '@/app/_components/ZoomableGrid';
 import RNDText from '@/app/_components/RNDText'
+import RNDStickyNote from '@/app/_components/RNDStickyNote'
 import LeftToolBar from '@/app/_components/LeftToolBar'
 interface IPLayGroundProps {
     params: {
@@ -27,6 +28,8 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
     const [scale, setScale] = useState(1);
 
     const [textItemCount, setTextItemCount] = useState(0);
+    const [stickyNoteItemCount, setStickyNoteItemCount] = useState(0);
+    const [stickyNoteColor, setStickyNoteColor] = useState('bg-transparent');
 
     const onSubmitAIGeneration = async (text: string) => {
         setLoading(true);
@@ -92,23 +95,30 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         setScale(s)
     }
 
-    const createTextItem = ()=>{
-setTextItemCount(textItemCount+1);
+
+    const onClickCreateStickyNote = (colorName: string) => {
+        setStickyNoteItemCount(stickyNoteItemCount + 1);
+        setStickyNoteColor(colorName);
     }
 
- 
 
 
     return (
         <div className=" w-screen h-screen bg-slate-500 " >
-           
-            <LeftToolBar onClickTextButton={createTextItem}/>
-           
+
+            <LeftToolBar onClickTextButton={() => setTextItemCount(textItemCount + 1)} onClickStickyNoteButton={onClickCreateStickyNote}/>
+
             <ZoomableGrid onSetScale={setScaleHanle}>
-               
+
                 {Array.from({ length: textItemCount }).map((_, index) => (
 
                     <RNDText key={index} parentScale={scale} />
+
+                ))}
+
+                {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
+
+                    <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColor} />
 
                 ))}
             </ZoomableGrid>

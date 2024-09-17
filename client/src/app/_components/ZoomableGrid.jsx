@@ -96,7 +96,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
 
         <div className='absolute top-0 bg-red-600' 
-        //style={getTransformedStyle()}
+        style={getTransformedStyle()}
         >
           {children}
         </div>
