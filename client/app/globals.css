@@ -5,7 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary:42, 90%, 55%;;
+  --primary:50, 100%, 65%;;
   --primary-foreground:#000000;
   --secondary:230.05 100% 60.98%;
   --secondary-foreground: 0 0% 100%;
@@ -54,7 +54,6 @@ html {
 }
 
 
-
 body {
   height: 100vh;
   withd: 100vw;
@@ -96,7 +95,7 @@ a {
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --primary: 50 100% 60%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
