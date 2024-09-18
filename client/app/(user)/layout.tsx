@@ -9,7 +9,6 @@ export default function layout({
             <aside className="w-[215px] hidden lg:block">
                 <SideBar />
             </aside>
-            <div className="w-6 hidden lg:block"></div>
             <div className="bg-red-400 flex-1 ">
                 <HeaderDefault />
                 <main className="">
