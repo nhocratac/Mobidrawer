@@ -18,12 +18,12 @@ export default function SideBar() {
                     more
                 </div>
             </div>
-            <div className="mx-auto w-[90%]">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <div className="relative mx-auto w-[90%] p-0">
+                <Search className="absolute left-5 top-1/2 h-4 w-4 text-gray-500 translate-y-[-50%]" />
                 <Input
                     type="search"
                     placeholder="Search..."
-                    className="pl-8  h-[40px] border border-gray-300 rounded-lg my-4"
+                    className="pl-12 py-0 m-0 h-[40px] border border-gray-300 rounded-lg my-4"
                 />
             </div>
             <div>
