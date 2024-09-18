@@ -13,10 +13,13 @@ import { useState } from "react";
 import AIGenerationPopup from "@/app/_components/AIGenerationPopup";
 import BoardHeader from "@/app/_components/BoardHeader";
 import ToolBarBtn from "@/app/_components/LeftToolBarBtn";
+import Shapes from "./CustomShape";
+import {getShapeByIndex} from "./CustomShape";
 
 const LeftToolBar = ({
     onClickTextButton = () => { },
     onClickStickyNoteButton = (color) => { },
+    onClickShape = (shape)=>{},
 }) => {
     const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
     const [isSelectNotePopupVisible, setIsSelectNotePopupVisible] = useState(false);
@@ -37,8 +40,9 @@ const LeftToolBar = ({
     };
     const onClickCreateTextButton = (colorName) => {
         resetSelectPopup();
-        onClickStickyNoteButton(colorName);
+        onClickTextButton();
     }
+
 
     const colors = [
         'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500',
@@ -65,8 +69,8 @@ const LeftToolBar = ({
     };
 
     const onSelectShape = (i) => {
-        // Handle shape selection
-        console.log('Selected shape:', shapeIcons[i]);
+     
+       onClickShape(getShapeByIndex(i));
         resetSelectPopup();
     };
 

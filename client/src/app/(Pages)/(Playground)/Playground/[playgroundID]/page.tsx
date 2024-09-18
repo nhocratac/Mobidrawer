@@ -1,130 +1,139 @@
+// src/app/PlayGroundPage.tsx
+
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DrawingCanvas from "@/app/_components/InPaintMask";
-import ResizableDraggableBox from "@/app/_components/DraggableResizableBox"
 import { getMaskData } from '@/app/_components/InPaintMask';
 import ZoomableGrid from '@/app/_components/ZoomableGrid';
-import RNDText from '@/app/_components/RNDText'
-import RNDStickyNote from '@/app/_components/RNDStickyNote'
-import LeftToolBar from '@/app/_components/LeftToolBar'
+import RNDText from '@/app/_components/RNDText';
+import RNDStickyNote from '@/app/_components/RNDStickyNote';
+import LeftToolBar from '@/app/_components/LeftToolBar';
+import Shapes from "@/app/_components/CustomShape";
+import RNDBase from "@/app/_components/RNDBase";
+
 interface IPLayGroundProps {
-    params: {
-        playgroundID: string;
-    };
+  params: {
+    playgroundID: string;
+  };
 }
 
+type ShapeComponent = React.FC<React.SVGProps<SVGSVGElement>>;
+
 const PlayGroundPage = ({ params }: IPLayGroundProps) => {
+  useEffect(() => {
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+  }, []);
 
-    useEffect(() => {
-        // Disable scrolling
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.height = '100%';
-    });
-    const [inputText, setInputText] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState('');
-    const [scale, setScale] = useState(1);
+  const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [scale, setScale] = useState(1);
 
-    const [textItemCount, setTextItemCount] = useState(0);
-    const [stickyNoteItemCount, setStickyNoteItemCount] = useState(0);
-    const [stickyNoteColor, setStickyNoteColor] = useState('bg-transparent');
+  const [textItemCount, setTextItemCount] = useState(0);
+  const [stickyNoteItemCount, setStickyNoteItemCount] = useState(0);
+  const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
 
-    const onSubmitAIGeneration = async (text: string) => {
-        setLoading(true);
-        try {
-            const res = await fetch('http://localhost:4000/ai/generation');
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            const data = await res.json();
-            setImageUrl(data.imageUrl);
-            console.log(data.imageUrl);
-        } catch (error) {
-            console.error('Error fetching image:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const [stickyNoteColors, setStickyNoteColors] = useState<string[]>([]);
 
-    const onSubmitInPaint = async () => {
-        // Get the RGBA data from the canvas
-        const rgbaData = getMaskData();
-        try {
-            const response = await fetch('http://localhost:4000/ai/inPaint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ image: imageUrl, prompt: "remove it " }), // Send base64 data or raw image data
-            });
+  const onClickCreateStickyNote = (colorName: string) => {
+    setStickyNoteItemCount(stickyNoteItemCount + 1);
+    setStickyNoteColors((prevColors) => [...prevColors, colorName]);
+  };
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+  const onSubmitAIGeneration = async (text: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/ai/generation');
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setImageUrl(data.imageUrl);
+      console.log(data.imageUrl);
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const data = await response.json();
-            console.log('Server response:', data);
-        } catch (error) {
-            console.log("err" + error)
-        }
+  const onSubmitInPaint = async () => {
+    // Get the RGBA data from the canvas
+    const rgbaData = getMaskData();
+    try {
+      const response = await fetch('http://localhost:4000/ai/inPaint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: imageUrl, prompt: "remove it " }), // Send base64 data or raw image data
+      });
 
-    };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    // use to check if it return correct image mask
-    const rgbaDataToImage = (rgbaData: any, width: any, height: any) => {
-        const canvas = document.createElement('canvas');
+      const data = await response.json();
+      console.log('Server response:', data);
+    } catch (error) {
+      console.log("err" + error);
+    }
+  };
 
-        canvas.width = width;
-        canvas.height = height;
+  const rgbaDataToImage = (rgbaData: any, width: any, height: any) => {
+    const canvas = document.createElement('canvas');
 
-        const imageData = (canvas.getContext('2d'))?.createImageData(width, height);
-        if (imageData == null) return;
-        for (let i = 0; i < rgbaData.length; i++) {
-            imageData.data[i] = rgbaData[i];
-        }
+    canvas.width = width;
+    canvas.height = height;
 
-        (canvas.getContext('2d'))?.putImageData(imageData, 0, 0);
-
-        const imageUrl = canvas.toDataURL();
-        return imageUrl;
-    };
-
-    const setScaleHanle = (s: number) => {
-        setScale(s)
+    const imageData = (canvas.getContext('2d'))?.createImageData(width, height);
+    if (imageData == null) return;
+    for (let i = 0; i < rgbaData.length; i++) {
+      imageData.data[i] = rgbaData[i];
     }
 
+    (canvas.getContext('2d'))?.putImageData(imageData, 0, 0);
 
-    const onClickCreateStickyNote = (colorName: string) => {
-        setStickyNoteItemCount(stickyNoteItemCount + 1);
-        setStickyNoteColor(colorName);
-    }
+    const imageUrl = canvas.toDataURL();
+    return imageUrl;
+  };
 
+  const setScaleHanle = (s: number) => {
+    setScale(s);
+  };
 
+  const onClickAddShape = (shape: ShapeComponent) => {
+    setShapeList([...shapeList, shape]);
+    console.log(shapeList);
+  };
 
-    return (
-        <div className=" w-screen h-screen bg-slate-500 " >
+  return (
+    <div className="w-screen h-screen bg-slate-500">
+      <LeftToolBar
+        onClickTextButton={() => setTextItemCount(textItemCount + 1)}
+        onClickStickyNoteButton={onClickCreateStickyNote}
+        onClickShape={onClickAddShape}
+      />
 
-            <LeftToolBar onClickTextButton={() => setTextItemCount(textItemCount + 1)} onClickStickyNoteButton={onClickCreateStickyNote}/>
+      <ZoomableGrid onSetScale={setScaleHanle}>
+        {Array.from({ length: textItemCount }).map((_, index) => (
+          <RNDText key={index} parentScale={scale} />
+        ))}
 
-            <ZoomableGrid onSetScale={setScaleHanle}>
+        {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
+          <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColors[index]} />
+        ))}
 
-                {Array.from({ length: textItemCount }).map((_, index) => (
-
-                    <RNDText key={index} parentScale={scale} />
-
-                ))}
-
-                {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
-
-                    <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColor} />
-
-                ))}
-            </ZoomableGrid>
-
-        </div>
-    );
+        {shapeList.map((ShapeComponent, index) => (
+          <RNDBase key={index} parentScale={scale} children={<ShapeComponent />} />
+        ))}
+      </ZoomableGrid>
+    </div>
+  );
 };
 
 export default PlayGroundPage;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Rnd } from 'react-rnd';
-
+import RNDText from "@/app/_components/RNDText"
 const handleStyles = {
   topLeft: 'cursor-nw-resize w-[10px] h-[10px] absolute bg-white border-2 border-black rounded-full top-[-5px] left-[-5px]',
   topRight: 'cursor-ne-resize w-[10px] h-[10px] absolute bg-white border-2 border-black rounded-full top-[-5px] right-[-5px]',
@@ -8,35 +8,32 @@ const handleStyles = {
   bottomRight: 'cursor-se-resize w-[10px] h-[10px] absolute bg-white border-2 border-black rounded-full bottom-[-5px] right-[-5px]',
 };
 
-const Box = ({ children }) => (
-  <div className="relative m-0 w-full h-full p-0 flex justify-center items-center overflow-hidden">
-    <div
-      contentEditable
-      className="absolute inset-0 bg-transparent text-center text-[16px] flex items-center justify-center "
-      style={{
-        padding: '0',
-        margin: '0',
-        overflow: 'hidden',
-        lineHeight: '1.5',  // Adjust line-height for vertical alignment
-      }}
-    >
-      type here
+const Box = ({ children, scale }) => (
+    <div className="relative m-0 w-full h-full p-0 flex justify-center items-center overflow-hidden">
+      {children}
+      <div className="absolute inset-0 flex justify-center items-center">
+        <div
+          style={{
+            width: 150, 
+            height: 150, 
+          }}
+        >
+          <RNDText parentScale={scale} width={150} height={150} />
+        </div>
+      </div>
     </div>
-    {children}
-  </div>
-);
-
-const RNDText = ({ parentScale ,width = 200, height = 30}) => (
+  );
+  const RNDBase = ({ parentScale, children}) => (
   <Rnd
     default={{
       x: 0,
       y: 0,
-      width: width,
-      height: height,
+      width: 200,
+      height: 200,
     }}
     bounds="window"
     minWidth={20}
-    minHeight={40}
+    minHeight={20}
     className="border-2 border-black relative"
     scale={parentScale}
     enableResizing={{
@@ -50,7 +47,7 @@ const RNDText = ({ parentScale ,width = 200, height = 30}) => (
       topLeft: true,
     }}
   >
-    <Box />
+    <Box children={children} scale={parentScale}/>
     <div className="resize-handles">
       <div className={handleStyles.topLeft}></div>
       <div className={handleStyles.topRight}></div>
@@ -64,4 +61,4 @@ const RNDText = ({ parentScale ,width = 200, height = 30}) => (
   </Rnd>
 );
 
-export default RNDText;
+export default RNDBase;
