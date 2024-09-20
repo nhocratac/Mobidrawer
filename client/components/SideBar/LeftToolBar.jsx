@@ -10,11 +10,11 @@ import { MdOutlineRectangle } from "react-icons/md";
 import { IoTriangleOutline } from "react-icons/io5";
 import { RxThickArrowRight, RxThickArrowLeft } from "react-icons/rx";
 import { useState } from "react";
-import AIGenerationPopup from "@/app/_components/AIGenerationPopup";
-import BoardHeader from "@/app/_components/BoardHeader";
-import ToolBarBtn from "@/app/_components/LeftToolBarBtn";
-import Shapes from "./CustomShape";
-import {getShapeByIndex} from "./CustomShape";
+import AIGenerationPopup from "@/components/ui/Panel_Popup/AIGenerationPopup";
+import BoardHeader from "@/components/header/WhiteBoardHeader";
+import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
+import Shapes from "@/components/ui/CustomShape";
+import {getShapeByIndex} from "@/components/ui/CustomShape";
 
 const LeftToolBar = ({
     onClickTextButton = () => { },
