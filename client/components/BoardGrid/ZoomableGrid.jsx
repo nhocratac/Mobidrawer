@@ -179,7 +179,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const getTransformedStyle = () => ({
     transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
     transformOrigin: '0 0',
-    pointerEvents: 'none', // Cho phép canvas nhận sự kiện
   });
 
   // Hàm thay đổi chế độ vẽ
@@ -251,7 +250,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       </div>
 
       {/* Các phần tử con */}
-      <div className='absolute top-0' style={getTransformedStyle()}>
+      <div className='absolute z-[100]  top-0' style={getTransformedStyle()}>
         {children}
       </div>
     </div>
