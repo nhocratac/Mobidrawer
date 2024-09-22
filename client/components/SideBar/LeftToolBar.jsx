@@ -17,11 +17,18 @@ import Shapes from "@/components/ui/CustomShape";
 import { getShapeByIndex } from "@/components/ui/CustomShape";
 import { CircleDashed } from 'lucide-react'
 import InputRange from "../ui/InputRange";
+import { useToolDevStore } from "@/lib/Zustand/store";
+
 const LeftToolBar = ({
     onClickTextButton = () => { },
     onClickStickyNoteButton = (color) => { },
     onClickShape = (shape) => { },
 }) => {
+
+    // get state from zustand store
+    const ModeTool = useToolDevStore(state => state.mode);
+    const setMode = useToolDevStore(state => state.setMode);
+    // local state
     const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
     const [isSelectNotePopupVisible, setIsSelectNotePopupVisible] = useState(false);
     const [isSelectShapeVisible, setIsSelectShapeVisible] = useState(false);
@@ -44,9 +51,17 @@ const LeftToolBar = ({
         resetSelectPopup();
         onClickTextButton();
     }
+
+    const OnClickArrowButton = () => {
+        resetSelectPopup();
+        setMode('drag');
+    }
+
     const onClickPenButton = () => {
         resetSelectPopup();
         setIsSelectPenVisible(!isSelectPenVisible);
+        // set state to zustand store
+        setMode('paint');
     }
 
 
@@ -85,6 +100,7 @@ const LeftToolBar = ({
         setIsSelectShapeVisible(false);
     }
 
+
     return (
         <div className="relative w-0 h-0">
             {/* Header */}
@@ -98,12 +114,12 @@ const LeftToolBar = ({
                 {/* toolbar container */}
                 <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
                     <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-                    <ToolBarBtn onclick={null} icon={GiArrowCursor} />
-                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
-                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
+                    <ToolBarBtn onclick={OnClickArrowButton} icon={GiArrowCursor} isChoosing = {ModeTool == 'drag'} />
+                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText}  />
+                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote}  />
                     <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
-                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2} />
-                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} />
+                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2}  />
+                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} isChoosing = {ModeTool == 'paint'} />
                 </div>
 
                 {/* select sticky note color */}
@@ -153,7 +169,7 @@ const LeftToolBar = ({
                                 <CircleDashed className="w-10 h-10" />
                             </button>
                             <div id='input-range-line-wide' className="">
-                                <InputRange label='wide line' min={6}  max={50} defaultValue={5} />
+                                <InputRange label='wide line' min={6} max={50} defaultValue={5} />
                             </div>
                         </div>
                     </div>

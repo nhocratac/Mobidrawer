@@ -1,3 +1,4 @@
+import { useToolDevStore } from '@/lib/Zustand/store';
 import { useEffect, useRef, useState } from 'react';
 
 const ZoomableGrid = ({ children, onSetScale }) => {
@@ -9,7 +10,8 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   
   // Trạng thái quản lý chế độ và hành động hiện tại
-  const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'paint', 'idle'
+ // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'paint', 'idle'
+  const mode = useToolDevStore(state => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   
@@ -234,20 +236,9 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       />
 
       {/* Nút thay đổi chế độ kéo */}
-      <div 
-        className='w-40 h-12 top-4 left-4 bg-green-600 z-50 fixed flex items-center justify-center cursor-pointer' 
-        onClick={handleChangeModeDrag}
-      >
-        {mode === 'drag' ? 'Disable Drag' : 'Enable Drag'}
-      </div>
 
       {/* Nút thay đổi chế độ vẽ */}
-      <div 
-        className='w-40 h-12 top-20 left-4 bg-violet-600 z-50 fixed flex items-center justify-center cursor-pointer' 
-        onClick={handleChangeModePaint}
-      >
-        {mode === 'paint' ? 'Disable Paint' : 'Enable Paint'}
-      </div>
+
 
       {/* Các phần tử con */}
       <div className='absolute z-[100]  top-0' style={getTransformedStyle()}>
