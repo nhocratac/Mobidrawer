@@ -20,7 +20,6 @@ const Box = ({ children }) => (
         lineHeight: '1.5',  // Adjust line-height for vertical alignment
       }}
     >
-      type here
     </div>
     {children}
   </div>

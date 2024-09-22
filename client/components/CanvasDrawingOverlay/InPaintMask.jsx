@@ -11,7 +11,7 @@ const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
         if (!canvas) return;
         const context = canvas.getContext('2d');
         if (!context) return;
-        context.lineWidth = 30;
+        context.lineWidth = 1;
         context.strokeStyle = `rgba(${maskColor[0]},${maskColor[1]},${maskColor[2]},${maskColor[3] / 255})`;
         context.lineJoin = 'round';
         context.lineCap = 'round';
@@ -50,7 +50,7 @@ const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
     };
 
     return (
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'inline-block'}}>
             <canvas
                 ref={canvasRef}
                 width={width}
