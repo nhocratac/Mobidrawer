@@ -3,7 +3,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Di
 
 
 interface DialogElementProps {
-    Video?: React.ComponentType<any>;
+    Video?: React.ReactNode;
     Title?: string;
     Description?: string;
     HandleClickCreate?: () => void;
@@ -40,7 +40,7 @@ export default function BoardThumbnail({ Thumbnail, title, size, DialogEle, ...p
 const BodyDialog = ({ Video, Title, Description, HandleClickCreate, ...props }: DialogElementProps) => {
     return (
         <DialogContent className="w-[520px] h-[574px]">
-            {Video && <Video />}
+            {Video}
             <DialogHeader>
                 {Title && <DialogTitle className="text-[2rem]">{Title}</DialogTitle>}
                 {Description && <DialogDescription className='text-[1.4rem]'>{Description}</DialogDescription>}

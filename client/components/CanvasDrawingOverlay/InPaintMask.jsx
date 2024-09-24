@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 
-const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
+const DrawingCanvas =({ imgUrl, width = '100%', height = '100%' }) => {
     const canvasRef = useRef(null);
+    
     const [isDrawing, setIsDrawing] = useState(false);
-    const [maskColor, setMaskColor] = useState([255, 30, 0, 255]); // Default color
+const [maskColor, setMaskColor] = useState([255, 30, 0, 255]); // Default color
 
 
     useEffect(() => {

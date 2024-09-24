@@ -15,20 +15,33 @@ import BoardHeader from "@/components/header/WhiteBoardHeader";
 import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
 import Shapes from "@/components/ui/CustomShape";
 import { getShapeByIndex } from "@/components/ui/CustomShape";
+
 import { FaDotCircle } from "react-icons/fa";
+
+import { CircleDashed } from 'lucide-react'
+import InputRange from "../ui/InputRange";
+import { useToolDevStore } from "@/lib/Zustand/store";
+
 const LeftToolBar = ({
     onClickTextButton = () => { },
     onClickStickyNoteButton = (color) => { },
     onClickShape = (shape) => { },
 }) => {
+
+    // get state from zustand store
+    const ModeTool = useToolDevStore(state => state.mode);
+    const setMode = useToolDevStore(state => state.setMode);
+    // local state
     const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
     const [isSelectNotePopupVisible, setIsSelectNotePopupVisible] = useState(false);
     const [isSelectShapeVisible, setIsSelectShapeVisible] = useState(false);
     const [isSelectPenVisible, setIsSelectPenVisible] = useState(false);
+
     const [isPenConfigPopupVisible, setIsPenConfigPopupVisible] = useState(false);
 
     const [penThickness, setPenThickness] = useState(5);
     const [penColor, setPenColor] = useState('#000000');
+
 
     const onClickAIButton = () => {
         setIsPopupVisible(!isAIGenerationPopupVisible);
@@ -43,10 +56,11 @@ const LeftToolBar = ({
         resetSelectPopup();
         setIsSelectShapeVisible(!isSelectShapeVisible);
     };
-    const onClickPenButton = () => {
-        resetSelectPopup();
-        setIsSelectPenVisible(!isSelectPenVisible);
-    };
+    // const onClickPenButton = () => {
+    //     resetSelectPopup();
+    //     setIsSelectPenVisible(!isSelectPenVisible);
+   
+    // };
     const onClickCreateTextButton = (colorName) => {
         resetSelectPopup();
         onClickTextButton();
@@ -54,6 +68,23 @@ const LeftToolBar = ({
     const handleThicknessChange = (e) => {
         setPenThickness(e.target.value);
     };
+
+
+
+    const OnClickArrowButton = () => {
+        resetSelectPopup();
+        setMode('drag');
+    }
+
+    const onClickPenButton = () => {
+        resetSelectPopup();
+        setIsSelectPenVisible(!isSelectPenVisible);
+        setIsPenConfigPopupVisible(false);
+        // set state to zustand store
+        setMode('paint');
+    }
+
+
 
     const stickyNoteColor = [
         'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500',
@@ -107,6 +138,8 @@ const LeftToolBar = ({
     const handlePenColorChange = (color) => {
         setPenColor(color)
     }
+
+
     return (
         <div className="relative w-0 h-0">
             {/* Header */}
@@ -120,12 +153,16 @@ const LeftToolBar = ({
                 {/* toolbar container */}
                 <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
                     <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-                    <ToolBarBtn onclick={null} icon={GiArrowCursor} />
-                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
-                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
+                    <ToolBarBtn onclick={OnClickArrowButton} icon={GiArrowCursor} isChoosing = {ModeTool == 'drag'} />
+                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText}  />
+                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote}  />
                     <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
+
                     <ToolBarBtn onclick={null} icon={ImArrowUpRight2} />
-                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} />
+
+                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2}  />
+                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} isChoosing = {ModeTool == 'paint'} />
+
                 </div>
 
                 {/* select sticky note color */}
@@ -161,6 +198,7 @@ const LeftToolBar = ({
                         </div>
                     </div>
                 </div>
+
 
                 {/* select pen */}
                 <div className={`bg-red-900 w-0 h-0 relative flex justify-center items-center`}>
@@ -215,6 +253,27 @@ const LeftToolBar = ({
 
                     </div>
                 </div>
+
+
+                {/* <div className={`bg-red-900 w-0 ${isSelectPenVisible ? 'h-[200px]' : 'h-0'} transition-all duration-300`}>
+                    <div className="w-[100px] h-full bg-gray-900 transform translate-x-1/2 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-2 p-2">
+                            <button
+                                className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
+                            >
+                                <FaPen className="w-10 h-10" />
+                            </button>
+                            <button
+                                className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
+                            >
+                                <CircleDashed className="w-10 h-10" />
+                            </button>
+                            <div id='input-range-line-wide' className="">
+                                <InputRange label='wide line' min={6} max={50} defaultValue={5} />
+                            </div>
+                        </div>
+                    </div>
+                </div> */}
 
             </div>
         </div>
