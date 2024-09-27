@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 
-const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
+const DrawingCanvas =({ imgUrl, width = '100%', height = '100%' }) => {
     const canvasRef = useRef(null);
+    
     const [isDrawing, setIsDrawing] = useState(false);
-    const [maskColor, setMaskColor] = useState([255, 30, 0, 255]); // Default color
+const [maskColor, setMaskColor] = useState([255, 30, 0, 255]); // Default color
 
 
     useEffect(() => {
@@ -11,7 +12,7 @@ const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
         if (!canvas) return;
         const context = canvas.getContext('2d');
         if (!context) return;
-        context.lineWidth = 30;
+        context.lineWidth = 1;
         context.strokeStyle = `rgba(${maskColor[0]},${maskColor[1]},${maskColor[2]},${maskColor[3] / 255})`;
         context.lineJoin = 'round';
         context.lineCap = 'round';
@@ -50,7 +51,7 @@ const DrawingCanvas =({ imgUrl, width = 200, height = 200 }) => {
     };
 
     return (
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'inline-block'}}>
             <canvas
                 ref={canvasRef}
                 width={width}

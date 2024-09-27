@@ -112,6 +112,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
   };
 
   return (
+   
     <div className="w-screen h-screen bg-slate-500">
       <LeftToolBar
         onClickTextButton={() => setTextItemCount(textItemCount + 1)}
@@ -131,6 +132,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         {shapeList.map((ShapeComponent, index) => (
           <RNDBase key={index} parentScale={scale} children={<ShapeComponent />} />
         ))}
+    
       </ZoomableGrid>
     </div>
   );

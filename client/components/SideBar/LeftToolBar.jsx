@@ -2,7 +2,7 @@
 import { GiArrowCursor } from "react-icons/gi";
 import { HiMiniSparkles } from "react-icons/hi2";
 import { RiText } from "react-icons/ri";
-import { FaRegStickyNote, FaRegCircle, FaRegStar } from "react-icons/fa";
+import { FaRegStickyNote, FaRegCircle, FaRegStar, FaHighlighter, FaEraser } from "react-icons/fa";
 import { LuShapes } from "react-icons/lu";
 import { ImArrowUpRight2 } from "react-icons/im";
 import { FaPen } from "react-icons/fa";
@@ -14,16 +14,34 @@ import AIGenerationPopup from "@/components/ui/Panel_Popup/AIGenerationPopup";
 import BoardHeader from "@/components/header/WhiteBoardHeader";
 import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
 import Shapes from "@/components/ui/CustomShape";
-import {getShapeByIndex} from "@/components/ui/CustomShape";
+import { getShapeByIndex } from "@/components/ui/CustomShape";
+
+import { FaDotCircle } from "react-icons/fa";
+
+import { CircleDashed } from 'lucide-react'
+import InputRange from "../ui/InputRange";
+import { useToolDevStore } from "@/lib/Zustand/store";
 
 const LeftToolBar = ({
     onClickTextButton = () => { },
     onClickStickyNoteButton = (color) => { },
-    onClickShape = (shape)=>{},
+    onClickShape = (shape) => { },
 }) => {
+
+    // get state from zustand store
+    const ModeTool = useToolDevStore(state => state.mode);
+    const setMode = useToolDevStore(state => state.setMode);
+    // local state
     const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
     const [isSelectNotePopupVisible, setIsSelectNotePopupVisible] = useState(false);
     const [isSelectShapeVisible, setIsSelectShapeVisible] = useState(false);
+    const [isSelectPenVisible, setIsSelectPenVisible] = useState(false);
+
+    const [isPenConfigPopupVisible, setIsPenConfigPopupVisible] = useState(false);
+
+    const [penThickness, setPenThickness] = useState(5);
+    const [penColor, setPenColor] = useState('#000000');
+
 
     const onClickAIButton = () => {
         setIsPopupVisible(!isAIGenerationPopupVisible);
@@ -38,13 +56,37 @@ const LeftToolBar = ({
         resetSelectPopup();
         setIsSelectShapeVisible(!isSelectShapeVisible);
     };
+    // const onClickPenButton = () => {
+    //     resetSelectPopup();
+    //     setIsSelectPenVisible(!isSelectPenVisible);
+   
+    // };
     const onClickCreateTextButton = (colorName) => {
         resetSelectPopup();
         onClickTextButton();
     }
+    const handleThicknessChange = (e) => {
+        setPenThickness(e.target.value);
+    };
 
 
-    const colors = [
+
+    const OnClickArrowButton = () => {
+        resetSelectPopup();
+        setMode('drag');
+    }
+
+    const onClickPenButton = () => {
+        resetSelectPopup();
+        setIsSelectPenVisible(!isSelectPenVisible);
+        setIsPenConfigPopupVisible(false);
+        // set state to zustand store
+        setMode('paint');
+    }
+
+
+
+    const stickyNoteColor = [
         'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500',
         'bg-purple-500', 'bg-pink-500', 'bg-teal-500', 'bg-indigo-500',
         'bg-gray-500', 'bg-orange-500', 'bg-lime-500', 'bg-rose-500',
@@ -52,6 +94,14 @@ const LeftToolBar = ({
         'bg-fuchsia-500', 'bg-zinc-500', 'bg-neutral-500', 'bg-slate-500',
         'bg-stone-500', 'bg-amber-500'
     ];
+    const penColors = [
+        '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff', // Primary colors
+        '#ff4500', '#32cd32', '#1e90ff', '#ffa500', '#800080', '#008080', '#808080', '#f5f5f5', // Secondary and neutral colors
+        '#ff6347', '#adff2f', '#4682b4', '#ff1493', '#6a5acd', '#20b2aa', '#2f4f4f', '#dcdcdc', // Muted colors
+
+
+    ];
+
 
     const shapeIcons = [
         MdOutlineRectangle,
@@ -64,20 +114,32 @@ const LeftToolBar = ({
 
     const onSelectNoteColor = (i) => {
         resetSelectPopup();
-        onClickStickyNoteButton(colors[i]);
+        onClickStickyNoteButton(stickyNoteColor[i]);
         setIsSelectNotePopupVisible(false);
     };
 
     const onSelectShape = (i) => {
-     
-       onClickShape(getShapeByIndex(i));
+
+        onClickShape(getShapeByIndex(i));
         resetSelectPopup();
+    };
+    const onTogglePenConfigPopup = () => {
+        setIsPenConfigPopupVisible(!isPenConfigPopupVisible);
+
     };
 
     const resetSelectPopup = () => {
         setIsSelectNotePopupVisible(false);
         setIsSelectShapeVisible(false);
+        setIsSelectPenVisible(false);
     }
+
+
+    const handlePenColorChange = (color) => {
+        setPenColor(color)
+    }
+
+
     return (
         <div className="relative w-0 h-0">
             {/* Header */}
@@ -91,19 +153,23 @@ const LeftToolBar = ({
                 {/* toolbar container */}
                 <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
                     <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-                    <ToolBarBtn onclick={null} icon={GiArrowCursor} />
-                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
-                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
+                    <ToolBarBtn onclick={OnClickArrowButton} icon={GiArrowCursor} isChoosing = {ModeTool == 'drag'} />
+                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText}  />
+                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote}  />
                     <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
+
                     <ToolBarBtn onclick={null} icon={ImArrowUpRight2} />
-                    <ToolBarBtn onclick={null} icon={FaPen} />
+
+                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2}  />
+                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} isChoosing = {ModeTool == 'paint'} />
+
                 </div>
 
                 {/* select sticky note color */}
                 <div className={`bg-red-900 w-0 ${isSelectNotePopupVisible ? 'h-[500px]' : 'h-0'} transition-all duration-300`}>
-                    <div className="w-[100px] h-full bg-gray-900 transform translate-x-1/2 overflow-y-auto">
+                    <div className="w-[100px]  overflow-y-hidden h-full bg-gray-900 transform translate-x-1/2 ">
                         <div className="grid grid-cols-2 gap-2 p-2">
-                            {colors.map((color, i) => (
+                            {stickyNoteColor.map((color, i) => (
                                 <button
                                     key={i}
                                     onClick={() => onSelectNoteColor(i)}
@@ -118,7 +184,7 @@ const LeftToolBar = ({
 
                 {/* select shape */}
                 <div className={`bg-red-900 w-0 ${isSelectShapeVisible ? 'h-[200px]' : 'h-0'} transition-all duration-300`}>
-                    <div className="w-[100px] h-full bg-gray-900 transform translate-x-1/2 overflow-y-auto">
+                    <div className="w-[100px] h-full overflow-y-hidden bg-gray-900 transform translate-x-1/2 ">
                         <div className="grid grid-cols-2 gap-2 p-2">
                             {shapeIcons.map((Icon, i) => (
                                 <button
@@ -132,6 +198,83 @@ const LeftToolBar = ({
                         </div>
                     </div>
                 </div>
+
+
+                {/* select pen */}
+                <div className={`bg-red-900 w-0 h-0 relative flex justify-center items-center`}>
+                    <div className={`absolute left-[50px] w-[50px] overflow-y-hidden  ${isSelectPenVisible ? 'h-[300px]' : 'h-0'} bg-gray-900 flex flex-col justify-center items-center transition-all duration-300`}>
+
+                        <div className="grid grid-cols-1 gap-1 p-1 w-fit justify-center items-center">
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                                <FaPen className="w-10 h-10" />
+                            </button>
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                                <FaHighlighter className="w-10 h-10" />
+                            </button>
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                                <FaEraser className="w-10 h-10" />
+                            </button>
+                            <button onClick={onTogglePenConfigPopup} className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                                <FaDotCircle className="w-10 h-10" />
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {/* pen configuration */}
+                <div className="bg-yellow-300 w-0 h-[100px]">
+                    <div className={`relative left-[110px] w-[200px] overflow-y-hidden ${isPenConfigPopupVisible ? 'h-[300px] p-4' : 'h-0 ' } bg-gray-900 flex flex-col transition-all duration-300 `}>
+                        {/* Thickness Slider */}
+                        <div className="w-full mb-6">
+                            <input
+                                type="range"
+                                min="1"
+                                max="20"
+                                value={penThickness}
+                                onChange={handleThicknessChange}
+                                className="w-full mt-2"
+                            />
+                        </div>
+
+                        {/* Color Grid */}
+                        {/* Pen Color Grid */}
+                        <div className="flex justify-center  h-full">
+                            <div className=" grid grid-cols-3 gap-10">
+                                {penColors.map((color, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => handlePenColorChange(color)}
+                                        style={{ backgroundColor: color }}
+                                        className={`w-12 h-12 rounded-full border-2 ${penColor === color ? 'border-white' : 'border-transparent'}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                {/* <div className={`bg-red-900 w-0 ${isSelectPenVisible ? 'h-[200px]' : 'h-0'} transition-all duration-300`}>
+                    <div className="w-[100px] h-full bg-gray-900 transform translate-x-1/2 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-2 p-2">
+                            <button
+                                className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
+                            >
+                                <FaPen className="w-10 h-10" />
+                            </button>
+                            <button
+                                className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
+                            >
+                                <CircleDashed className="w-10 h-10" />
+                            </button>
+                            <div id='input-range-line-wide' className="">
+                                <InputRange label='wide line' min={6} max={50} defaultValue={5} />
+                            </div>
+                        </div>
+                    </div>
+                </div> */}
+
             </div>
         </div>
     );
