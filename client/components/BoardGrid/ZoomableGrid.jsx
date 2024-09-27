@@ -4,22 +4,23 @@ import { useEffect, useRef, useState } from 'react';
 const ZoomableGrid = ({ children, onSetScale }) => {
   const gridCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
-  
+
   // Trạng thái quản lý scale và dịch chuyển
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const penColor = useToolDevStore(state => state.pencil?.color);
   const penThickness = useToolDevStore(state => state.pencil?.thickness)
   // Trạng thái quản lý chế độ và hành động hiện tại
- // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
+  // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore(state => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
-  
+
   // Trạng thái lưu vị trí bắt đầu của thao tác
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  
+
   // Trạng thái lưu trữ các đường vẽ
+  const [canvasPaths, setCanvasPaths] = useState([]); // {}
   const [paths, setPaths] = useState([]); // Mỗi đường là một mảng các điểm {x, y}
 
   // Hàm tiện ích để chuyển đổi tọa độ
@@ -83,16 +84,17 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     const redrawDrawings = () => {
       drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       drawCtx.save();
-
+    
       // Áp dụng scale và dịch chuyển
       drawCtx.scale(scale, scale);
       drawCtx.translate(translate.x / scale, translate.y / scale);
-
-      drawCtx.strokeStyle = penColor; // Màu sắc của đường vẽ
-      drawCtx.lineWidth = penThickness / scale; // Điều chỉnh độ dày đường vẽ dựa trên scale
-
-      paths.forEach(path => {
+    
+      // Vẽ từng đường với màu và độ dày tương ứng
+      canvasPaths.forEach(({ color, thickness, path }) => {
         if (path.length > 0) {
+          drawCtx.strokeStyle = color;
+          drawCtx.lineWidth = thickness * scale;
+    
           drawCtx.beginPath();
           drawCtx.moveTo(path[0].x, path[0].y);
           for (let point of path.slice(1)) {
@@ -101,7 +103,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           drawCtx.stroke();
         }
       });
-
+    
       drawCtx.restore();
     };
 
@@ -120,11 +122,11 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     return () => {
       window.removeEventListener('resize', resizeCanvases);
     };
-  }, [scale, translate, paths]);
+  }, [scale, translate, canvasPaths]);
 
   // Hàm xử lý zoom khi cuộn chuột
   const handleZoom = (e) => {
-    e.preventDefault(); // Ngăn chặn hành vi mặc định của trình duyệt
+    //e.preventDefault(); // Ngăn chặn hành vi mặc định của trình duyệt
     const delta = -e.deltaY;
     const zoomFactor = delta > 0 ? 1.1 : 0.9;
     let newScale = scale * zoomFactor;
@@ -135,27 +137,34 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Hàm xử lý khi nhấn chuột
   const handleMouseDown = (e) => {
-    if (mode === 'drag' && e.button === 0) { // Middle mouse button for panning
-      e.preventDefault(); // Ngăn chặn hành vi mặc định (ví dụ: cuộn trang)
+    if (mode === 'drag' && e.button === 0) {
+      e.preventDefault();
       setIsPanning(true);
       setPanStart({ x: e.clientX - translate.x, y: e.clientY - translate.y });
-    } else if (mode === 'pen' && e.button === 0) { // Left mouse button for drawing
-      e.preventDefault(); // Ngăn chặn hành vi mặc định (ví dụ: chọn văn bản)
+    } else if (mode === 'pen' && e.button === 0) {
+      e.preventDefault();
       setIsDrawing(true);
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
-      setPaths(prev => [...prev, [{ x, y }]]);
+
+      // Thêm một đường vẽ mới với màu và độ dày hiện tại
+      setCanvasPaths(prev => [...prev, {
+        color: penColor,
+        thickness: penThickness,
+        path: [{ x, y }]
+      }]);
     }
   };
-
   // Hàm xử lý khi di chuyển chuột
   const handleMouseMove = (e) => {
     if (isPanning && mode === 'drag') {
       setTranslate({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
     } else if (isDrawing && mode === 'pen') {
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
-      setPaths(prev => {
+      
+      // Cập nhật đường vẽ hiện tại
+      setCanvasPaths(prev => {
         const newPaths = [...prev];
-        const currentPath = newPaths[newPaths.length - 1];
+        const currentPath = newPaths[newPaths.length - 1].path;
         currentPath.push({ x, y });
         return newPaths;
       });
@@ -206,7 +215,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           display: 'block',
           width: '100%',
           height: '100%',
-          pointerEvents: 'none', // Cho phép phần tử cha nhận sự kiện
         }}
       />
 
@@ -217,21 +225,20 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           position: 'absolute',
           top: 0,
           left: 0,
-          cursor: mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
+          cursor:  mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
           display: 'block',
           width: '100%',
           height: '100%',
-          pointerEvents: 'none', // Cho phép phần tử cha nhận sự kiện
         }}
       />
 
 
-        <div className='absolute top-0 bg-red-600' 
+      <div className='absolute top-0 bg-red-600'
         style={getTransformedStyle()}
-        >         
-            {children}
+      >
+        {children}
 
-        </div>
+      </div>
 
 
 
