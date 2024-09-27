@@ -8,9 +8,10 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   // Trạng thái quản lý scale và dịch chuyển
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const [penColor,setPenColor] = useState('#ff0000');
+  const penColor = useToolDevStore(state => state.pencil?.color);
+  const penThickness = useToolDevStore(state => state.pencil?.thickness)
   // Trạng thái quản lý chế độ và hành động hiện tại
- // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'paint', 'idle'
+ // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore(state => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -88,7 +89,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       drawCtx.translate(translate.x / scale, translate.y / scale);
 
       drawCtx.strokeStyle = penColor; // Màu sắc của đường vẽ
-      drawCtx.lineWidth = 2 / scale; // Điều chỉnh độ dày đường vẽ dựa trên scale
+      drawCtx.lineWidth = penThickness / scale; // Điều chỉnh độ dày đường vẽ dựa trên scale
 
       paths.forEach(path => {
         if (path.length > 0) {
@@ -138,7 +139,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       e.preventDefault(); // Ngăn chặn hành vi mặc định (ví dụ: cuộn trang)
       setIsPanning(true);
       setPanStart({ x: e.clientX - translate.x, y: e.clientY - translate.y });
-    } else if (mode === 'paint' && e.button === 0) { // Left mouse button for drawing
+    } else if (mode === 'pen' && e.button === 0) { // Left mouse button for drawing
       e.preventDefault(); // Ngăn chặn hành vi mặc định (ví dụ: chọn văn bản)
       setIsDrawing(true);
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
@@ -150,7 +151,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const handleMouseMove = (e) => {
     if (isPanning && mode === 'drag') {
       setTranslate({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
-    } else if (isDrawing && mode === 'paint') {
+    } else if (isDrawing && mode === 'pen') {
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
       setPaths(prev => {
         const newPaths = [...prev];
@@ -166,7 +167,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     if (mode === 'drag' && e.button === 0) { // Middle mouse button
       setIsPanning(false);
     }
-    if (mode === 'paint' && e.button === 0) { // Left mouse button
+    if (mode === 'pen' && e.button === 0) { // Left mouse button
       setIsDrawing(false);
     }
   };
@@ -182,18 +183,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
     transformOrigin: '0 0',
   });
-
-  // Hàm thay đổi chế độ vẽ
-  const handleChangeModePaint = () => {
-    setMode(prevMode => (prevMode === 'paint' ? 'idle' : 'paint'));
-    console.log('now Mode: ', mode === 'paint' ? 'Idle' : 'Paint');
-  };
-
-  // Hàm thay đổi chế độ kéo
-  const handleChangeModeDrag = () => { 
-    setMode(prevMode => (prevMode === 'drag' ? 'idle' : 'drag'));
-    console.log('now Mode: ', mode === 'drag' ? 'Idle' : 'Drag');
-  };
 
 
   return (
@@ -213,7 +202,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           position: 'absolute',
           top: 0,
           left: 0,
-          cursor: mode === 'drag' ? 'grabbing' : mode === 'paint' ? 'crosshair' : 'default',
+          cursor: mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
           display: 'block',
           width: '100%',
           height: '100%',
@@ -228,7 +217,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           position: 'absolute',
           top: 0,
           left: 0,
-          cursor: mode === 'drag' ? 'grabbing' : mode === 'paint' ? 'crosshair' : 'default',
+          cursor: mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
           display: 'block',
           width: '100%',
           height: '100%',

@@ -21,6 +21,7 @@ import { FaDotCircle } from "react-icons/fa";
 import { CircleDashed } from 'lucide-react'
 import InputRange from "../ui/InputRange";
 import { useToolDevStore } from "@/lib/Zustand/store";
+import { set } from "react-hook-form";
 
 const LeftToolBar = ({
     onClickTextButton = () => { },
@@ -39,8 +40,13 @@ const LeftToolBar = ({
 
     const [isPenConfigPopupVisible, setIsPenConfigPopupVisible] = useState(false);
 
-    const [penThickness, setPenThickness] = useState(5);
-    const [penColor, setPenColor] = useState('#000000');
+    // const [penThickness, setPenThickness] = useState(5);
+    //const [penColor, setPenColor] = useState('#000000');
+    const penThickness = useToolDevStore(state => state.pencil?.thickness)
+    const setPenThickness = useToolDevStore(state => state.pencil?.setThickness);
+    const penColor = useToolDevStore(state => state.pencil?.color)
+    const setPenColor = useToolDevStore(state => state.pencil?.setColor);
+
 
 
     const onClickAIButton = () => {
@@ -59,7 +65,7 @@ const LeftToolBar = ({
     // const onClickPenButton = () => {
     //     resetSelectPopup();
     //     setIsSelectPenVisible(!isSelectPenVisible);
-   
+
     // };
     const onClickCreateTextButton = (colorName) => {
         resetSelectPopup();
@@ -73,7 +79,11 @@ const LeftToolBar = ({
 
     const OnClickArrowButton = () => {
         resetSelectPopup();
-        setMode('drag');
+        console.log(ModeTool);
+        if (ModeTool == 'drag')
+            setMode('idle');
+        else
+            setMode('drag');
     }
 
     const onClickPenButton = () => {
@@ -81,7 +91,10 @@ const LeftToolBar = ({
         setIsSelectPenVisible(!isSelectPenVisible);
         setIsPenConfigPopupVisible(false);
         // set state to zustand store
-        setMode('paint');
+        if (ModeTool == 'pen')
+            setMode('idle');
+        else
+            setMode('pen');
     }
 
 
@@ -153,15 +166,15 @@ const LeftToolBar = ({
                 {/* toolbar container */}
                 <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
                     <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-                    <ToolBarBtn onclick={OnClickArrowButton} icon={GiArrowCursor} isChoosing = {ModeTool == 'drag'} />
-                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText}  />
-                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote}  />
+                    <ToolBarBtn onclick={OnClickArrowButton} icon={GiArrowCursor} isChoosing={ModeTool == 'drag'} />
+                    <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
+                    <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
                     <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
 
                     <ToolBarBtn onclick={null} icon={ImArrowUpRight2} />
 
-                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2}  />
-                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} isChoosing = {ModeTool == 'paint'} />
+                    <ToolBarBtn onclick={null} icon={ImArrowUpRight2} />
+                    <ToolBarBtn onclick={onClickPenButton} icon={FaPen} isChoosing={ModeTool == 'pen'} />
 
                 </div>
 
@@ -223,7 +236,7 @@ const LeftToolBar = ({
                 </div>
                 {/* pen configuration */}
                 <div className="bg-yellow-300 w-0 h-[100px]">
-                    <div className={`relative left-[110px] w-[200px] overflow-y-hidden ${isPenConfigPopupVisible ? 'h-[300px] p-4' : 'h-0 ' } bg-gray-900 flex flex-col transition-all duration-300 `}>
+                    <div className={`relative left-[110px] w-[200px] overflow-y-hidden ${isPenConfigPopupVisible ? 'h-[300px] p-4' : 'h-0 '} bg-gray-900 flex flex-col transition-all duration-300 `}>
                         {/* Thickness Slider */}
                         <div className="w-full mb-6">
                             <input
@@ -239,7 +252,7 @@ const LeftToolBar = ({
                         {/* Color Grid */}
                         {/* Pen Color Grid */}
                         <div className="flex justify-center  h-full">
-                            <div className=" grid grid-cols-3 gap-10">
+                            <div className=" grid grid-cols-4 gap-4 overflow-auto w-full">
                                 {penColors.map((color, index) => (
                                     <button
                                         key={index}
