@@ -15,13 +15,13 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const mode = useToolDevStore(state => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [undoPressed, setUndoPressed] = useState(false);
 
   // Trạng thái lưu vị trí bắt đầu của thao tác
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Trạng thái lưu trữ các đường vẽ
   const [canvasPaths, setCanvasPaths] = useState([]); // {}
-  const [paths, setPaths] = useState([]); // Mỗi đường là một mảng các điểm {x, y}
 
   // Hàm tiện ích để chuyển đổi tọa độ
   const getTransformedCoordinates = (x, y) => {
@@ -32,10 +32,42 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   };
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+        if (!undoPressed) { // Kiểm tra cờ để tránh gọi nhiều lần
+          e.preventDefault();
+          setCanvasPaths((prevPaths) => {
+            if (prevPaths.length === 0) return prevPaths; // Không làm gì nếu không còn path
+            return prevPaths.slice(0, -1); // Loại bỏ đường vẽ cuối cùng
+          });
+          setUndoPressed(true); // Đặt cờ để ngăn xử lý lặp lại
+        }
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.key === 'z') {
+        setUndoPressed(false); // Reset cờ khi thả phím
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
     const gridCanvas = gridCanvasRef.current;
     const gridCtx = gridCanvas.getContext('2d');
     const drawCanvas = drawCanvasRef.current;
     const drawCtx = drawCanvas.getContext('2d');
+
+    // add event listener undo
+
+
 
     // Hàm điều chỉnh kích thước canvas khi cửa sổ thay đổi
     const resizeCanvases = () => {
@@ -84,17 +116,17 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     const redrawDrawings = () => {
       drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       drawCtx.save();
-    
+
       // Áp dụng scale và dịch chuyển
       drawCtx.scale(scale, scale);
       drawCtx.translate(translate.x / scale, translate.y / scale);
-    
+
       // Vẽ từng đường với màu và độ dày tương ứng
       canvasPaths.forEach(({ color, thickness, path }) => {
         if (path.length > 0) {
           drawCtx.strokeStyle = color;
           drawCtx.lineWidth = thickness * scale;
-    
+
           drawCtx.beginPath();
           drawCtx.moveTo(path[0].x, path[0].y);
           for (let point of path.slice(1)) {
@@ -103,14 +135,13 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           drawCtx.stroke();
         }
       });
-    
+
       drawCtx.restore();
     };
 
     // Khởi tạo kích thước canvas khi component mounts
     resizeCanvases();
     window.addEventListener('resize', resizeCanvases); // Thêm chỉ một lần
-
     // Vẽ lại lưới và các đường vẽ khi scale hoặc translate thay đổi
     const drawAll = () => {
       drawGrid();
@@ -160,7 +191,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       setTranslate({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
     } else if (isDrawing && mode === 'pen') {
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
-      
+
       // Cập nhật đường vẽ hiện tại
       setCanvasPaths(prev => {
         const newPaths = [...prev];
@@ -225,7 +256,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           position: 'absolute',
           top: 0,
           left: 0,
-          cursor:  mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
+          cursor: mode === 'drag' ? 'grabbing' : mode === 'pen' ? 'crosshair' : 'default',
           display: 'block',
           width: '100%',
           height: '100%',

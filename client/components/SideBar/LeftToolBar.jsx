@@ -13,15 +13,11 @@ import { useState } from "react";
 import AIGenerationPopup from "@/components/ui/Panel_Popup/AIGenerationPopup";
 import BoardHeader from "@/components/header/WhiteBoardHeader";
 import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
-import Shapes from "@/components/ui/CustomShape";
 import { getShapeByIndex } from "@/components/ui/CustomShape";
 
 import { FaDotCircle } from "react-icons/fa";
 
-import { CircleDashed } from 'lucide-react'
-import InputRange from "../ui/InputRange";
 import { useToolDevStore } from "@/lib/Zustand/store";
-import { set } from "react-hook-form";
 
 const LeftToolBar = ({
     onClickTextButton = () => { },
@@ -79,7 +75,6 @@ const LeftToolBar = ({
 
     const OnClickArrowButton = () => {
         resetSelectPopup();
-        console.log(ModeTool);
         if (ModeTool == 'drag')
             setMode('idle');
         else
