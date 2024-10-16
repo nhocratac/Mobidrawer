@@ -12,7 +12,7 @@ interface FiltersAndViewProps {
   [key: string]: any;
 }
 
-const FiltersAndView: React.FC<FiltersAndViewProps> = ({ ...props }) => {
+const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }) => {
   // Implement your component logic here
 
   return (
@@ -75,7 +75,7 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ ...props }) => {
         <p className='font-light'>
           View
         </p>
-        <Select>
+        <Select onValueChange={(value) => setModeView(value)}>
           <SelectTrigger className="min-w-[100px] w-1/5">
             <SelectValue placeholder="List" />
           </SelectTrigger>
@@ -83,7 +83,7 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ ...props }) => {
             <SelectItem value="List">
               List
             </SelectItem>
-            <SelectItem value="Grid">
+            <SelectItem value="Grid" >
               Grid
             </SelectItem>
           </SelectContent>

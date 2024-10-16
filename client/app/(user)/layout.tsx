@@ -9,9 +9,9 @@ export default function layout({
             <aside className="w-[215px] hidden lg:block">
                 <SideBar />
             </aside>
-            <div className="bg-red-400 flex-1 ">
+            <div className="flex-1 flex flex-col">
                 <HeaderDefault />
-                <main className="">
+                <main className="lg:h-[64px] h-[54px] flex-1 overflow-auto">
                     {children}
                 </main>
             </div>

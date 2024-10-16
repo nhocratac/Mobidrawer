@@ -1,15 +1,18 @@
 'use client'
 
 import FiltersAndView from "@/app/(user)/dashboard/FiltersAndViews"
+import ListBoardOfUser from "@/app/(user)/dashboard/ListBoardOfUser"
 import ListBoardThumbnail from "@/app/(user)/dashboard/ListBoardThumbnail"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 
 
 
 export default function page() {
+  const [modeView, setModeView] = useState('List')
   return (
-    <div className="mt-0 bg-[var(--background)] border">
+    <div className="mt-0 bg-[var(--background)] border h-full flex flex-col">
       <div className="flex justify-between lg:h-[80px] items-center ">
         <div className="text-[2.4rem] px-8 ">
           Boards in this team
@@ -26,7 +29,8 @@ export default function page() {
       <div className="mx-[24px] h-auto max-h-[300px] bg-[#f1f2f5] p-[25px]">
         <ListBoardThumbnail />
       </div>
-      <FiltersAndView/>  
+      <FiltersAndView setModeView={setModeView} />
+      <ListBoardOfUser modeView={modeView} />
     </div>
   )
 }

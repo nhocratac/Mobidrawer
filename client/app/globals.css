@@ -152,3 +152,21 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 10px; /* Chiều rộng thanh cuộn */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Màu nền của phần track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* Màu của thanh cuộn */
+  border-radius: 5px; /* Làm mềm các góc */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Màu thanh cuộn khi hover */
+}
