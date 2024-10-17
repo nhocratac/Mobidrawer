@@ -21,13 +21,13 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('flow chart','122')
-                    if(!newBoard) {
+                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    if (!newBoard) {
                         // handel error
                     }
                     router.push(`/board/${newBoard.boardID}`)
                 } catch (error) {
-                    
+
                 }
             }
         },
@@ -36,7 +36,15 @@ export default function ListBoardThumbnail() {
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
-                console.log('dax tao Brainwriting')
+                try {
+                    const newBoard = BoardAPI.createBoard('brain-writting', '122')
+                    if (!newBoard) {
+                        // handel error
+                    }
+                    router.push(`/board/${newBoard.boardID}`)
+                } catch (error) {
+
+                }
             }
         },
         intelligentTemplate: {
@@ -44,7 +52,15 @@ export default function ListBoardThumbnail() {
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
-                console.log('dax tao Intelligent Template')
+                try {
+                    const newBoard = BoardAPI.createBoard('Intelligent Template', '122')
+                    if (!newBoard) {
+                        // handel error
+                    }
+                    router.push(`/board/${newBoard.boardID}`)
+                } catch (error) {
+
+                }
             }
         },
         kanbanFramework: {
@@ -52,7 +68,15 @@ export default function ListBoardThumbnail() {
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
-                console.log('dax tao Kanban Framework')
+                try {
+                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    if (!newBoard) {
+                        // handel error
+                    }
+                    router.push(`/board/${newBoard.boardID}`)
+                } catch (error) {
+
+                }
             }
         },
         mindMap: {
@@ -60,7 +84,15 @@ export default function ListBoardThumbnail() {
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
-                console.log('dax tao Mind Map')
+                try {
+                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    if (!newBoard) {
+                        // handel error
+                    }
+                    router.push(`/board/${newBoard.boardID}`)
+                } catch (error) {
+
+                }
             }
         },
         quickRetrospective: {
@@ -68,7 +100,15 @@ export default function ListBoardThumbnail() {
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
-                console.log('dax tao Quick Retrospective')
+                try {
+                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    if (!newBoard) {
+                        // handel error
+                    }
+                    router.push(`/board/${newBoard.boardID}`)
+                } catch (error) {
+
+                }
             }
         }
     }
