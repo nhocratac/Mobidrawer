@@ -32,9 +32,10 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Hàm tiện ích để chuyển đổi tọa độ
   const getTransformedCoordinates = (x, y) => { // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvas
+    console.log(penThickness)
     return {
-      x: (x - translate.x) / scale,
-      y: (y - translate.y) / scale,
+      x: (x - translate.x - penThickness/2) / scale,
+      y: (y - translate.y - penThickness/2) / scale,
     };
   };
 
@@ -258,7 +259,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
             mode === "drag"
               ? "grabbing"
               : mode === "pen"
-              ? "crosshair"
+              ? "pointer"
               : "default",
           display: "block",
           width: "100%",
@@ -277,7 +278,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
             mode === "drag"
               ? "grabbing"
               : mode === "pen"
-              ? "crosshair"
+              ? "pointer"
               : "default",
           display: "block",
           width: "100%",

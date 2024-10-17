@@ -8,22 +8,22 @@ interface PencilCanvasProps {
   path: { x: number, y: number }[];
 }
 
-const calSizeCanvas = (path: { x: number, y: number }[]) => {
-  if (path.length === 0) {
-    return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
-  }
-  let minX = path[0].x;
-  let minY = path[0].y;
-  let maxX = path[0].x;
-  let maxY = path[0].y;
-  path.forEach(point => {
-    if (point.x < minX) minX = point.x;
-    if (point.y < minY) minY = point.y;
-    if (point.x > maxX) maxX = point.x;
-    if (point.y > maxY) maxY = point.y;
-  });
-  return { minX, minY, maxX, maxY };
-};
+// const calSizeCanvas = (path: { x: number, y: number }[]) => {
+//   if (path.length === 0) {
+//     return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+//   }
+//   let minX = path[0].x;
+//   let minY = path[0].y;
+//   let maxX = path[0].x;
+//   let maxY = path[0].y;
+//   path.forEach(point => {
+//     if (point.x < minX) minX = point.x;
+//     if (point.y < minY) minY = point.y;
+//     if (point.x > maxX) maxX = point.x;
+//     if (point.y > maxY) maxY = point.y;
+//   });
+//   return { minX, minY, maxX, maxY };
+// };
 
 const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -36,8 +36,6 @@ const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvas
     if (!ctx) return;
 
     // Calculate the bounding box of the path
-    const { minX, minY, maxX, maxY } = calSizeCanvas(path);
-
   
     // Set canvas size to full window
     canvasPen.width =window.innerWidth;
