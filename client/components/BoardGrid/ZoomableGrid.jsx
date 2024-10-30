@@ -11,6 +11,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const penColor = useToolDevStore((state) => state.pencil?.color);
   const penThickness = useToolDevStore((state) => state.pencil?.thickness);
+  const penOpacity = useToolDevStore((state) => state.pencil?.opacity);
   // Trạng thái quản lý chế độ và hành động hiện tại
   // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore((state) => state.mode);
@@ -26,13 +27,29 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     {
       color: penColor,
       thickness: penThickness,
+      opacity : penOpacity,
       path: [],
     },
   ]); // {}
 
+  const setonePathInArrayPath = (index, newPath) => {
+    setCanvasPaths(prevPaths => {
+      // Tạo một bản sao của paths hiện tại
+      const updatedPaths = [...prevPaths];
+      
+      // Thay thế path tại vị trí index bằng newPath
+      if (index >= 0 && index < updatedPaths.length) {
+        updatedPaths[index] = newPath;
+      } else {
+        console.warn("Index out of range");
+      }
+      
+      return updatedPaths;
+    });
+  };
+
   // Hàm tiện ích để chuyển đổi tọa độ
-  const getTransformedCoordinates = (x, y) => { // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvas
-    console.log(penThickness)
+  const getTransformedCoordinates = (x, y) => { // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
     return {
       x: (x - translate.x - penThickness/2) / scale,
       y: (y - translate.y - penThickness/2) / scale,
@@ -173,6 +190,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
         newPaths.push({
           color: penColor,
           thickness: penThickness,
+          opacity: penOpacity,
           path: [{ x, y }],
         });
         return newPaths;
@@ -301,8 +319,10 @@ const ZoomableGrid = ({ children, onSetScale }) => {
             color={pathData.color}
             thickness={pathData.thickness}
             path={pathData.path}
+            opacity={pathData.opacity}
             scale={scale}
             translate={translate}
+            setPath={setonePathInArrayPath}
           />
         ))}
       </div>

@@ -1,32 +1,31 @@
-import React, { useEffect, useRef } from 'react';
+import { useToolDevStore } from '@/lib/Zustand/store';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
 interface PencilCanvasProps {
   color: string;
   thickness: number;
   scale: number;
+  opacity : number;
   translate: { x: number, y: number };
   path: { x: number, y: number }[];
+  setPath: (newPath: { x: number, y: number }[]) => void; // Thêm hàm cập nhật path
 }
 
-// const calSizeCanvas = (path: { x: number, y: number }[]) => {
-//   if (path.length === 0) {
-//     return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
-//   }
-//   let minX = path[0].x;
-//   let minY = path[0].y;
-//   let maxX = path[0].x;
-//   let maxY = path[0].y;
-//   path.forEach(point => {
-//     if (point.x < minX) minX = point.x;
-//     if (point.y < minY) minY = point.y;
-//     if (point.x > maxX) maxX = point.x;
-//     if (point.y > maxY) maxY = point.y;
-//   });
-//   return { minX, minY, maxX, maxY };
-// };
-
-const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvasProps) => {
+const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPath }: PencilCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const modeTool = useToolDevStore(state => state.mode)
+
+  const erasePartOfPath = (eraseX: number, eraseY: number) => {
+    console.log(eraseX,eraseY)
+    const threshold = 10; // Khoảng cách để xác định vùng xóa
+    const newPath = path.filter(point => {
+      const distance = Math.sqrt((point.x - eraseX) ** 2 + (point.y - eraseY) ** 2);
+      return distance > threshold; // Giữ lại các điểm không nằm trong vùng xóa
+    });
+    setPath(newPath); // Cập nhật path
+  };
+
+
 
   useEffect(() => {
     const canvasPen = canvasRef.current;
@@ -36,9 +35,9 @@ const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvas
     if (!ctx) return;
 
     // Calculate the bounding box of the path
-  
+
     // Set canvas size to full window
-    canvasPen.width =window.innerWidth;
+    canvasPen.width = window.innerWidth;
     canvasPen.height = window.innerHeight;
 
     // Clear canvas before redrawing
@@ -54,6 +53,7 @@ const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvas
     ctx.lineWidth = thickness;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.globalAlpha = opacity
 
     // Draw the path
     if (path.length > 0) {
@@ -64,9 +64,26 @@ const PencilCanvas = ({ color, thickness, path, scale, translate }: PencilCanvas
       });
       ctx.stroke();
     }
-
     ctx.restore(); // Restore the previous context state
   }, [color, thickness, path, scale, translate]);
+
+  useEffect(() => {
+    const canvasPen = canvasRef.current;
+    if (!canvasPen || modeTool !== 'eraser') return;
+    const handleMouseDown = (event: MouseEvent) => {
+      console.log('on mouse down')
+      const rect = canvasPen.getBoundingClientRect();
+      const x = (event.clientX - rect.left - translate.x) / scale;
+      const y = (event.clientY - rect.top - translate.y) / scale;
+      erasePartOfPath(x, y);
+    };
+    canvasPen.addEventListener('click', () => console.log('okoko'));
+    canvasPen.addEventListener('mousedown', handleMouseDown);
+    return () => {
+      canvasPen.removeEventListener('click', () => console.log('okoko'));
+      canvasPen.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [modeTool, scale, translate, path]);
 
   return (
     <canvas

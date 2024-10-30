@@ -42,6 +42,9 @@ const LeftToolBar = ({
     const setPenThickness = useToolDevStore(state => state.pencil?.setThickness);
     const penColor = useToolDevStore(state => state.pencil?.color)
     const setPenColor = useToolDevStore(state => state.pencil?.setColor);
+    const penOpacity = useToolDevStore(state => state.pencil?.opacity)
+    const setHighightPen = useToolDevStore(state => state.pencil.setOpacity)
+
 
 
 
@@ -86,10 +89,16 @@ const LeftToolBar = ({
         setIsSelectPenVisible(!isSelectPenVisible);
         setIsPenConfigPopupVisible(false);
         // set state to zustand store
-        if (ModeTool == 'pen')
-            setMode('idle');
-        else
-            setMode('pen');
+        setMode('pen')
+        setHighightPen(1)
+    }
+
+    const handleClickEraserButton = () => {
+        setMode('eraser')
+    }
+
+    const handleClickHighlightButton = ( ) => {
+        setHighightPen(0.5)
     }
 
 
@@ -105,9 +114,7 @@ const LeftToolBar = ({
     const penColors = [
         '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff', // Primary colors
         '#ff4500', '#32cd32', '#1e90ff', '#ffa500', '#800080', '#008080', '#808080', '#f5f5f5', // Secondary and neutral colors
-        '#ff6347', '#adff2f', '#4682b4', '#ff1493', '#6a5acd', '#20b2aa', '#2f4f4f', '#dcdcdc', // Muted colors
-
-
+        '#ff6347', '#adff2f', '#4682b4', '#ff1493', '#6a5acd', '#20b2aa', '#2f4f4f', '#dcdcdc', // Muted color
     ];
 
 
@@ -213,13 +220,13 @@ const LeftToolBar = ({
                     <div className={`absolute left-[50px] w-[50px] overflow-y-hidden  ${isSelectPenVisible ? 'h-[300px]' : 'h-0'} bg-gray-900 flex flex-col justify-center items-center transition-all duration-300`}>
 
                         <div className="grid grid-cols-1 gap-1 p-1 w-fit justify-center items-center">
-                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700" onClick={ onClickPenButton}>
                                 <FaPen className="w-10 h-10" />
                             </button>
-                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700" onClick={handleClickHighlightButton}>
                                 <FaHighlighter className="w-10 h-10" />
                             </button>
-                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
+                            <button className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700" onClick={handleClickEraserButton}>
                                 <FaEraser className="w-10 h-10" />
                             </button>
                             <button onClick={onTogglePenConfigPopup} className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700">
