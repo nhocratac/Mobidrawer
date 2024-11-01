@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation"; // Ensure you're using next/navigat
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Google from '@/assets/logo/google';
+import Microsoft from '@/assets/logo/microsoft';
+import Slack from '@/assets/logo/slack';
 
 // Schema validation for email, name, and password
 const FormSchemaEmail = z.object({
@@ -121,19 +124,22 @@ export default function RegisterForm() {
               className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
-              Sign up with Google
+              <Google></Google>
+              <p className="ml-[5px]">Sign up with Google</p>
             </Button>
             <Button
               className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
-              Sign up with Microsoft
+              <Microsoft></Microsoft>
+              <p className="ml-[5px]">Sign up with Microsoft</p>
             </Button>
             <Button
               className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
-              Sign up with Slack
+              <Slack></Slack>
+              <p className="ml-[5px]">Sign up with Slack</p>
             </Button>
           </div>
           <footer className="mt-14">

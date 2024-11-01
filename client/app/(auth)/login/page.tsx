@@ -8,6 +8,8 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Layout from './layout';
+import Google from '@/assets/logo/google';
+import Microsoft from '@/assets/logo/microsoft';
 
 const FormSchema = z.object({
   username: z.string().min(2, {
@@ -41,19 +43,17 @@ export default function InputForm() {
 
         {/* Social login buttons */}
         <div className="grid grid-cols-4 gap-4 min-h-[48px] mb-14 mt-14">
-        <Button variant="outline" className="w-full h-full py-3 border border-gray-300 rounded-xl text-center border-[#444749] hover:bg-black hover:text-white">
+        <Button variant="outline" className=" text-[20px] w-full h-full py-3 border border-gray-300 rounded-xl text-center border-[#444749] hover:bg-black hover:text-white">
           SSO
         </Button>
         <Button variant="outline" className="w-full h-full py-3 border border-gray-300 rounded-xl flex items-center justify-center border-[#444749] hover:bg-black hover:text-white">
-          <img src="/path-to-google-icon" alt="Google" className="h-5 w-5 mr-2" />
-          Google
+        <Google></Google>
         </Button>
         <Button variant="outline" className="w-full h-full py-3 border border-gray-300 rounded-xl flex items-center justify-center border-[#444749] hover:bg-black hover:text-white">
-          <img src="/path-to-office-icon" alt="Office" className="h-5 w-5 mr-2" />
-          Office
+          <Microsoft></Microsoft>
         </Button>
-        <Button variant="outline" className="w-full h-full py-3 border border-gray-300 rounded-xl text-center border-[#444749] hover:bg-black hover:text-white">
-          +
+        <Button variant="outline" className="text-[21px] w-full h-full py-3 border border-gray-300 rounded-xl text-center border-[#444749] hover:bg-black hover:text-white">
+            +
         </Button>
       </div>
 
