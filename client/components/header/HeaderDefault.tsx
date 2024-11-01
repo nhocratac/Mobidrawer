@@ -4,6 +4,8 @@ import path from '@/utils/path'
 import Link from 'next/link'
 import React from 'react'
 import HamburgerMenu from '@/components/header/HamburgerMenu'
+
+
 interface HeaderDefaultProps {
   role?: string
   [key: string]: any
@@ -21,7 +23,7 @@ export default function HeaderDefault({
       <div className='flex items-center place-content-around lg:leading-[64px]  gap-4 '>
         <HamburgerMenu/>
         <Link href={path.home}>
-          <h1 className='mt-0 text-[3rem]'>
+          <h1 className='mt-0 text-[3rem] shake-rotate'>
             MOBIDRAWER
           </h1>
         </Link>
