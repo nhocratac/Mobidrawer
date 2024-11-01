@@ -1,31 +1,38 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import type {} from "@redux-devtools/extension"; // required for devtools typing
+import {
+  BoardState,
+  ListBoardState,
+  ModeType,
+  ToolDevState,
+} from "@/lib/Zustand/type.type";
 
 // Định nghĩa kiểu enum cho chế độ
-enum ModeType {
-  drag = "drag",
-  idle = "idle",
-  resize = "resize",
-  rotate = "rotate",
-  pen = "pen",
-  eraser = "eraser",
-}
 
 // Định nghĩa trạng thái cho công cụ phát triển
-interface ToolDevState {
-  mode: ModeType;
-  setMode: (mode: ModeType) => void;
-  pencil: {
-    color?: string;
-    thickness?: number;
-    opacity ?: number;
-    setColor?: (color: string) => void;
-    setThickness?: (thickness: number) => void;
-    setOpacity ?: (opacity:number) => void
-  };
-}
-
+const useBoardStore = create<ListBoardState>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        boards: [],
+        setBoards: (newBoard: BoardState) => {
+          set((state) => ({
+            boards: [...state.boards, newBoard], // Sử dụng state.boards để lấy mảng hiện tại
+          }));
+        },
+      }),
+      {
+        name: "Boards-storage",
+        merge: (persistedState: any, currentState) => ({
+          ...currentState,
+          ...persistedState,
+          setBoards: currentState.setBoards,
+        }),
+      }
+    )
+  )
+);
 // Tạo store với Zustand
 const useToolDevStore = create<ToolDevState>()(
   devtools(
@@ -66,7 +73,7 @@ const useToolDevStore = create<ToolDevState>()(
                 color,
                 setColor: state.pencil.setColor, // Giữ lại hàm setColor
                 setThickness: state.pencil.setThickness, // Giữ lại hàm setThickness
-                setOpacity : state.pencil.setOpacity
+                setOpacity: state.pencil.setOpacity,
               },
             }));
           },
@@ -78,7 +85,7 @@ const useToolDevStore = create<ToolDevState>()(
                 thickness,
                 setColor: state.pencil.setColor, // Giữ lại hàm setColor
                 setThickness: state.pencil.setThickness, // Giữ lại hàm setThickness
-                setOpacity : state.pencil.setOpacity
+                setOpacity: state.pencil.setOpacity,
               },
             }));
           },
@@ -90,7 +97,7 @@ const useToolDevStore = create<ToolDevState>()(
                 opacity,
                 setColor: state.pencil.setColor, // Giữ lại hàm setColor
                 setThickness: state.pencil.setThickness, // Giữ lại hàm setThickness
-                setOpacity : state.pencil.setOpacity
+                setOpacity: state.pencil.setOpacity,
               },
             }));
           },
@@ -101,11 +108,13 @@ const useToolDevStore = create<ToolDevState>()(
         merge: (persistedState: any, currentState) => ({
           ...currentState,
           ...persistedState,
+          setMode: currentState.setMode,
           pencil: {
             ...currentState.pencil,
             ...persistedState?.pencil,
             setColor: currentState.pencil.setColor, // Đảm bảo setColor không bị ghi đè
             setThickness: currentState.pencil.setThickness, // Đảm bảo setThickness không bị ghi đè
+            setOpacity: currentState.pencil.setOpacity,
           },
         }),
       }
@@ -113,4 +122,4 @@ const useToolDevStore = create<ToolDevState>()(
   )
 );
 
-export { useToolDevStore };
+export { useToolDevStore, useBoardStore };

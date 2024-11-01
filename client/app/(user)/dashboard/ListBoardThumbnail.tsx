@@ -9,10 +9,13 @@ import VideoDialog from "@/components/BoardThumbnail/VideoDialog";
 import BoardThumbnail from "@/components/BoardThumbnail/BoardThumbnail";
 import BoardAPI from "@/api/BoardAPI";
 import { useRouter } from "next/navigation";
+import { useBoardStore } from "@/lib/Zustand/store";
+import { boardType } from "@/lib/Zustand/type.type";
 
 
 
 export default function ListBoardThumbnail() {
+    const {setBoards, boards} = useBoardStore()
     const router = useRouter()
     const DialogData = {
         flowchart: {
@@ -21,11 +24,13 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    boards.length
+                    const newBoard = BoardAPI.createBoard(boardType.flowchart, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -37,11 +42,12 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('brain-writting', '122')
+                    const newBoard = BoardAPI.createBoard(boardType.brainWritting, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -53,11 +59,12 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('Intelligent Template', '122')
+                    const newBoard = BoardAPI.createBoard(boardType.intelligentTemplate, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -69,11 +76,12 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    const newBoard = BoardAPI.createBoard(boardType.kanbanFramework, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -85,11 +93,12 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    const newBoard = BoardAPI.createBoard(boardType.mindMap, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -101,11 +110,12 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: () => {
                 try {
-                    const newBoard = BoardAPI.createBoard('flow chart', '122')
+                    const newBoard = BoardAPI.createBoard(boardType.quickRetrospective, boards.length)
                     if (!newBoard) {
                         // handel error
                     }
-                    router.push(`/board/${newBoard.boardID}`)
+                    setBoards(newBoard)
+                    router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
                 }

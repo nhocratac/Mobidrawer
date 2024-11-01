@@ -1,30 +1,37 @@
+import { BoardState, boardType } from "@/lib/Zustand/type.type";
 
+const boardAvatar = [
+  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906",
+  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_30.png?etag=20230906",
+  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_18.png?etag=20230906",
+];
 
-const createBoard  =  (type:string, user: string) => {
-    try {
-        // const response = await fetch(`http://localhost:5000/api/board/create`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({type, user}),
-        // });
-        // return await response.json();
-        const response = {
-            boardID : '1',
-            paths : [],
-            user : '1',
-            type : type,
-            shapes: [],
-            notes : [],
-        }
-        return response
-    } catch (error) {
-        throw error;
-    }
-}
+const createBoard = (type: boardType, id: number) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Thêm số 0 nếu cần
+  const day = String(now.getDate()).padStart(2, '0');
+  const hour = String(now.getHours()).padStart(2, '0');
+  
+  // Tạo chuỗi ngày giờ tùy chỉnh
+  const customDate = `${year}-${month}-${day} ${hour}:00`;
+  try {
+    const response: BoardState = {
+      id: id,
+      name: `${type} ${id}`,
+      lastOpened : customDate,
+      description: `This is a ${type} board was created at ${new Date().toISOString()}`,
+      canvasPaths: [],
+      thumbnail: boardAvatar[id % boardAvatar.length],
+      type: type,
+    };
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const BoardAPI = {
-    createBoard,
-}
+  createBoard,
+};
 export default BoardAPI;

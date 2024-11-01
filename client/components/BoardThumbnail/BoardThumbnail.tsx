@@ -25,7 +25,7 @@ export default function BoardThumbnail({ Thumbnail, title, size, DialogEle, ...p
             <Dialog>
                 <DialogTrigger asChild>
                     <div className="h-full w-full" >
-                        <div className=" h-4/5 border rounded-xl shadow-md overflow-hidden transition-transform duration-300 hover:brightness-110  ">
+                        <div className=" h-4/5 border rounded-xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:brightness-110 hover:rotate-1">
                             <Thumbnail />
                         </div>
                         <div className="text-[1.4rem]">{title}</div>
