@@ -1,8 +1,8 @@
 'use client'
 
-import FiltersAndView from "@/app/(user)/dashboard/FiltersAndViews"
-import ListBoardOfUser from "@/app/(user)/dashboard/ListBoardOfUser"
-import ListBoardThumbnail from "@/app/(user)/dashboard/ListBoardThumbnail"
+import FiltersAndView from "@/app/user/dashboard/FiltersAndViews"
+import ListBoardOfUser from "@/components/dashboard/ListBoardOfUser"
+import ListBoardThumbnail from "@/components/dashboard/ListBoardThumbnail"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 

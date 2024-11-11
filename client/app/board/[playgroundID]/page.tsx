@@ -1,7 +1,5 @@
-// src/app/PlayGroundPage.tsx
-
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, ReactNode } from 'react';
 import DrawingCanvas from "@/components/CanvasDrawingOverlay/InPaintMask";
 import { getMaskData } from '@/components/CanvasDrawingOverlay/InPaintMask';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
@@ -62,7 +60,6 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
   };
 
   const onSubmitInPaint = async () => {
-    // Get the RGBA data from the canvas
     const rgbaData = getMaskData();
     try {
       const response = await fetch('http://localhost:4000/ai/inPaint', {
@@ -70,7 +67,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: imageUrl, prompt: "remove it " }), // Send base64 data or raw image data
+        body: JSON.stringify({ image: imageUrl, prompt: "remove it " }),
       });
 
       if (!response.ok) {
@@ -80,7 +77,7 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
       const data = await response.json();
       console.log('Server response:', data);
     } catch (error) {
-      console.log("err" + error);
+      console.log("Error:", error);
     }
   };
 
@@ -112,14 +109,12 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
   };
 
   return (
-   
     <div className="w-screen h-screen bg-slate-500">
       <LeftToolBar
         onClickTextButton={() => setTextItemCount(textItemCount + 1)}
         onClickStickyNoteButton={onClickCreateStickyNote}
         onClickShape={onClickAddShape}
       />
-
       <ZoomableGrid onSetScale={setScaleHanle}>
         {Array.from({ length: textItemCount }).map((_, index) => (
           <RNDText key={index} parentScale={scale} />
@@ -132,7 +127,6 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         {shapeList.map((ShapeComponent, index) => (
           <RNDBase key={index} parentScale={scale} children={<ShapeComponent />} />
         ))}
-    
       </ZoomableGrid>
     </div>
   );

@@ -5,6 +5,7 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import { useBoardStore } from "@/lib/Zustand/store";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface Board {
@@ -118,26 +119,33 @@ function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoar
                     <tbody>
                         {
                             ListBoard.map((data, index) => (
-
                                 <tr className="p-10 hover:cursor-pointer hover:bg-slate-100" key={index}>
                                     <td className="flex">
                                         <ContextMenuWrapper>
                                             <div className="flex">
-                                                <img src={data.thumbnail} alt="thumbnail" className="w-[56px] h-[56px]" />
-                                                <div className="h-[56px] ml-2"> {/* Added margin-left for spacing */}
-                                                    <p className="text-2xl font-bold">{data.name}</p>
-                                                    <p className='text-lg font-light'>{data.description}</p>
-                                                </div>
+                                                <Link href={`/board/${data.id}`} className="flex">
+                                                    <img src={data.thumbnail} alt="thumbnail" className="w-[56px] h-[56px]" />
+                                                    <div className="h-[56px] ml-2"> {/* Added margin-left for spacing */}
+                                                        <p className="text-2xl font-bold">{data.name}</p>
+                                                        <p className='text-lg font-light'>{data.description}</p>
+                                                    </div>
+                                                </Link>
                                             </div>
                                         </ContextMenuWrapper>
                                     </td>
-                                    <td className="text-2xl">0</td>
-                                    <td className="text-2xl">0</td>
-                                    <td className="text-2xl">{data.lastOpened}</td>
-                                    <td className="text-2xl">{data.owner}</td>
-
+                                    <td>
+                                        <Link href={`/board/${data.id}`} className="text-2xl">0</Link>
+                                    </td>
+                                    <td>
+                                        <Link href={`/board/${data.id}`} className="text-2xl">0</Link>
+                                    </td>
+                                    <td>
+                                        <Link href={`/board/${data.id}`} className="text-2xl">{data.lastOpened}</Link>
+                                    </td>
+                                    <td>
+                                        <Link href={`/board/${data.id}`} className="text-2xl">{data.owner}</Link>
+                                    </td>
                                 </tr>
-
                             ))
                         }
                     </tbody>
@@ -151,13 +159,15 @@ function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoar
                 {
                     ListBoard.map((data, index) => (
                         <ContextMenuWrapper>
-                            <div key={index} className=" p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col item">
-                                <img src={data.thumbnail} alt="thumbnail" className="w-[100%] h-[100%] flex-1" />
-                                <div>
-                                    <p className="text-2xl font-bold">{data.name}</p>
-                                    <p className='text-lg font-light'>{data.description}</p>
+                            <Link href={`/board/${data.id}`}>
+                                <div key={index} className=" p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col item">
+                                    <img src={data.thumbnail} alt="thumbnail" className="w-[100%] h-[100%] flex-1" />
+                                    <div>
+                                        <p className="text-2xl font-bold">{data.name}</p>
+                                        <p className='text-lg font-light'>{data.description}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            </Link>
                         </ContextMenuWrapper>
                     ))
                 }

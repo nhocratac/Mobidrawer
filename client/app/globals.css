@@ -194,6 +194,15 @@ a {
   }
 }
 
+@keyframes fly {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .shake-rotate {
   display: inline-block;
   transition: transform 2s ease-in-out;
@@ -201,4 +210,49 @@ a {
 
 .shake-rotate:hover {
   animation: shakeRotate 2s ease-in-out;
+}
+
+
+@keyframes fly {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fly-out {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(900px, 900px); /* Adjust for screen size */
+  }
+  100% {
+    transform: translate(0, 0); /* Reset to the starting position */
+  }
+}
+
+
+@keyframes flame {
+  0%, 100% {
+    height: 30px;
+    opacity: 0.75;
+  }
+  50% {
+    height: 40px;
+    opacity: 0.9;
+  }
+}
+
+/* Apply the custom animations */
+.animate-fly {
+}
+
+.animate-fly:hover {
+  animation: fly 1s ease-in-out infinite; /* Adjust duration for desired speed */
+}
+.animate-flame {
+  animation: flame 0.5s ease-in-out infinite;
 }

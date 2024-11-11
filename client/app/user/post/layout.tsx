@@ -1,10 +1,11 @@
-export default function Layout({
+
+export default function layout({
     children,
 }: {
     children: React.ReactNode,
 }) {
     return (
-        <div>
+        <div className=" h-full flex flex-col ">
             {children}
         </div>
     )

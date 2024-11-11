@@ -1,5 +1,4 @@
 "use client";
-import { Button } from '@/components/ui/button';
 import React, { useState } from 'react';
 import Slack from '@/assets/logo/slack';
 import { Menu, X } from "lucide-react";
@@ -16,7 +15,7 @@ const Navbar = () => {
             <div className="container px-4 mx-auto relative h-full text-[16px]">
                 <div className="flex justify-between items-center h-full pl-[40px] pr-[40px]">
                     <div className="flex items-center flex-shrink-0">
-                        <Slack className="h-10 w-10 mr-2" />
+                        <Slack  />
                         <span className="text-xl tracking-tight">MobiDrawer</span>
                     </div>
                     <ul className='hidden lg:flex ml-14 space-x-12'>

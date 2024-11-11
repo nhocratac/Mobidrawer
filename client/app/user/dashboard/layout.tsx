@@ -5,7 +5,7 @@ export default function layout({
     children: React.ReactNode,
 }) {
     return (
-        <div className="bg-white border h-full">
+        <div className="bg-white  h-full">
             {children}
         </div>
     )

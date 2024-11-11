@@ -1,3 +1,4 @@
+import { svgs } from "@/assets";
 import NavSide from "@/components/SideBar/NavSide";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -7,7 +8,7 @@ import { Search } from "lucide-react"
 
 export default function SideBar() {
     return (
-        <div className="text-3xl w-full">
+        <div className="text-3xl w-full h-full flex flex-col  ">
             <div className="h-[48px] border w-full flex items-center justify-between">
                 <div className="ml-4">
                     <Avatar className="w-[32px] h-[32px]">
@@ -28,10 +29,11 @@ export default function SideBar() {
                 />
             </div>
             <div>
-                <NavSide/>
+                <NavSide />
             </div>
-            <div>
-                more
+            <div className="m-auto relative">
+                <svgs.rocket width={100} height={100} className="animate-fly" />
+                <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[20px] h-[30px] animate-flame bg-gradient-to-t from-yellow-500 to-transparent rounded-full opacity-75" />
             </div>
         </div>
     )
