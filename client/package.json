@@ -38,6 +38,8 @@
     "react-resizable": "^3.0.5",
     "react-resizable-panels": "^2.1.2",
     "react-rnd": "^10.4.12",
+    "react-slick": "^0.30.2",
+    "slick-carousel": "^1.8.1",
     "stability-client": "^1.9.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
