@@ -1,17 +1,21 @@
-import { useToolDevStore } from "@/lib/Zustand/store";
-import { useEffect, useRef, useState } from "react";
+'use client'
+import { useBoardStore, useToolDevStore } from "@/lib/Zustand/store";
+import { use, useEffect, useRef, useState } from "react";
 import PencilCanvas from "../CanvasDrawingOverlay/PencilCanvas";
+import { useParams } from "next/navigation";
 
 const ZoomableGrid = ({ children, onSetScale }) => {
   const gridCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
-
+  const boardId = useParams().id;
   // Trạng thái quản lý scale và dịch chuyển
+  const penColor = useToolDevStore((state) => state.pencil?.color);
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const penColor = useToolDevStore((state) => state.pencil?.color);
   const penThickness = useToolDevStore((state) => state.pencil?.thickness);
   const penOpacity = useToolDevStore((state) => state.pencil?.opacity);
+  const board = useBoardStore((state) => state?.boards.find((board) => board.id == boardId));
+  const updateBoard = useBoardStore((state) => state.updateBoard);
   // Trạng thái quản lý chế độ và hành động hiện tại
   // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore((state) => state.mode);
@@ -23,39 +27,37 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Trạng thái lưu trữ các đường vẽ
-  const [canvasPaths, setCanvasPaths] = useState([
-    {
-      color: penColor,
-      thickness: penThickness,
-      opacity : penOpacity,
-      path: [],
-    },
-  ]); // {}
+  const [canvasPaths, setCanvasPaths] = useState(
+    useBoardStore(
+      (state) => state?.boards.find((board) => board.id == boardId)?.canvasPaths
+    )
+  ); // {}
+
 
   const setonePathInArrayPath = (index, newPath) => {
-    setCanvasPaths(prevPaths => {
+    setCanvasPaths((prevPaths) => {
       // Tạo một bản sao của paths hiện tại
       const updatedPaths = [...prevPaths];
-      
+
       // Thay thế path tại vị trí index bằng newPath
       if (index >= 0 && index < updatedPaths.length) {
         updatedPaths[index] = newPath;
       } else {
         console.warn("Index out of range");
       }
-      
+
       return updatedPaths;
     });
   };
 
   // Hàm tiện ích để chuyển đổi tọa độ
-  const getTransformedCoordinates = (x, y) => { // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
+  const getTransformedCoordinates = (x, y) => {
+    // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
     return {
-      x: (x - translate.x - penThickness/2) / scale,
-      y: (y - translate.y - penThickness/2) / scale,
+      x: (x - translate.x - penThickness / 2) / scale,
+      y: (y - translate.y - penThickness / 2) / scale,
     };
   };
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
@@ -70,9 +72,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
         }
       }
     };
-    const data = {
-      address: "",
-    };
     const handleKeyUp = (e) => {
       if (e.key === "z") {
         setUndoPressed(false); // Reset cờ khi thả phím
@@ -82,11 +81,16 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     return () => {
+      console.log("remove event listener and unmount");
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
-    };
+      // update board canvasPaths to store
+    }
   }, []);
 
+  useEffect(() => {
+    updateBoard({...board ,canvasPaths: canvasPaths });
+  }, [canvasPaths]);
   useEffect(() => {
     const gridCanvas = gridCanvasRef.current;
     const gridCtx = gridCanvas.getContext("2d");

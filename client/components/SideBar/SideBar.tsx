@@ -31,9 +31,8 @@ export default function SideBar() {
             <div>
                 <NavSide />
             </div>
-            <div className="m-auto relative">
-                <svgs.rocket width={100} height={100} className="animate-fly" />
-                <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[20px] h-[30px] animate-flame bg-gradient-to-t from-yellow-500 to-transparent rounded-full opacity-75" />
+            <div className="mt-[200px] relative mx-auto">
+                <svgs.Rocket width={100} height={100} className="animate-fly " />
             </div>
         </div>
     )

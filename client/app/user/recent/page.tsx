@@ -6,7 +6,7 @@ import { LayoutGrid, LayoutList } from "lucide-react";
 import {  useState } from "react";
 
 
-export default function page() {
+export default function RencentPage() {
     const [modeView, setModeView] = useState('List');
     return (
         <div className="flex flex-1 flex-col justify-between items-center gap-8 ">

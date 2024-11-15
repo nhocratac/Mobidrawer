@@ -1,13 +1,8 @@
-import { Button } from "@/components/ui/button"
-import { ThumbsUp } from "lucide-react"
-import { useState } from "react"
+import Reaction from "@/components/Reaction/Reaction"
+
 
 const CommentItem = () => {
-    const [liked, setLiked] = useState(false)
 
-    const toggleLike = () => {
-        setLiked(!liked)
-    }
     return (
         <div className="flex gap-4">
             <img
@@ -17,14 +12,7 @@ const CommentItem = () => {
             <div className=" py-4 px-8 rounded-2xl flex flex-col text-2xl gap-2 bg-neutral-200">
                 <h5 className="font-bold">Nguyễn Văn A</h5>
                 <p>Awesome!. Sao bạn không làm thêm nội dung này</p>
-                <Button className='text-xl rounded-2xl ' variant={'outline'} onClick={toggleLike}>
-                    <ThumbsUp
-                        width={14}
-                        strokeWidth={2}
-                        color={liked ? 'none' : 'black'}
-                        fill={liked ? 'blue' : 'none'}
-                    />{'Thích'}
-                </Button>
+                <Reaction />
             </div>
         </div>
     )

@@ -1,5 +1,6 @@
 'use client';
 import ModalComment from "@/components/Comment/ModalComment";
+import Reaction from "@/components/Reaction/Reaction";
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Share2, ThumbsUp } from "lucide-react"
 import { useState } from "react"
@@ -52,11 +53,7 @@ function PostItem() {
             </div>
             <div className="p-4 flex justify-around items-center gap-2 ">
                 <Button className='text-2xl rounded-2xl px-6 py-6 flex-1' variant={'outline'} onClick={toggleLike}>
-                    <ThumbsUp
-                        strokeWidth={2}
-                        color={liked ? 'none' : 'black'}
-                        fill={liked ? 'blue' : 'none'}
-                    />{'Thích'}
+                    <Reaction/>
                 </Button>
                 <Button className='text-2xl rounded-2xl px-6 py-6 flex-1' variant={'outline'} onClick={handleToggleModal}>
                     <MessageCircle

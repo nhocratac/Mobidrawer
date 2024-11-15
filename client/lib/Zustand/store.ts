@@ -1,3 +1,4 @@
+'use client'
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import type {} from "@redux-devtools/extension"; // required for devtools typing
@@ -16,18 +17,23 @@ const useBoardStore = create<ListBoardState>()(
     persist(
       (set, get) => ({
         boards: [],
-        setBoards: (newBoard: BoardState) => {
+        addnewBoard: (newBoard: BoardState) => {
           set((state) => ({
             boards: [...state.boards, newBoard], // Sử dụng state.boards để lấy mảng hiện tại
           }));
         },
+        updateBoard: (newBoard: BoardState) => {
+          set((state) => ({
+            boards : state.boards.map((board) => (board.id === newBoard.id ? newBoard : board))
+          }));
+        }
       }),
       {
         name: "Boards-storage",
         merge: (persistedState: any, currentState) => ({
           ...currentState,
           ...persistedState,
-          setBoards: currentState.setBoards,
+          addnewBoard: currentState.addnewBoard,
         }),
       }
     )

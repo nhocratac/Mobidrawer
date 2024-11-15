@@ -6,7 +6,7 @@ import LogoSlider from '@/components/PageComponents/LogoSlider';
 import SvgGrid from '@/components/PageComponents/SvgGrid';
 import Mesh from '@/components/PageComponents/Mesh';
 import "slick-carousel/slick/slick-theme.css";
-export default function page() {
+export default function Page() {
   return (
     <>
       <div className="w-screen min-h-screen fixed z-10 flex justify-center px-6 pointer-events-none">

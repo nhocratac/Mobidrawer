@@ -56,5 +56,6 @@ export interface BoardState {
 
 export interface ListBoardState {
   boards: BoardState[];
-  setBoards: (newBoard: BoardState) => void;
+  addnewBoard: (newBoard: BoardState) => void;
+  updateBoard: (newBoard: BoardState) => void;
 }

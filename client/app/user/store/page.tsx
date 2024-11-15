@@ -1,8 +1,10 @@
+import ListStoreTemplate from "@/components/Store/ListStoreTemplate";
 
-export default function page() {
+
+export default function StorePage() {
   return (
-    <div>
-        this is message page for admin
+    <div className="">
+      <ListStoreTemplate/>
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import CommentList from "@/components/Comment/CommentList"
-import { Input } from "@/components/ui/input"
 import { SendHorizontal } from "lucide-react"
 
 const ModalComment = ({ handleToggleModal }: { handleToggleModal: any }) => {
@@ -8,8 +7,6 @@ const ModalComment = ({ handleToggleModal }: { handleToggleModal: any }) => {
             handleToggleModal()
         }
     }
-
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
             onClick={handleOverlayClick} >

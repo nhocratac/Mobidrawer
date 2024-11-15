@@ -224,13 +224,13 @@ a {
 
 @keyframes fly-out {
   0% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(900px, 900px); /* Adjust for screen size */
+    top: 0px;
+    left: 0px;
+    transform: rotate(-40deg) translateX(-50%);
   }
   100% {
-    transform: translate(0, 0); /* Reset to the starting position */
+    top: -100vh;
+    transform:  rotate(-40deg);
   }
 }
 
@@ -248,11 +248,19 @@ a {
 
 /* Apply the custom animations */
 .animate-fly {
+  transform:scale(1);
+  transition: transform linear 0.9s; /* Adjust duration for desired speed */
+}
+
+.animate-fly:active {
+  position: absolute;
+  animation: fly-out 2s linear; /* Adjust duration for desired speed */
 }
 
 .animate-fly:hover {
-  animation: fly 1s ease-in-out infinite; /* Adjust duration for desired speed */
+  transform:scale(1.25);
+  transition: transform linear 0.9s; /* Adjust duration for desired speed */
 }
 .animate-flame {
-  animation: flame 0.5s ease-in-out infinite;
+  animation: flame 0.5s linear infinite;
 }

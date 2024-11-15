@@ -1,7 +1,7 @@
 import HeaderDefault from "@/components/header/HeaderDefault"
 import SideBar from "@/components/SideBar/SideBar"
 
-export default function layout({
+export default function Layout({
     children,
 }: { children: React.ReactNode }) {
     return (
