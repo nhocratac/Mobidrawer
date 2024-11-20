@@ -1,18 +1,18 @@
-import rocket from "./rocket.jpg";
+import haha from "./svg/haha.svg";
+import like from "./svg/like.svg";
+import like_outline from "./svg/like_outline.svg";
+import love from "./svg/love.svg";
+import MiroLogo from "./svg/miroLogo.svg";
+import owner1Logo from "./svg/onwer1Logo.svg";
 import rocketSVG from "./svg/rocket.svg";
 import store1 from "./svg/store1.svg";
 import store2 from "./svg/store2.svg";
 import store3 from "./svg/store3.svg";
 import store4 from "./svg/store4.svg";
-import MiroLogo from "./svg/miroLogo.svg";
-import owner1Logo from "./svg/onwer1Logo.svg";
-import haha from "./svg/haha.svg";
-import like from "./svg/like.svg";
-import love from "./svg/love.svg";
-import like_outline from "./svg/like_outline.svg";
+
 
 const images = {
-  rocket: rocket,
+
 };
 
 const svgs = {
@@ -29,3 +29,4 @@ const svgs = {
   LikeOutline: like_outline,
 };
 export { images, svgs };
+

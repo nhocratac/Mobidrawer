@@ -3,7 +3,7 @@ import NavSide from "@/components/SideBar/NavSide";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { EllipsisVertical, Search } from "lucide-react"
 
 
 export default function SideBar() {
@@ -17,7 +17,7 @@ export default function SideBar() {
                     </Avatar>
                 </div>
                 <div className="mr-4">
-                    more
+                    <EllipsisVertical/>
                 </div>
             </div>
             <div className="relative mx-auto w-[90%] p-0">

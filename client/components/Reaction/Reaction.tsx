@@ -1,6 +1,6 @@
 
 import { svgs } from "@/assets"
-import { use, useEffect, useState } from "react"
+import {  useEffect, useState } from "react"
 
 const ReactionIcon = ({ Icon, textTooltip, onClick, className, ...props }: {
     Icon: any,
