@@ -1,4 +1,5 @@
 import { Avatar } from '@/components/ui/avatar';
+import { FunctionComponent } from 'react';
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -58,4 +59,25 @@ export interface ListBoardState {
   boards: BoardState[];
   addnewBoard: (newBoard: BoardState) => void;
   updateBoard: (newBoard: BoardState) => void;
+}
+
+export interface ItemProps {
+  id : string ;
+  ImageThumnail: string;
+  owner: {
+      name: string;
+      logo: string;
+  };
+  name: string;
+  info: {
+      description: string;
+      price: number;
+      rating: number;
+  }
+}  
+export interface TemplateStoreState {
+  templates : ItemProps[];
+  addTemplate : (template: ItemProps) => void;
+  updateTemplate : (template: ItemProps) => void;
+  deleteTemplate : (id: string) => void;
 }

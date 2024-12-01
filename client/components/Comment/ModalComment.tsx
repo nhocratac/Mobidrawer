@@ -15,7 +15,7 @@ const ModalComment = ({ handleToggleModal }: { handleToggleModal: any }) => {
                 <CommentList />
                 <div className="relative">
                     <textarea
-                        placeholder="Write a comment"
+                        placeholder="Hãy viết bình luận của bạn"
                         className="mt-4 text-2xl w-full h-32 p-2 border border-gray-300 rounded-lg"
                         rows={4}
                     ></textarea>

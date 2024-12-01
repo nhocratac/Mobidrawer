@@ -20,52 +20,52 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
       <div className="flex gap-6 text-[1.4rem]">
         <div className='flex gap-4' >
           <p className='font-light'>
-            Filter by
+            Lọc theo
           </p>
           <Select>
             <SelectTrigger className="min-w-[100px] w-1/5">
               <SelectValue placeholder="Board" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">
-                All
+              <SelectItem value="Tất cả">
+                Tất cả
               </SelectItem>
               <SelectItem value="Not in space">
-                Not in space
+                Không thuộc không gian
               </SelectItem>
             </SelectContent>
           </Select>
           <Select>
             <SelectTrigger className="min-w-[100px] w-1/5">
-              <SelectValue placeholder="Owner" />
+              <SelectValue placeholder="Chủ sở hữu" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="everyone">
-                Everyone
+              <SelectItem value="mọi người">
+                Mọi người
               </SelectItem>
-              <SelectItem value="mine">
-                Mine
+              <SelectItem value="của tôi">
+                Của tôi
               </SelectItem>
-              <SelectItem value="others">
-                Others
+              <SelectItem value="khác">
+                Khác
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="flex gap-4">
           <p className='font-light'>
-            Sort by
+            Sắp xếp theo
           </p>
           <Select>
             <SelectTrigger className="min-w-[100px] w-1/5">
-              <SelectValue placeholder="Recent" />
+              <SelectValue placeholder="gần đây" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Recent">
-                Recent
+              <SelectItem value="gần đây">
+                Gần đây
               </SelectItem>
-              <SelectItem value="Old">
-                Old
+              <SelectItem value="cũ">
+                Cũ
               </SelectItem>
             </SelectContent>
           </Select>
@@ -73,18 +73,18 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
       </div>
       <div className="flex gap-4 text-[1.4rem]">
         <p className='font-light'>
-          View
+          Xem theo
         </p>
         <Select onValueChange={(value) => setModeView(value)}>
           <SelectTrigger className="min-w-[100px] w-1/5">
-            <SelectValue placeholder="List" />
+            <SelectValue placeholder="danh sách" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="List">
-              List
+            <SelectItem value="danh sách">
+              Danh sách
             </SelectItem>
-            <SelectItem value="Grid" >
-              Grid
+            <SelectItem value="lưới" >
+              Lưới
             </SelectItem>
           </SelectContent>
         </Select>

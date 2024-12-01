@@ -15,7 +15,7 @@ import { boardType } from "@/lib/Zustand/type.type";
 
 
 export default function ListBoardThumbnail() {
-    const {setBoards, boards} = useBoardStore()
+    const {addnewBoard, boards} = useBoardStore()
     const router = useRouter()
     const DialogData = {
         flowchart: {
@@ -29,7 +29,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
@@ -46,7 +46,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
@@ -63,7 +63,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
@@ -80,7 +80,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
@@ -97,7 +97,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 
@@ -114,7 +114,7 @@ export default function ListBoardThumbnail() {
                     if (!newBoard) {
                         // handel error
                     }
-                    setBoards(newBoard)
+                    addnewBoard(newBoard)
                     router.push(`/board/${newBoard.id}`)
                 } catch (error) {
 

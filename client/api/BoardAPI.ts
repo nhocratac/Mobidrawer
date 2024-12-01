@@ -20,7 +20,7 @@ const createBoard = (type: boardType, id: number) => {
       id: id,
       name: `${type} ${id}`,
       lastOpened : customDate,
-      description: `This is a ${type} board was created at ${new Date().toISOString()}`,
+      description: `Đây là ${type} bảng đã được tạo tại${new Date().toISOString()}`,
       canvasPaths: [],
       thumbnail: boardAvatar[id % boardAvatar.length],
       type: type,

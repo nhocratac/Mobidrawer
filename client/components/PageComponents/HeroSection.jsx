@@ -1,4 +1,4 @@
-import demo from "../../assets/demo.png";
+
 import VideoDialog from "@/components/BoardThumbnail/VideoDialog";
 export default function HeroSection() {
   return (

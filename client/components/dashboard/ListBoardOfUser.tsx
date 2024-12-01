@@ -73,7 +73,6 @@ const tableData = [
         lastOpened: '4 days ago',
         owner: 'you',
     },
-
 ];
 
 function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
@@ -81,11 +80,11 @@ function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
             <ContextMenuContent>
-                <ContextMenuItem>Profile</ContextMenuItem>
-                <ContextMenuItem>Billing</ContextMenuItem>
-                <ContextMenuItem>Team</ContextMenuItem>
-                <ContextMenuItem>Subscription</ContextMenuItem>
-                <ContextMenuItem>Rename</ContextMenuItem>
+                <ContextMenuItem>Hồ sơ</ContextMenuItem>
+                <ContextMenuItem>Thanh toán</ContextMenuItem>
+                <ContextMenuItem>Nhóm</ContextMenuItem>
+                <ContextMenuItem>Đăng kí</ContextMenuItem>
+                <ContextMenuItem>Đổi tên</ContextMenuItem>
             </ContextMenuContent>
         </ContextMenu>
 
@@ -109,11 +108,11 @@ function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoar
                 <table className="w-full">
                     <thead>
                         <tr className="font-light text-2xl text-left">
-                            <th className="w-2/5">Name</th>
-                            <th className="w-[15%]">Online User</th>
-                            <th className="w-[15%]">Space</th>
-                            <th className="w-[15%]">Last Opened</th>
-                            <th className="w-[15%]">Owner</th>
+                            <th className="w-2/5">Tên</th>
+                            <th className="w-[15%]">Hoạt động</th>
+                            <th className="w-[15%]">Khoảng Trống</th>
+                            <th className="w-[15%]">Lần cuối mở</th>
+                            <th className="w-[15%]">Chủ sở hữu</th>
                         </tr>
                     </thead>
                     <tbody>

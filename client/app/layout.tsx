@@ -1,7 +1,8 @@
-import  { Metadata } from "next";
+import { Metadata } from "next";
 import "./globals.css";
 import roboto from "@/fonts/fontRoBoto";
 import env from "@/utils/environment";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: env.APP_NAME,
@@ -29,7 +30,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={`${roboto.className} antialiased`}>
-        {children}
+        <main>{children}</main>
+        <Toaster/>
       </body>
     </html>
   );

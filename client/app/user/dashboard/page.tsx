@@ -17,16 +17,16 @@ export default function DashboardPage() {
     <div className="mt-0 bg-[var(--background)] border h-full flex flex-col">
       <div className="flex justify-between lg:h-[80px] items-center ">
         <div className="text-[2.4rem] px-8 ">
-          Boards in this team
+          Các bảng của bạn
         </div>
         <div className="flex gap-4 mr-4 text-[1.4rem] items-center">
           <Button className="px-[10px] border lg:h-[32px] text-[1.4rem] rounded-[4px]">
             <Link href={path.user.store}>
-              explore templatess
+              khám phá
             </Link>
           </Button>
           <Button variant={'secondary'} className="px-[10px] text-[1.4rem] border lg:h-[32px] rounded-[4px]  " >
-            <Link href={path.user.post}>Create new</Link>
+            <Link href={path.user.post}>Tạo mới</Link>
           </Button>
         </div>
       </div>

@@ -1,15 +1,17 @@
 'use client'
-import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
-import type {} from "@redux-devtools/extension"; // required for devtools typing
 import {
   BoardState,
+  ItemProps,
   ListBoardState,
   ModeType,
+  TemplateStoreState,
   ToolDevState,
 } from "@/lib/Zustand/type.type";
+import type { } from "@redux-devtools/extension";
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
 
-// Định nghĩa kiểu enum cho chế độ
+
 
 // Định nghĩa trạng thái cho công cụ phát triển
 const useBoardStore = create<ListBoardState>()(
@@ -128,4 +130,40 @@ const useToolDevStore = create<ToolDevState>()(
   )
 );
 
-export { useToolDevStore, useBoardStore };
+
+const useTemplateStore = create<TemplateStoreState> () (
+  devtools(
+    persist(
+      (set, get) => ({
+        templates: [],
+        addTemplate: (newTemplate: ItemProps) => {
+          set((state) => ({
+            templates: [...state.templates, newTemplate],
+          }));
+        },
+        updateTemplate: (newTemplate: ItemProps) => {
+          set((state) => ({
+            templates: state.templates.map((template) => (template.id === newTemplate.id ? newTemplate : template))
+          }));
+        },
+        deleteTemplate : (id: string) => {
+          set((state) => ({
+            templates: state.templates.filter((template) => template.id !== id)
+          }))
+        }
+      }),
+      {
+        name: "Templates-storage",
+        merge: (persistedState: any, currentState) => ({
+          ...currentState,
+          ...persistedState,
+          addnewTemplate: currentState.addTemplate,
+          deleteTemplate: currentState.deleteTemplate,
+          updateTemplate: currentState.updateTemplate,
+        }),
+      }
+    )
+  )
+)
+export { useBoardStore, useTemplateStore, useToolDevStore };
+

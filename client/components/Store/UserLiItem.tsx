@@ -8,46 +8,34 @@ import { Star } from "lucide-react";
 const StarRating = ({ rating }: { rating: number }) => {
     const stars = [];
     for (let i = 0; i < Math.floor(rating); i++) {
-        stars.push(<Star key={i} strokeWidth={0} size={18} fill="yellow" />);
+        stars.push(<Star key={i} strokeWidth={0} size={18} fill="yellow" aria-label="Star" />);
     }
     for (let i = Math.floor(rating); i < 5; i++) {
-        stars.push(<Star key={i} strokeWidth={0} size={18} fill="gray" />);
+        stars.push(<Star key={i} strokeWidth={0} size={18} fill="gray" aria-label="Empty Star" />);
     }
-    return (
-        <div className="flex gap-2">
-            {stars}
-        </div>
-    )
-}
+    return <div className="flex gap-2">{stars}</div>;
+};
 
-const LiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
+
+const UserLiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
     const { toast } = useToast()
 
-    const addNewTemplate = useTemplateStore((state) => state.addTemplate)
-    const handleAdd = () => {
+    const deleteTemplate = useTemplateStore((state) => state.deleteTemplate)
+    const handleDelete = () => {
         toast({
             title: "Thành công",
-            description: "Bạn đã thêm mẫu thành công",
+            description: "Bạn đã xóa mẫu thành công",
         })
-        const currBoard: ItemProps = {
-            ImageThumnail,
-            owner,
-            name,
-            info,
-            id
-        }
-
-        addNewTemplate(currBoard)
+        deleteTemplate(id)
     }
     return (
-        <li className="flex flex-col gap-2 border-b ">
-            <div className="max-w-[265px] max-h-[200px]  group relative">
+        <li className="flex flex-col gap-2   border-b ">
+            <div className="max-w-[265px] max-h-[200px] group relative">
                 {ImageThumnail && <img src={ImageThumnail} alt={`template-${name}`} className="rounded-[12px] " />}
                 <div className="absolute text-white   opacity-0  group-hover:opacity-100 top-0 left-0 w-full h-full   p-4 ">
                     <p className="relative font-bold text-4xl z-10">{name}</p>
                     <p className="relative z-10 flex gap-4 items-center">
                         <img src={owner.logo} alt={`${owner.name} logo`} height={24} width={24} />
-
                         <span className="font-normal text-2xl">{owner.name}</span>
                     </p>
                     <p className="relative text-xl z-10 ">Mô tả: {info.description}</p>
@@ -61,10 +49,10 @@ const LiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
             </div>
             <div className="px-6 flex justify-between ">
                 <span className="font-bold text-2xl">{name}</span>
-                <Button type="button" className="text-xl font-bold rounded-[12px] px-4 py-2" onClick={handleAdd}>Thêm</Button>
+                <Button type="button" className="text-xl font-bold rounded-[12px] px-4 py-2" variant={'destructive'} onClick={handleDelete}>Xóa</Button>
             </div>
         </li>
     )
 }
 
-export default LiItem
+export default UserLiItem

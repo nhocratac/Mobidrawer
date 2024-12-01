@@ -5,7 +5,7 @@ import React from 'react'
 function PostPage() {
     return (
         <div className='flex-1 flex gap-4 '>
-            <div className=' w-4/5 flex flex-col gap-8 p-16 items-center border border-gray-300'>
+            <div className=' w-4/5 flex border border-gray-300'>
                 <PostList />
             </div>
             <div className='bg-slate-100 w-1/5'>

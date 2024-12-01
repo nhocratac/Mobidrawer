@@ -1,12 +1,30 @@
 'use client';
 import ModalComment from "@/components/Comment/ModalComment";
 import Reaction from "@/components/Reaction/Reaction";
-import { Button } from "@/components/ui/button"
-import { MessageCircle, Share2, ThumbsUp } from "lucide-react"
-import { useState } from "react"
-import Image from 'next/image'
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Share2 } from "lucide-react";
+import { useState } from "react";
 
-function PostItem() {
+
+
+
+export interface PostItemProps {
+    // Define the props of PostItem
+    id: string,
+    owner: {
+        name: string,
+        avatar: string,
+        role : string
+    },
+    image: string,
+    text: {
+        title: string,
+        description: string,
+    }
+}
+
+
+function PostItem({ owner, image, text, id }: PostItemProps) {
     const [liked, setLiked] = useState(false)
     const [isCommenting, setIsCommenting] = useState(false)
     const [isSharing, setIsSharing] = useState(false)
@@ -23,18 +41,18 @@ function PostItem() {
         <div className='min-h-48 w-full p-8 border border-gray-200 rounded-xl shadow-lg'>
             <div className='p-4 flex justify-between items-center'>
                 <div className='flex gap-4'>
-                    <Image
+                    <img
                         className='w-16 h-16 rounded-full'
                         width={64}
                         height={64}
                         alt='avatar'
-                        src = '/assets/images/vietthang.jpg' />
+                        src={owner.avatar} />
                     <div>
                         <p className='font-medium text-3xl'>
-                            Nguyễn Việt Thắng
+                            {owner.name}
                         </p>
                         <p className='text-xl font-light'>
-                            Developer <span className='font-medium'>{' 3 giờ trước'}</span>
+                            {owner.role} <span className='font-medium'>{' 3 giờ trước'}</span>
                         </p>
                     </div>
                 </div>
@@ -44,19 +62,19 @@ function PostItem() {
                 </div>
             </div>
             <div className='p-4'>
-                <p className='text-3xl font-medium'>{'Chào mừng bạn đến với team'}</p>
-                <p className='text-2xl font-normal'>{'Bạn đã tham gia team với vai trò Developer. Chúng tôi rất vui khi gặp bạn'}</p>
+                <p className='text-3xl font-medium'>{text.title}</p>
+                <p className='text-2xl font-normal'>{text.description}</p>
             </div>
             <div className='p-4 flex justify-center'>
                 <img
-                    className='w-[500px] h-[500px]' // Thay đổi kích thước ở đây
-                    src='https://images.ctfassets.net/w6r2i5d8q73s/eukCg0rlZwALnsTen1Klb/eea90c6d6033a86287277af3e30585b8/agile_retrospective_product-image_02_EN_standard_3_2.png?fm=webp&q=75'
+                    className='w-[500px] h-[500px]'
+                    src= {image}
                     alt='team'
                 />
             </div>
             <div className="p-4 flex justify-around items-center gap-2 ">
                 <Button className='text-2xl rounded-2xl px-6 py-6 flex-1' variant={'outline'} onClick={toggleLike}>
-                    <Reaction/>
+                    <Reaction />
                 </Button>
                 <Button className='text-2xl rounded-2xl px-6 py-6 flex-1' variant={'outline'} onClick={handleToggleModal}>
                     <MessageCircle
