@@ -28,7 +28,7 @@ export default function HeaderDefault({
           </h1>
         </Link>
         <span className=''>
-          free drawing app
+          vẽ miễn phí
         </span>
       </div>
       <div className='flex gap-4 text-[2rem]'>
@@ -39,10 +39,10 @@ export default function HeaderDefault({
         ) : (
           <>
             <Link href={path.login}>
-              <Button className='text-[2rem]'>Login</Button>
+              <Button className='text-[2rem]'>Đăng Nhập</Button>
             </Link>
             <Link href={path.register}>
-              <Button className='text-[2rem]'>Register</Button>
+              <Button className='text-[2rem]'>Đăng kí</Button>
             </Link>
           </>
         )}

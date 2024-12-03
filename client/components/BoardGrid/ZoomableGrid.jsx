@@ -1,61 +1,74 @@
-import { useToolDevStore } from "@/lib/Zustand/store";
+"use client";
+import { useBoardStore, useToolDevStore } from "@/lib/Zustand/store";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import PencilCanvas from "../CanvasDrawingOverlay/PencilCanvas";
+import BoardGridContext from "./BoardGridContext";
 
 const ZoomableGrid = ({ children, onSetScale }) => {
   const gridCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
 
+  const boardId = useParams().id;
   // Trạng thái quản lý scale và dịch chuyển
+  const penColor = useToolDevStore((state) => state.pencil?.color);
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const penColor = useToolDevStore((state) => state.pencil?.color);
+  const [backgroundColor, setBackgroundColor] = useState();
+  const [gridVisible, setGridVisible] = useState();
   const penThickness = useToolDevStore((state) => state.pencil?.thickness);
   const penOpacity = useToolDevStore((state) => state.pencil?.opacity);
+  const board = useBoardStore((state) =>
+    state?.boards.find((board) => board.id == boardId)
+  );
+
+  const updateBoard = useBoardStore((state) => state.updateBoard);
   // Trạng thái quản lý chế độ và hành động hiện tại
   // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore((state) => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [undoPressed, setUndoPressed] = useState(false);
+  const [isVisibleContextMenu, setIsVisibleContextMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   // Trạng thái lưu vị trí bắt đầu của thao tác
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Trạng thái lưu trữ các đường vẽ
-  const [canvasPaths, setCanvasPaths] = useState([
-    {
-      color: penColor,
-      thickness: penThickness,
-      opacity : penOpacity,
-      path: [],
-    },
-  ]); // {}
+  const [canvasPaths, setCanvasPaths] = useState(board?.canvasPaths || []);
+  useEffect(() => {
+    if (board?.canvasPaths) {
+      setCanvasPaths(board.canvasPaths);
+      setBackgroundColor(board?.options?.backgroundColor);
+      setGridVisible(board?.options?.gird);
+    }
+  }, [board]);
 
   const setonePathInArrayPath = (index, newPath) => {
-    setCanvasPaths(prevPaths => {
+    setCanvasPaths((prevPaths) => {
       // Tạo một bản sao của paths hiện tại
       const updatedPaths = [...prevPaths];
-      
+
       // Thay thế path tại vị trí index bằng newPath
       if (index >= 0 && index < updatedPaths.length) {
         updatedPaths[index] = newPath;
       } else {
         console.warn("Index out of range");
       }
-      
+
       return updatedPaths;
     });
   };
 
   // Hàm tiện ích để chuyển đổi tọa độ
-  const getTransformedCoordinates = (x, y) => { // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
+  const getTransformedCoordinates = (x, y) => {
+    // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
     return {
-      x: (x - translate.x - penThickness/2) / scale,
-      y: (y - translate.y - penThickness/2) / scale,
+      x: (x - translate.x - penThickness / 2) / scale,
+      y: (y - translate.y - penThickness / 2) / scale,
     };
   };
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
@@ -70,9 +83,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
         }
       }
     };
-    const data = {
-      address: "",
-    };
     const handleKeyUp = (e) => {
       if (e.key === "z") {
         setUndoPressed(false); // Reset cờ khi thả phím
@@ -82,16 +92,21 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     return () => {
+      console.log("remove event listener and unmount");
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
+      // update board canvasPaths to store
     };
   }, []);
+
+  useEffect(() => {
+    updateBoard({ ...board, canvasPaths: canvasPaths });
+  }, [canvasPaths]);
 
   useEffect(() => {
     const gridCanvas = gridCanvasRef.current;
     const gridCtx = gridCanvas.getContext("2d");
     const drawCanvas = drawCanvasRef.current;
-    const drawCtx = drawCanvas.getContext("2d");
 
     // add event listener undo
 
@@ -115,30 +130,30 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
       // Vẽ các đường lưới
       const gridSize = 50; // Điều chỉnh kích thước lưới
-      gridCtx.strokeStyle = "#ddd";
+      gridCtx.strokeStyle = gridVisible ? "#ddd" : "transparent";
       gridCtx.lineWidth = 0.1;
 
       // Vẽ các đường thẳng dọc
       for (
         let x = -gridCanvas.width;
-        x < (gridCanvas.width * 2) / scale;
+        x < (gridCanvas.width * 10) / scale;
         x += gridSize
       ) {
         gridCtx.beginPath();
         gridCtx.moveTo(x, -gridCanvas.height);
-        gridCtx.lineTo(x, (gridCanvas.height * 2) / scale);
+        gridCtx.lineTo(x, (gridCanvas.height *10) / scale);
         gridCtx.stroke();
       }
 
       // Vẽ các đường thẳng ngang
       for (
         let y = -gridCanvas.height;
-        y < (gridCanvas.height * 2) / scale;
+        y < (gridCanvas.height * 10) / scale;
         y += gridSize
       ) {
         gridCtx.beginPath();
         gridCtx.moveTo(-gridCanvas.width, y);
-        gridCtx.lineTo((gridCanvas.width * 2) / scale, y);
+        gridCtx.lineTo((gridCanvas.width * 10) / scale, y);
         gridCtx.stroke();
       }
 
@@ -160,7 +175,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     return () => {
       window.removeEventListener("resize", resizeCanvases);
     };
-  }, [scale, translate, canvasPaths]);
+  }, [scale, translate, canvasPaths, gridVisible]);
 
   // Hàm xử lý zoom khi cuộn chuột
   const handleZoom = (e) => {
@@ -256,15 +271,34 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     transformOrigin: "0 0",
   });
 
+  const handleContextMenu = (event) => {
+    event.preventDefault();
+    setIsVisibleContextMenu(true);
+
+    // Lấy vị trí con trỏ chuột
+    const { clientX: mouseX, clientY: mouseY } = event;
+
+    // Đặt vị trí menu
+    setMenuPosition({
+      x: mouseX,
+      y: mouseY,
+    });
+  };
   return (
     <div
-      className="relative bg-slate-700"
+      className={`relative ${
+        backgroundColor ? backgroundColor : "bg-slate-700"
+      }`}
       style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
       onWheel={handleZoom} // Gắn sự kiện zoom lên phần tử cha
       onMouseDown={handleMouseDown} // Gắn sự kiện mouse down lên phần tử cha
       onMouseMove={handleMouseMove} // Gắn sự kiện mouse move lên phần tử cha
       onMouseUp={handleMouseUp} // Gắn sự kiện mouse up lên phần tử cha
       onMouseLeave={handleMouseLeave} // Gắn sự kiện mouse leave lên phần tử cha
+      onContextMenu={handleContextMenu}
+      onClick={() => {
+        setIsVisibleContextMenu(false);
+      }}
     >
       {/* Canvas cho lưới */}
       <canvas
@@ -313,19 +347,27 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           pointerEvents: "none", // Để tránh chồng lấp với các sự kiện canvas
         }}
       >
-        {canvasPaths.map((pathData, index) => (
-          <PencilCanvas
-            key={index}
-            color={pathData.color}
-            thickness={pathData.thickness}
-            path={pathData.path}
-            opacity={pathData.opacity}
-            scale={scale}
-            translate={translate}
-            setPath={setonePathInArrayPath}
-          />
-        ))}
+        {canvasPaths &&
+          canvasPaths.map((pathData, index) => (
+            <PencilCanvas
+              key={index}
+              color={pathData.color}
+              thickness={pathData.thickness}
+              path={pathData.path}
+              opacity={pathData.opacity}
+              scale={scale}
+              translate={translate}
+              setPath={setonePathInArrayPath}
+            />
+          ))}
       </div>
+
+      {isVisibleContextMenu && (
+        <BoardGridContext
+          menuPosition={menuPosition}
+          isVisible={isVisibleContextMenu}
+        />
+      )}
 
       <div className="absolute top-0 bg-red-600" style={getTransformedStyle()}>
         {children}

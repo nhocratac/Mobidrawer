@@ -20,10 +20,14 @@ const createBoard = (type: boardType, id: number) => {
       id: id,
       name: `${type} ${id}`,
       lastOpened : customDate,
-      description: `This is a ${type} board was created at ${new Date().toISOString()}`,
+      description: `Đây là ${type} bảng đã được tạo tại${new Date().toISOString()}`,
       canvasPaths: [],
       thumbnail: boardAvatar[id % boardAvatar.length],
       type: type,
+      options: {
+        gird: true,
+        backgroundColor: 'bg-slate-700',
+      },
     };
     return response;
   } catch (error) {

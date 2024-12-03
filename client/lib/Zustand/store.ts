@@ -1,14 +1,16 @@
-import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
-import type {} from "@redux-devtools/extension"; // required for devtools typing
+"use client";
 import {
   BoardState,
+  ItemProps,
   ListBoardState,
   ModeType,
+  TemplateStoreState,
   ToolDevState,
 } from "@/lib/Zustand/type.type";
-
-// Định nghĩa kiểu enum cho chế độ
+import type {} from "@redux-devtools/extension";
+import { stat } from "fs";
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
 
 // Định nghĩa trạng thái cho công cụ phát triển
 const useBoardStore = create<ListBoardState>()(
@@ -16,9 +18,48 @@ const useBoardStore = create<ListBoardState>()(
     persist(
       (set, get) => ({
         boards: [],
-        setBoards: (newBoard: BoardState) => {
+        addnewBoard: (newBoard: BoardState) => {
           set((state) => ({
             boards: [...state.boards, newBoard], // Sử dụng state.boards để lấy mảng hiện tại
+          }));
+        },
+        updateBoard: (newBoard: BoardState) => {
+          set((state) => ({
+            boards: state.boards.map((board) =>
+              board.id === newBoard.id ? newBoard : board
+            ),
+          }));
+        },
+        setBoardColor: (id: number, color: string) => {
+          set((state) => ({
+            boards: state.boards.map((board) =>
+              board.id == id
+                ? {
+                    ...board,
+                    options: {
+                      ...board.options,
+                      backgroundColor: color,
+                    },
+                  }
+                : board
+            ),
+          }));
+        },
+        setGridVisible: (id: number) => {
+          set((state) => ({
+            boards: state.boards.map((board) => {
+              if (board.id == id) {
+                return {
+                  ...board,
+                  options: {
+                    ...board.options,
+                    gird: !board.options.gird,
+                  },
+                };
+              } else {
+                return board;
+              }
+            }),
           }));
         },
       }),
@@ -27,7 +68,7 @@ const useBoardStore = create<ListBoardState>()(
         merge: (persistedState: any, currentState) => ({
           ...currentState,
           ...persistedState,
-          setBoards: currentState.setBoards,
+          addnewBoard: currentState.addnewBoard,
         }),
       }
     )
@@ -122,4 +163,40 @@ const useToolDevStore = create<ToolDevState>()(
   )
 );
 
-export { useToolDevStore, useBoardStore };
+const useTemplateStore = create<TemplateStoreState>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        templates: [],
+        addTemplate: (newTemplate: ItemProps) => {
+          set((state) => ({
+            templates: [...state.templates, newTemplate],
+          }));
+        },
+        updateTemplate: (newTemplate: ItemProps) => {
+          set((state) => ({
+            templates: state.templates.map((template) =>
+              template.id === newTemplate.id ? newTemplate : template
+            ),
+          }));
+        },
+        deleteTemplate: (id: string) => {
+          set((state) => ({
+            templates: state.templates.filter((template) => template.id !== id),
+          }));
+        },
+      }),
+      {
+        name: "Templates-storage",
+        merge: (persistedState: any, currentState) => ({
+          ...currentState,
+          ...persistedState,
+          addnewTemplate: currentState.addTemplate,
+          deleteTemplate: currentState.deleteTemplate,
+          updateTemplate: currentState.updateTemplate,
+        }),
+      }
+    )
+  )
+);
+export { useBoardStore, useTemplateStore, useToolDevStore };

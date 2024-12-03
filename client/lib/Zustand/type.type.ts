@@ -1,4 +1,3 @@
-import { Avatar } from '@/components/ui/avatar';
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -52,9 +51,37 @@ export interface BoardState {
   type : boardType;
   thumbnail : string;
   canvasPaths: canvasPath[];
+  options: {
+    gird ?: boolean;
+    backgroundColor ?: string;
+  };
 }
 
 export interface ListBoardState {
   boards: BoardState[];
-  setBoards: (newBoard: BoardState) => void;
+  addnewBoard: (newBoard: BoardState) => void;
+  updateBoard: (newBoard: BoardState) => void;
+  setBoardColor: (id: number, color: string) => void;
+  setGridVisible: (id: number) => void;
+}
+
+export interface ItemProps {
+  id : string ;
+  ImageThumnail: string;
+  owner: {
+      name: string;
+      logo: string;
+  };
+  name: string;
+  info: {
+      description: string;
+      price: number;
+      rating: number;
+  }
+}  
+export interface TemplateStoreState {
+  templates : ItemProps[];
+  addTemplate : (template: ItemProps) => void;
+  updateTemplate : (template: ItemProps) => void;
+  deleteTemplate : (id: string) => void;
 }

@@ -1,7 +1,8 @@
-import  { Metadata } from "next";
+import { Metadata } from "next";
 import "./globals.css";
 import roboto from "@/fonts/fontRoBoto";
 import env from "@/utils/environment";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: env.APP_NAME,
@@ -25,11 +26,10 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
-        <meta name="msapplication-TileColor" content="#da532f" />
-        <meta name="theme-color" content="#ffffff" />
       </head>
-      <body className={`${roboto.className} antialiased`}>
-        {children}
+      <body className={`${roboto.className} antialiased`} suppressHydrationWarning={true}>
+        <main>{children}</main>
+        <Toaster/>
       </body>
     </html>
   );

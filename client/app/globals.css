@@ -195,6 +195,15 @@ a {
   }
 }
 
+@keyframes fly {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .shake-rotate {
   display: inline-block;
   transition: transform 2s ease-in-out;
