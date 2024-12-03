@@ -24,6 +24,10 @@ const createBoard = (type: boardType, id: number) => {
       canvasPaths: [],
       thumbnail: boardAvatar[id % boardAvatar.length],
       type: type,
+      options: {
+        gird: true,
+        backgroundColor: 'bg-slate-700',
+      },
     };
     return response;
   } catch (error) {

@@ -1,5 +1,5 @@
 'use client'
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 
 interface InputRangeProps {
@@ -18,7 +18,13 @@ export default function InputRange({ label, min, max, defaultValue }: InputRange
             const value = (e.target as HTMLInputElement).value
             setValue(parseInt(value))
         })
-    })
+        return () => {
+            range.removeEventListener('input', (e) => {
+                const value = (e.target as HTMLInputElement).value
+                setValue(parseInt(value))
+            })
+        }
+    }, [value])
     return (
         <div className="flex items-center space-x-4">
             <label htmlFor="range" className="text-sm font-medium">

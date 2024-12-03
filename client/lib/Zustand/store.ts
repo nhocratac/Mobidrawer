@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import {
   BoardState,
   ItemProps,
@@ -7,11 +7,10 @@ import {
   TemplateStoreState,
   ToolDevState,
 } from "@/lib/Zustand/type.type";
-import type { } from "@redux-devtools/extension";
+import type {} from "@redux-devtools/extension";
+import { stat } from "fs";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-
-
 
 // Định nghĩa trạng thái cho công cụ phát triển
 const useBoardStore = create<ListBoardState>()(
@@ -26,9 +25,43 @@ const useBoardStore = create<ListBoardState>()(
         },
         updateBoard: (newBoard: BoardState) => {
           set((state) => ({
-            boards : state.boards.map((board) => (board.id === newBoard.id ? newBoard : board))
+            boards: state.boards.map((board) =>
+              board.id === newBoard.id ? newBoard : board
+            ),
           }));
-        }
+        },
+        setBoardColor: (id: number, color: string) => {
+          set((state) => ({
+            boards: state.boards.map((board) =>
+              board.id == id
+                ? {
+                    ...board,
+                    options: {
+                      ...board.options,
+                      backgroundColor: color,
+                    },
+                  }
+                : board
+            ),
+          }));
+        },
+        setGridVisible: (id: number) => {
+          set((state) => ({
+            boards: state.boards.map((board) => {
+              if (board.id == id) {
+                return {
+                  ...board,
+                  options: {
+                    ...board.options,
+                    gird: !board.options.gird,
+                  },
+                };
+              } else {
+                return board;
+              }
+            }),
+          }));
+        },
       }),
       {
         name: "Boards-storage",
@@ -130,8 +163,7 @@ const useToolDevStore = create<ToolDevState>()(
   )
 );
 
-
-const useTemplateStore = create<TemplateStoreState> () (
+const useTemplateStore = create<TemplateStoreState>()(
   devtools(
     persist(
       (set, get) => ({
@@ -143,14 +175,16 @@ const useTemplateStore = create<TemplateStoreState> () (
         },
         updateTemplate: (newTemplate: ItemProps) => {
           set((state) => ({
-            templates: state.templates.map((template) => (template.id === newTemplate.id ? newTemplate : template))
+            templates: state.templates.map((template) =>
+              template.id === newTemplate.id ? newTemplate : template
+            ),
           }));
         },
-        deleteTemplate : (id: string) => {
+        deleteTemplate: (id: string) => {
           set((state) => ({
-            templates: state.templates.filter((template) => template.id !== id)
-          }))
-        }
+            templates: state.templates.filter((template) => template.id !== id),
+          }));
+        },
       }),
       {
         name: "Templates-storage",
@@ -164,6 +198,5 @@ const useTemplateStore = create<TemplateStoreState> () (
       }
     )
   )
-)
+);
 export { useBoardStore, useTemplateStore, useToolDevStore };
-

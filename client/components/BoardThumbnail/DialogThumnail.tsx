@@ -5,22 +5,11 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-  } from "@/components/ui/dialog"
+} from "@/components/ui/dialog"
   
 
   
 
-interface DialogThumnailProp {
-    Video?: React.ReactNode;
-    Title?: string;
-    Description?: string;
-    HandleClickCreate?: () => void;
-    [key: string]: any;
-}
-
-const Data = {
-    Video:''
-}
 
 export const VideoAuto = () => {
     return (
@@ -30,7 +19,7 @@ export const VideoAuto = () => {
     )
 }
 
-export default function DialogThumnail({ Video, Title, Description, HandleClickCreate }: DialogThumnailProp) {
+export default function DialogThumnail() {
     return (
         <div>
             <Dialog>

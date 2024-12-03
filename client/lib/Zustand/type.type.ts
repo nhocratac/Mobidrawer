@@ -1,5 +1,3 @@
-import { Avatar } from '@/components/ui/avatar';
-import { FunctionComponent } from 'react';
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -53,12 +51,18 @@ export interface BoardState {
   type : boardType;
   thumbnail : string;
   canvasPaths: canvasPath[];
+  options: {
+    gird ?: boolean;
+    backgroundColor ?: string;
+  };
 }
 
 export interface ListBoardState {
   boards: BoardState[];
   addnewBoard: (newBoard: BoardState) => void;
   updateBoard: (newBoard: BoardState) => void;
+  setBoardColor: (id: number, color: string) => void;
+  setGridVisible: (id: number) => void;
 }
 
 export interface ItemProps {

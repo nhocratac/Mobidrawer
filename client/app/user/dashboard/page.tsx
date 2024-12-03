@@ -12,7 +12,7 @@ import { useState } from "react"
 
 
 export default function DashboardPage() {
-  const [modeView, setModeView] = useState('List')
+  const [modeView, setModeView] = useState<'List'| 'Grid'>('List')
   return (
     <div className="mt-0 bg-[var(--background)] border h-full flex flex-col">
       <div className="flex justify-between lg:h-[80px] items-center ">

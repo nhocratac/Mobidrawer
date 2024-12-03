@@ -80,10 +80,10 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
             <SelectValue placeholder="danh sách" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="danh sách">
+            <SelectItem value="List">
               Danh sách
             </SelectItem>
-            <SelectItem value="lưới" >
+            <SelectItem value="Grid" >
               Lưới
             </SelectItem>
           </SelectContent>

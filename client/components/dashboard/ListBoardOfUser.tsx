@@ -19,7 +19,7 @@ interface Board {
 
 interface ListBoardOfUserProps {
     boardList?: Board[];
-    modeView: string;
+    modeView: 'List' | 'Grid';
     [key: string]: any;
 }
 

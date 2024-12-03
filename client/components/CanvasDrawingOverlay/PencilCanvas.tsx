@@ -1,5 +1,5 @@
 import { useToolDevStore } from '@/lib/Zustand/store';
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface PencilCanvasProps {
   color: string;
@@ -16,7 +16,6 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPa
   const modeTool = useToolDevStore(state => state.mode)
 
   const erasePartOfPath = (eraseX: number, eraseY: number) => {
-    console.log(eraseX,eraseY)
     const threshold = 10; // Khoảng cách để xác định vùng xóa
     const newPath = path.filter(point => {
       const distance = Math.sqrt((point.x - eraseX) ** 2 + (point.y - eraseY) ** 2);
@@ -34,7 +33,6 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPa
     const ctx = canvasPen.getContext("2d");
     if (!ctx) return;
 
-    // Calculate the bounding box of the path
 
     // Set canvas size to full window
     canvasPen.width = window.innerWidth;
@@ -71,16 +69,13 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPa
     const canvasPen = canvasRef.current;
     if (!canvasPen || modeTool !== 'eraser') return;
     const handleMouseDown = (event: MouseEvent) => {
-      console.log('on mouse down')
       const rect = canvasPen.getBoundingClientRect();
       const x = (event.clientX - rect.left - translate.x) / scale;
       const y = (event.clientY - rect.top - translate.y) / scale;
       erasePartOfPath(x, y);
     };
-    canvasPen.addEventListener('click', () => console.log('okoko'));
     canvasPen.addEventListener('mousedown', handleMouseDown);
     return () => {
-      canvasPen.removeEventListener('click', () => console.log('okoko'));
       canvasPen.removeEventListener('mousedown', handleMouseDown);
     };
   }, [modeTool, scale, translate, path]);
