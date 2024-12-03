@@ -38,7 +38,7 @@ export default function InputForm() {
   return (
     <div>
         <div className="mb-6">
-          <h1 className="text-[50px] font-bold text-left">Sign in</h1>
+          <h1 className="text-[50px] font-bold text-left">Đăng nhập</h1>
         </div>
 
         {/* Social login buttons */}
@@ -86,7 +86,7 @@ export default function InputForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[16px]">Password</FormLabel>
+                <FormLabel className="text-[16px]">Mật khẩu</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -110,12 +110,12 @@ export default function InputForm() {
                 {...form.register('rememberMe')}
               />
               <label htmlFor="remember-me" className="ml-2 block text-gray-900 text-[16px]">
-                Remember me
+                Ghi nhớ tài khoản
               </label>
             </div>
             <div className="text-sm">
               <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 text-[16px] underline ">
-                Forgot password?
+                Quên mật khấu?
               </a>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function InputForm() {
           {/* Submit button */}
           <div>
             <Button type="submit" className="text-[16px] w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Sign in
+              Đăng nhập
             </Button>
           </div>
         </form>
