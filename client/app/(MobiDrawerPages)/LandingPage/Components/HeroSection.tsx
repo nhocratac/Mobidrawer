@@ -6,8 +6,8 @@ import Mesh from "./Mesh"
 import SvgGrid from "./SvgGrid"
 import Image from 'next/image'
 import feature from '@/assets/LandingPageImages/feature.png'
-import { Input } from "@/components/ui/input"
-
+import about from '@/assets/TeamImages/about.png'
+import Link from 'next/link'
 export default function HeroSection() {
   return (
     <div className="relative min-h-[800px]">
@@ -52,23 +52,19 @@ export default function HeroSection() {
           </motion.h2>
 
           <motion.div
-            className="mx-auto mt-10 flex flex-col items-center gap-4 w-full max-w-md"
+            className="mx-auto mt-10 mb-20 flex flex-col items-center gap-4  max-w-md"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Input
-              className="h-[36px] rounded-md text-xl w-full px-4"
-              placeholder="Nhập email của bạn"
-              type="email"
-            />
-
-            <Button
-              className="h-[36px] w-full bg-blue-600 text-xl hover:bg-blue-700 transition-colors duration-300 text-white"
-            >
-              Đăng ký miễn phí
-            </Button>
+            <Link href="/user/dashboard">
+              <Button
+                className="py-8 px-4 w-full bg-blue-600 text-2xl hover:bg-blue-700 transition-colors duration-300 text-white"
+              >
+                Đi đến bảng điều khiển
+              </Button>
+            </Link>
           </motion.div>
 
           <motion.div
@@ -80,10 +76,10 @@ export default function HeroSection() {
           >
             <div className="mb-12 rounded-xl border-8 border-yellow-300 bg-gray-200">
               <Image
-                src={feature}
+                src={about}
                 alt="Features Overview"
-                width={768}
-                height={499}
+                width={1200}
+                height={707}
                 className="rounded-lg w-full h-full object-cover"
                 priority
               />

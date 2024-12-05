@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Ensure you're using next/navigation
+import { useRouter } from "next/navigation"; 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,36 +12,33 @@ import Google from '@/assets/logo/google';
 import Microsoft from '@/assets/logo/microsoft';
 import Slack from '@/assets/logo/slack';
 
-// Schema validation for email, name, and password
 const FormSchemaEmail = z.object({
   email: z.string().email({
-    message: "Invalid email address.",
+    message: "Địa chỉ email không hợp lệ.",
   }),
 });
 
 const FormSchemaName = z.object({
   name: z.string().min(2, {
-    message: "Name must have at least 2 characters.",
+    message: "Tên phải có ít nhất 2 ký tự.",
   }),
 });
 
 const FormSchemaPassword = z.object({
   password: z.string().min(6, {
-    message: "Password must have at least 6 characters.",
+    message: "Mật khẩu phải có ít nhất 6 ký tự.",
   }),
 });
 
 export default function RegisterForm() {
   const [isMounted, setIsMounted] = useState(false);
-  const [step, setStep] = useState(1); // Step to track which form is currently being shown
+  const [step, setStep] = useState(1); 
   const router = useRouter();
 
-  // Ensure component is mounted on the client
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Form for each step
   const formEmail = useForm<z.infer<typeof FormSchemaEmail>>({
     resolver: zodResolver(FormSchemaEmail),
     defaultValues: { email: "" },
@@ -57,25 +54,21 @@ export default function RegisterForm() {
     defaultValues: { password: "" },
   });
 
-  // Handle email submit
   function onSubmitEmail(data: z.infer<typeof FormSchemaEmail>) {
     console.log("Email submitted:", data);
-    setStep(2); // Move to the name step
+    setStep(2); 
   }
 
-  // Handle name submit
   function onSubmitName(data: z.infer<typeof FormSchemaName>) {
     console.log("Name submitted:", data);
-    setStep(3); // Move to the password step
+    setStep(3); 
   }
 
-  // Handle password submit
   function onSubmitPassword(data: z.infer<typeof FormSchemaPassword>) {
     console.log("Password submitted:", data);
-    router.push("/auth/success"); // Replace with your success page
+    router.push("/auth/success"); 
   }
 
-  // If not mounted yet, return null to avoid SSR errors
   if (!isMounted) {
     return null;
   }
@@ -83,15 +76,14 @@ export default function RegisterForm() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-[50px] font-bold text-left">
-          {step === 1 ? "Register for free" : step === 2 ? "Set your name" : "Pick a password"}
+        <h1 className="text-6xl font-bold text-left my-4">
+          {step === 1 ? "Đăng ký" : step === 2 ? "Điền tên của bạn" : "Điền mật khẩu"}
         </h1>
-        <h2 className="text-[16px]">
-          {step === 1 ? "We recommend using your work email — it keeps work and life separate." : step === 2 ? "To start, What your name?" : "Now, set your password with at least 8 characters:"}
+        <h2 className="text-2xl">
+          {step === 1 ? "Chúng tôi khuyến nghị sử dụng email công việc để tách biệt công việc và cuộc sống cá nhân." : step === 2 ? "Tên của bạn là gì ?" : "Hãy điền mật khẩu với ít nhất 8 ký tự:"}
         </h2>
       </div>
 
-      {/* Conditional rendering of forms based on the step */}
       {step === 1 && (
         <>
           <Form {...formEmail}>
@@ -101,58 +93,58 @@ export default function RegisterForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[16px]">Work email</FormLabel>
+                    <FormLabel className="text-2xl">Email</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Enter your email address"
-                        className="block w-full h-[40px] px-10 py-3 border border-[#444749] rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-[16px]"
+                        placeholder="Điền địa chỉ mail của bạn"
+                        className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
                         {...field}
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="text-[16px] w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-                Continue with email
+              <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+                Tiếp tục với email
               </Button>
             </form>
           </Form>
           <hr className="border-gray-300 my-4 mb-14 mt-14" />
           <div className="flex flex-col gap-y-4 justify-center">
             <Button
-              className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
               <Google></Google>
-              <p className="ml-[5px]">Sign up with Google</p>
+              <p className="ml-[5px]">Đăng nhập với Google</p>
             </Button>
             <Button
-              className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
               <Microsoft></Microsoft>
-              <p className="ml-[5px]">Sign up with Microsoft</p>
+              <p className="ml-[5px]">Đăng nhập với Microsoft</p>
             </Button>
             <Button
-              className="text-[16px] w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               style={{ border: '1px solid #444749' }}
             >
               <Slack></Slack>
-              <p className="ml-[5px]">Sign up with Slack</p>
+              <p className="ml-2">Đăng nhập với Slack</p>
             </Button>
           </div>
           <footer className="mt-14">
-            <p className="text-[12px]">
-              By signing up, you agree with Miro's{' '}
+            <p className="text-lg">
+              Khi đăng ký, bạn đồng ý với {' '}
               <Link className="text-blue-500" href="#">
-                Terms & Conditions
+                Điều khoản & Điều kiện
               </Link>{' '}
-              and{' '}
+              cùng {' '}
               <Link className="text-blue-500" href="#">
-                Privacy Policy
+                Chính sách Bảo mật
               </Link>
-              .
+              {' '}của MobiDrawer.
             </p>
           </footer>
         </>
@@ -166,20 +158,20 @@ export default function RegisterForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[16px]">Name</FormLabel>
+                  <FormLabel className="text-2xl">Tên</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="Name"
-                      className="block w-full h-[40px] px-10 py-3 border border-[#444749] rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-[16px]"
+                      placeholder="Tên của bạn"
+                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
                       {...field}
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
-            <Button type="submit" className="text-[16px] w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-              Continue
+            <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+              Tiếp tục
             </Button>
           </form>
         </Form>
@@ -193,20 +185,20 @@ export default function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[16px]">Password</FormLabel>
+                  <FormLabel className="text-2xl">Mật khẩu</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Password"
-                      className="block w-full h-[40px] px-10 py-3 border border-[#444749] rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-[16px]"
+                      placeholder="Mật khẩu"
+                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
                       {...field}
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
-            <Button type="submit" className="text-[16px] w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-              Continue
+            <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+              Tiếp tục
             </Button>
           </form>
         </Form>

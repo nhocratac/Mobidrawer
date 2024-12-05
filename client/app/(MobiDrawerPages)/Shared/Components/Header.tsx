@@ -1,18 +1,17 @@
 "use client";
 import React, { useState } from 'react';
-import Slack from '@/assets/logo/slack';
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button"
-import { Link } from "lucide-react"
+import Link from 'next/link'
 
 const navLinks = [
     { href: "#products", label: "Sản phẩm" },
     { href: "#solutions", label: "Giải pháp" },
     { href: "/Enterprise", label: "Doanh nghiệp" },
-    { href: "#resources", label: "Tài nguyên" },
-    { href: "#pricing", label: "Giá cả" },
-    { href: "#contact", label: "Liên hệ" },
+    { href: "#Resources", label: "Tài nguyên" },
+    { href: "/Pricing", label: "Giá cả" },
+    { href: "/Contact", label: "Liên hệ" },
 
 ];
 
@@ -40,7 +39,7 @@ const resourcesDropdownItems = [
     },
 
     {
-        href: "/Developers", label: "Nhà phát triển",
+        href: "/Events", label: "Sự kiện",
     }
 ];
 
@@ -57,22 +56,22 @@ const Navbar = () => {
         >
             <div className="container px-10 mx-auto relative h-full text-[16px]">
                 <div className="flex justify-between items-center h-full pl-[40px] pr-[40px]">
-                            <motion.div
-                                className="flex items-center flex-shrink-0 cursor-pointer" 
-                                whileHover={{ scale: 1.02 }}
-                            >
-                                <a href="/LandingPage" className="flex items-center">
-                                    <span className="text-2xl font-semibold bg-gradient-to-r from-orange-500 to-orange-800 bg-clip-text text-transparent ">
-                                        MobiDrawer
-                                    </span>
-                                </a>
-                            </motion.div>
-                                        {/* Desktop Navigation - keeping original spacing */}
+                    <motion.div
+                        className="flex items-center flex-shrink-0 cursor-pointer"
+                        whileHover={{ scale: 1.02 }}
+                    >
+                        <a href="/LandingPage" className="flex items-center">
+                            <span className="text-2xl font-semibold bg-gradient-to-r from-orange-500 to-orange-800 bg-clip-text text-transparent ">
+                                MobiDrawer
+                            </span>
+                        </a>
+                    </motion.div>
+                    {/* Desktop Navigation - keeping original spacing */}
                     <ul className='hidden lg:flex ml-14 space-x-12'>
                         {navLinks.map((link) => (
                             <div key={link.href} className="relative group">
-                                <a 
-                                    href={link.href} 
+                                <a
+                                    href={link.href}
                                     className="text-neutral-900 hover:text-orange-600 transition-colors duration-200 flex items-center gap-1"
                                 >
                                     {link.label}
@@ -80,7 +79,7 @@ const Navbar = () => {
                                     {link.label === "Giải pháp" && <ChevronDown className="h-4 w-4" />}
                                     {link.label === "Tài nguyên" && <ChevronDown className="h-4 w-4" />}
                                 </a>
-                                
+
                                 {link.label === "Sản phẩm" && (
                                     <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 top-full left-0 mt-1">
                                         <div className="bg-white rounded-lg shadow-lg min-w-[220px]">
@@ -130,18 +129,21 @@ const Navbar = () => {
                         ))}
                     </ul>
 
-                    {/* Auth Buttons - keeping original styling */}
                     <div className="hidden lg:flex justify-center space-x-4 items-center">
-                        <Button variant="outline" size="lg"
-                            className="bg-white py-4 px-4 border text-xl border-neutral-200 hover:border-yellow-300 transition-colors duration-200"
-                        >
-                            Đăng nhập
-                        </Button>
-                        <Button
-                            className="py-2 px-4 text-xl bg-blue-600 hover:bg-blue-700 text-white hover:opacity-90 transition-opacity duration-200"
-                        >
-                            Đăng ký miễn phí
-                        </Button>
+                        <Link href='/login'>
+                            <Button variant="outline" size="lg"
+                                className="bg-white py-4 px-4 border text-xl border-neutral-200 hover:border-yellow-300 transition-colors duration-200"
+                            >
+                                Đăng nhập
+                            </Button>
+                        </Link>
+                        <Link href='/register'>
+                            <Button
+                                className="py-2 px-4 text-xl bg-blue-600 hover:bg-blue-700 text-white hover:opacity-90 transition-opacity duration-200"
+                            >
+                                Đăng ký miễn phí
+                            </Button>
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
