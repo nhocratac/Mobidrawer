@@ -2,10 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import Mesh from "./Mesh"
-import SvgGrid from "./SvgGrid"
+import Mesh from "@/app/(MobiDrawerPages)/LandingPage/Components/Mesh"
+import SvgGrid from "@/app/(MobiDrawerPages)/LandingPage/Components/SvgGrid"
 import Image from 'next/image'
-import feature from '@/assets/LandingPageImages/feature.png'
 import about from '@/assets/TeamImages/about.png'
 import Link from 'next/link'
 export default function HeroSection() {

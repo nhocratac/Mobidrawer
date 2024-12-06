@@ -13,7 +13,7 @@ export default function CustomizablePlatformSection() {
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollContainerRef.current) {
-            const scrollAmount = 876 // 219 * 4 (4 cards at once)
+            const scrollAmount = 876 
 
             if (direction === 'right') {
                 scrollContainerRef.current.scrollTo({
@@ -83,7 +83,6 @@ export default function CustomizablePlatformSection() {
                         ))}
                     </div>
 
-                    {/* Left Arrow */}
                     {showLeftArrow && (
                         <motion.button
                             initial={{ opacity: 0 }}
@@ -95,7 +94,6 @@ export default function CustomizablePlatformSection() {
                         </motion.button>
                     )}
 
-                    {/* Right Arrow */}
                     {showRightArrow && (
                         <motion.button
                             initial={{ opacity: 0 }}

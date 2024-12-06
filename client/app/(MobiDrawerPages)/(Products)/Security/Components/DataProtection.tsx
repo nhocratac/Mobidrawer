@@ -1,11 +1,9 @@
 import Link from "next/link"
-import Image from "next/image"
 import { Lock, Globe, Cloud, Code } from 'lucide-react'
 
 export default function DataProtection() {
     return (
         <div className="w-full mx-auto px-4 py-12 space-y-24 pb-40">
-            {/* GDPR Section */}
             <section className="relative grid md:grid-cols-2 gap-8 items-center">
                 <div className="relative">
                     <div className="absolute -left-4 top-0 w-24 h-24 bg-sky-100 rounded-full blur-2xl opacity-60" />
@@ -64,7 +62,6 @@ Chúng tôi tuân thủ nghiêm ngặt Quy định Bảo vệ Dữ liệu Chung 
                 </div>
             </section>
 
-            {/* ISO Section */}
             <section className="relative grid md:grid-cols-2 gap-8 items-center">
                 <div className="space-y-6 md:order-1">
                     <h2 className="text-4xl sm:text-5xl text-left leading-tight">
@@ -109,7 +106,6 @@ Bảo mật, toàn vẹn và khả năng truy cập thông tin là cam kết c�
                 </div>
             </section>
 
-            {/* Server Location Section */}
             <section className="relative grid md:grid-cols-2 gap-8 items-center">
                 <div className="relative">
                     <div className="absolute -left-4 top-0 w-24 h-24 bg-sky-100 rounded-full blur-2xl opacity-60" />
@@ -141,7 +137,6 @@ Bảo mật, toàn vẹn và khả năng truy cập thông tin là cam kết c�
                 </div>
             </section>
 
-            {/* Development Location Section */}
             <section className="relative grid md:grid-cols-2 gap-8 items-center">
                 <div className="space-y-6 md:order-1">
                     <h2 className="text-4xl sm:text-5xl text-left leading-tight">

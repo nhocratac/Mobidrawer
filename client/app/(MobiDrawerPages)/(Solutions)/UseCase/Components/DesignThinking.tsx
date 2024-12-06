@@ -2,9 +2,9 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import team1 from '@/assets/TeamImages/team1.png'
-import team2 from '@/assets/TeamImages/team2.png'
-import team3 from '@/assets/TeamImages/team3.png'
+import design1 from '@/assets/UseCaseImages/DesignThinking1.png'
+import design2 from '@/assets/UseCaseImages/DesignThinking2.png'
+import design3 from '@/assets/UseCaseImages/DesignThinking3.png'
 import { useState } from 'react'
 
 const fadeInUp = {
@@ -16,24 +16,24 @@ const fadeInUp = {
 const galleryItems = [
     {
         id: 1,
-        title: "Trực quan hoá các hệ thống phức tạp",
-        description: "Tạo sơ đồ cơ sở hạ tầng và hệ thống, tiết kiệm hàng giờ thiết kế kỹ thuật thủ công với AI tích hợp sẵn và hơn 2.000 hình dạng và mẫu. Các ứng dụng là vô tận - từ tối ưu hóa cơ sở hạ tầng đám mây của bạn, xác định các lỗ hổng trong ngăn xếp khả năng, đến việc tạo ra các mô hình mối đe dọa chi tiết, kết nối với nhau.",
+        title: "Dễ dàng quản lý",
+        description: "Dù làm việc tại chỗ hay phân tán, tính năng quản lý của chúng tôi giúp bạn dẫn dắt và điều phối các buổi workshop Tư duy Thiết kế từ xa như một chuyên gia.",
     },
     {
         id: 2,
-        title: "Kế hoạch, dự án và quy trình",
-        description: "Kết nối các nhóm - theo thời gian thực hoặc không đồng bộ - để cộng tác, thảo luận các đánh đổi và đưa ra quyết định thông minh. Dễ dàng với các công cụ hỗ trợ AI, nhiều định dạng dữ liệu và tích hợp với các công cụ như Jira và Azure DevOps.",
+        title: "Tập trung vào trực quan",
+        description: "Sử dụng công cụ phác thảo, ghi chú dán kỹ thuật số và các yếu tố trực quan để biến ý tưởng của bạn thành hiện thực trên không gian làm việc vô hạn",
     },
     {
         id: 3,
-        title: "Tăng tốc phát triển",
-        description: "Rút ngắn thời gian giao hàng với các khả năng được tăng cường bởi AI. Hãy nghĩ đến việc trực quan hóa dữ liệu theo thời gian thực, các hội thảo tương tác và các quy trình quản lý dự án mạnh mẽ. Bạn sẽ giải quyết các tồn đọng phát triển sản phẩm nhanh hơn khi kết hợp AI, tính tương tác và tích hợp.",
+        title: "Tư duy Thiết kế ở quy mô lớn",
+        description: "Xây dựng văn hóa đổi mới và thúc đẩy các giá trị Tư duy Thiết kế ở quy mô lớn với các giải pháp doanh nghiệp an toàn từ  MobiDrawer",
     }
 ];
 
-const planImages = [team1, team2, team3];
+const planImages = [design1, design2, design3];
 
-export default function FeatureSection() {
+export default function DesignThinking() {
     const [activeItem, setActiveItem] = useState(galleryItems[0]);
     const [activeImage, setActiveImage] = useState(planImages[0]);
 
@@ -51,7 +51,7 @@ export default function FeatureSection() {
 
     return (
         <section id="features" className="bg-white py-20">
-            <div className="container mx-auto px-4 md:px-8 lg:px-12">
+            <div className="container mx-auto px-4 md:px-8 lg:px-12 py-20">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -61,12 +61,9 @@ export default function FeatureSection() {
                 >
                     <h2 className="text-6xl sm:text-6xl text-center text mb-8 mx-auto px-4 leading-tight"
                         style={{ lineHeight: '1.5', maxWidth: '1000px', whiteSpace: 'pre-wrap' }}>
-                        Lên kế hoạch, đồng bộ và thực thi chiến lược nhanh hơn
+                        Tư duy Thiết kế
                     </h2>
-                    <p className="text-neutral-500 text-2xl max-w-4xl mx-auto"
-                        style={{ maxWidth: '590px' }}>
-                        Tận dụng một nguồn thông tin duy nhất để vận hành các dự án chuyển đổi phức tạp, phát triển ứng dụng nhanh hơn và tối ưu hóa hoạt động IT.
-                    </p>
+                    
                 </motion.div>
 
                 <motion.div
@@ -80,8 +77,8 @@ export default function FeatureSection() {
                             <Image
                                 src={activeImage}
                                 alt="Features Overview"
-                                width={1191}
-                                height={670}
+                                width={800}
+                                height={600}
                                 className="rounded-2xl w-full h-full object-cover shadow-lg"
                                 priority
                             />

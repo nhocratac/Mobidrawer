@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -41,7 +40,6 @@ const formSchema = z.object({
 
 export function ContactForm() {
 
-    // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         defaultValues: {
             email: "",
@@ -53,7 +51,6 @@ export function ContactForm() {
         },
     })
 
-    // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof formSchema>) {
         console.log(values)
     }

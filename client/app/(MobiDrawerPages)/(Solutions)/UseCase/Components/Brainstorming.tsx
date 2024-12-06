@@ -1,12 +1,46 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion' 
+import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import Image from 'next/image'
 import { useState } from 'react'
-import useCasesImg from '@/assets/LandingPageImages/UseCasesImg'
+import brain1 from '@/assets/UseCaseImages/brain1.png'
+import brain2 from '@/assets/UseCaseImages/brain2.png'
+import brain3 from '@/assets/UseCaseImages/brain3.png'
+import { title } from 'process'
 
-export default function UseCasesSection() {
+const brainstorming = [
+    {
+        id: 1,
+        title: 'Hình dung ý tưởng của bạn',
+        description: 'Hãy tạo ra những ý tưởng mới mẻ và độc đoán bằng cách sử dụng các công cụ tư duy sáng tạo của chúng tôi.',
+        src: brain1,
+        alt: 'Brainstorming 1',
+        width: 600,
+        height: 400
+    },
+
+    {
+        id: 2,
+        title: 'Suy luận và phân tích',
+        description: 'Hãy sử dụng các công cụ phân tích để tìm ra cách giải quyết vấn đề một cách hợp lý nhất.',
+        src: brain2,
+        alt: 'Brainstorming 2',
+        width: 600,
+        height: 400
+    },
+
+    {
+        id: 3,
+        title: 'Tạo ra giải pháp tối ưu',
+        description: 'Hãy sử dụng các công cụ tư duy sáng tạo để tạo ra giải pháp tối ưu cho vấn đề của bạn.',
+        src: brain3,
+        alt: 'Brainstorming 3',
+        width: 600,
+    }
+]
+
+export default function Brainstorming() {
     const [ref, inView] = useInView({
         triggerOnce: false,
         threshold: 0.1,
@@ -36,7 +70,7 @@ export default function UseCasesSection() {
                 >
                     <h2 className="text-6xl sm:text-6xl text-center text mb-8 mx-auto px-4 leading-tight"
                         style={{ lineHeight: '1.5', maxWidth: '800px', whiteSpace: 'pre-wrap' }}>
-                        Công cụ cộng tác cho công việc kinh doanh hàng ngày của bạn
+                        Tư duy sáng tạo
                     </h2>
                 </motion.div>
 
@@ -56,10 +90,10 @@ export default function UseCasesSection() {
                             transition={{ duration: 0.3 }}
                         >
                             <Image
-                                src={useCasesImg[activeCase].src}
-                                alt={useCasesImg[activeCase].alt}
-                                width={useCasesImg[activeCase].width}
-                                height={useCasesImg[activeCase].height}
+                                src={brainstorming[activeCase].src}
+                                alt={brainstorming[activeCase].alt}
+                                width={brainstorming[activeCase].width}
+                                height={brainstorming[activeCase].height}
                                 className="w-full h-auto rounded-lg"
                                 priority={activeCase === 0}
                             />
@@ -73,8 +107,8 @@ export default function UseCasesSection() {
                         transition={{ duration: 0.6, delay: 0.4 }}
                         className="space-y-2 my-auto"
                     >
-                        {useCasesImg.map((useCase, index) => (
-                            <div key={useCase.id}>
+                        {brainstorming.map((brainstorming, index) => (
+                            <div key={brainstorming.id}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +125,7 @@ export default function UseCasesSection() {
                                         <div className="flex items-center justify-between">
                                             <span className={`text-2xl font-medium 
                                                 ${activeCase === index ? 'text-orange-600' : 'text-gray-700'}`}>
-                                                {useCase.title}
+                                                {brainstorming.title}
                                             </span>
                                             {activeCase === index && (
                                                 <motion.svg
@@ -133,7 +167,7 @@ export default function UseCasesSection() {
                                                 <div className="flex gap-4 items-start">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2.5" />
                                                     <p className="text-xl text-neutral-600 leading-relaxed">
-                                                        {useCase.description}
+                                                        {brainstorming.description}
                                                     </p>
                                                 </div>
                                             </div>

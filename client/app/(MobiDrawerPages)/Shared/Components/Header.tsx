@@ -66,7 +66,6 @@ const Navbar = () => {
                             </span>
                         </a>
                     </motion.div>
-                    {/* Desktop Navigation - keeping original spacing */}
                     <ul className='hidden lg:flex ml-14 space-x-12'>
                         {navLinks.map((link) => (
                             <div key={link.href} className="relative group">
@@ -158,7 +157,6 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Drawer - keeping original dark theme */}
 
                 <motion.div
                     initial={false}

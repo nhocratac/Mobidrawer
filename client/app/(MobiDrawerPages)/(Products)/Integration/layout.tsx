@@ -1,10 +1,10 @@
 'use client'
 import React from 'react'
-import LandingNavbar from '../../Shared/Components/Header'
-import Footer from '../../Shared/Components/Footer'
-import IntegrationHero from './Components/IntegrationHero'
-import LogoSlider from '../../LandingPage/Components/LogoSlider'
-import IntegrationTools from './Components/IntegrationTools'
+import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
+import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
+import IntegrationHero from '@/app/(MobiDrawerPages)/(Products)/Integration/Components/IntegrationHero'
+import LogoSlider from '@/app/(MobiDrawerPages)/LandingPage/Components/LogoSlider'
+import IntegrationTools from '@/app/(MobiDrawerPages)/(Products)/Integration/Components/IntegrationTools'
 export default function Layout({
     children,
 }: {

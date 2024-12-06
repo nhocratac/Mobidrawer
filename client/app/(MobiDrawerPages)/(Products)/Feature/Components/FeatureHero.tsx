@@ -1,6 +1,5 @@
 'use client'
 
-import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import feature from '@/assets/LandingPageImages/feature.png'

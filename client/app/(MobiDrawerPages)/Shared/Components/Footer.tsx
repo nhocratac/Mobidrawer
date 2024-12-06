@@ -1,6 +1,4 @@
 import Link from "next/link"
-import Image from "next/image"
-// eslint-disable-next-line
 import { FacebookIcon, LinkedinIcon, Instagram, YoutubeIcon,} from 'lucide-react'
 
 export default function Footer() {
@@ -8,7 +6,6 @@ export default function Footer() {
         <footer className="bg-black text-white w-full">
             <div className="container mx-auto max-w-[calc(100%-350px)]">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 py-20">
-                    {/* Product Column */}
                     <div className="space-y-4">
                         <h3 className="text-4xl">Sản phẩm</h3>
                         <ul className="space-y-2 text-lg">
@@ -23,7 +20,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Cột Giải pháp */}
                     <div className="space-y-4">
                         <h3 className="text-4xl">Giải pháp</h3>
                         <ul className="space-y-2 text-lg">
@@ -41,7 +37,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Cột Tài nguyên */}
                     <div className="space-y-4">
                         <h3 className="text-4xl">Tài nguyên</h3>
                         <ul className="space-y-2 text-lg">
@@ -54,7 +49,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Cột Công ty */}
                     <div className="space-y-4">
                         <h3 className="text-4xl">Công ty</h3>
                         <ul className="space-y-2 text-lg">
@@ -65,7 +59,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Cột Gói và Giá */}
                     <div className="space-y-4">
                         <h3 className="text-4xl">Gói và Giá</h3>
                         <ul className="space-y-2 text-lg">
@@ -81,11 +74,9 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Phần Dưới */}
                 <div className="mt-12 pt-8 pb-20 border-t border-gray-800 ">
                     <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                         <div className="flex items-center space-x-6">
-                            {/* Biểu tượng mạng xã hội */}
                             <Link href="#" className="text-gray-300 hover:text-white">
                                 <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -107,7 +98,6 @@ export default function Footer() {
                       
                     </div>
 
-                    {/* Copyright and Legal */}
                     <div className="mt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-lg text-white">
                         <div className="flex items-center space-x-2">
                             <span>MobiDrawer &copy; 2024</span>

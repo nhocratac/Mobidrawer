@@ -1,7 +1,5 @@
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Search } from 'lucide-react'
-import Link from "next/link"
 import Image from "next/image"
 import help from "@/assets/HelpCenterImages/help.png"
 

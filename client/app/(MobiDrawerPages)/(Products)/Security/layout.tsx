@@ -1,10 +1,10 @@
 'use client'
 import React from 'react'
-import LandingNavbar from '../../Shared/Components/Header'
-import Footer from '../../Shared/Components/Footer'
-import LogoSlider from '../../LandingPage/Components/LogoSlider'
-import SecurityHero from './Components/SecurityHero'
-import DataProtection from './Components/DataProtection'
+import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
+import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
+import LogoSlider from '@/app/(MobiDrawerPages)/LandingPage/Components/LogoSlider'
+import SecurityHero from '@/app/(MobiDrawerPages)/(Products)/Security/Components/SecurityHero'
+import DataProtection from '@/app/(MobiDrawerPages)/(Products)/Security/Components/DataProtection'
 export default function Layout({
     children,
 }: {

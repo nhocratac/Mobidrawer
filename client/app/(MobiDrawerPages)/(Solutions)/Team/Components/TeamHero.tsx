@@ -44,13 +44,13 @@ export default function HeroSection() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <a href="" className="inline-block">
+                            <Link href="\user\dashboard">
                                 <Button
                                     className="bg-black text-white hover:bg-black/80 text-2xl px-8 py-8"
                                 >
                                     Dùng thử miễn phí
                                 </Button>
-                            </a>
+                            </Link>
                         </motion.div>
                 </motion.div>
 

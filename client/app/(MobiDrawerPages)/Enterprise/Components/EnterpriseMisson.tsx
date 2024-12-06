@@ -1,10 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Button } from "@/components/ui/button"
 import Image from 'next/image'
 import misson from '@/assets/TeamImages/misson.png'
-import { Input } from "@/components/ui/input"
 
 export default function EnterpriseMisson() {
     return (

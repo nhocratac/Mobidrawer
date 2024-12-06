@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion' // Add AnimatePresence
+import { motion, AnimatePresence } from 'framer-motion' 
 import { useInView } from 'react-intersection-observer'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -27,7 +27,6 @@ export default function UseCasesSection() {
     return (
         <section className="py-24 bg-white overflow-hidden" ref={ref}>
             <div className="container mx-auto px-4">
-                {/* Title section remains the same */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -45,7 +44,6 @@ export default function UseCasesSection() {
                 </motion.div>
 
                 <div className="grid lg:grid-cols-2 gap-16 items-start mt-16">
-                    {/* Image section remains the same */}
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -71,7 +69,6 @@ export default function UseCasesSection() {
                         </motion.div>
                     </motion.div>
 
-                    {/* Use cases list with animated description */}
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -122,7 +119,6 @@ export default function UseCasesSection() {
                                     </button>
                                 </motion.div>
 
-                                {/* Updated description animation and styling */}
                                 <AnimatePresence>
                                     {activeCase === index && showDescription && (
                                         <motion.div

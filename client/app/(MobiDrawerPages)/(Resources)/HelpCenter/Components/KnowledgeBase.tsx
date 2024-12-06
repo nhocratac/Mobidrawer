@@ -1,8 +1,6 @@
 'use client'
 
 import Image from "next/image"
-import Link from "next/link"
-import City from "@/assets/Offices/index"
 import { motion } from "framer-motion"
 import { useRef } from "react"
 import { useInView } from "framer-motion"

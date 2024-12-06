@@ -2,10 +2,10 @@
 import React from 'react'
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
 import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
-import EnterpriseHero from './Components/EnterpriseHero'
-import EnterpriseMisson from './Components/EnterpriseMisson'
-import EnterpriseMembers from './Components/EnterpriseMembers'
-import Offices from './Components/Offices'
+import EnterpriseHero from '@/app/(MobiDrawerPages)/Enterprise/Components/EnterpriseHero'
+import EnterpriseMisson from '@/app/(MobiDrawerPages)/Enterprise/Components/EnterpriseMisson'
+import EnterpriseMembers from '@/app/(MobiDrawerPages)/Enterprise/Components/EnterpriseMembers'
+import Offices from '@/app/(MobiDrawerPages)/Enterprise/Components/Offices'
 export default function Layout({
     children,
 }: {

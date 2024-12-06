@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import LandingNavbar from '../../Shared/Components/Header'
-import FeatureHero from './Components/FeatureHero'
-import Footer from '../../Shared/Components/Footer'
-import LogoSlider from '../../LandingPage/Components/LogoSlider'
-import Feature from './Components/Feature'
-import CollaborationSection from './Components/CollaborationSection'
-import FeatureShowcase from './Components/FeatureShowcase'
+import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
+import FeatureHero from '@/app/(MobiDrawerPages)/(Products)/Feature/Components/FeatureHero'
+import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
+import LogoSlider from '@/app/(MobiDrawerPages)/LandingPage/Components/LogoSlider'
+import Feature from '@/app/(MobiDrawerPages)/(Products)/Feature/Components/Feature'
+import CollaborationSection from '@/app/(MobiDrawerPages)/(Products)/Feature/Components/CollaborationSection'
+import FeatureShowcase from '@/app/(MobiDrawerPages)/(Products)/Feature/Components/FeatureShowcase'
 export default function Layout({
     children,
 }: {

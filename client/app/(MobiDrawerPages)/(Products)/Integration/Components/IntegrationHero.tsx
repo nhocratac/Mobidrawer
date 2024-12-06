@@ -11,7 +11,6 @@ export default function IntegrationHero() {
     const ref = useRef(null)
     const isInView = useInView(ref, { once: false })
 
-    // Chia icons thành 2 mảng cho 2 bên
     const leftIcons = IntegrationIcons.slice(0, Math.ceil(IntegrationIcons.length / 2))
     const rightIcons = IntegrationIcons.slice(Math.ceil(IntegrationIcons.length / 2))
 
@@ -30,8 +29,7 @@ export default function IntegrationHero() {
     return (
         <div ref={ref} className="w-full min-h-[600px] bg-white pt-12">
             <div className="w-full relative px-4">
-                {/* Integration Icons - Left Side */}
-                <div className="absolute left-4 lg:left-8 top-0 w-1/4">
+=                <div className="absolute left-4 lg:left-8 top-0 w-1/4">
                     <div className="grid grid-cols-2 gap-12">
                         {leftIcons.map((icon, i) => (
                             <motion.div
@@ -55,8 +53,7 @@ export default function IntegrationHero() {
                     </div>
                 </div>
 
-                {/* Main Content */}
-                <motion.div
+=                <motion.div
                     className="max-w-3xl mx-auto text-center space-y-8 relative z-10 pt-20"
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -89,8 +86,7 @@ export default function IntegrationHero() {
                     </motion.div>
                 </motion.div>
 
-                {/* Integration Icons - Right Side */}
-                <div className="absolute right-4 lg:right-8 top-0 w-1/4">
+=                <div className="absolute right-4 lg:right-8 top-0 w-1/4">
                     <div className="grid grid-cols-2 gap-12">
                         {rightIcons.map((icon, i) => (
                             <motion.div

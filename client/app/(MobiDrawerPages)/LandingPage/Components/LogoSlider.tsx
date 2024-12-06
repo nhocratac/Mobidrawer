@@ -16,9 +16,7 @@ export default function LogoSlider() {
                 Hơn 80 triệu người dùng và 250.000 công ty cùng hợp tác trong Workspace.
             </motion.h2>
 
-            {/* First Row - Sliding left */}
             <div className='h-[100px] relative overflow-hidden w-full'>
-                {/* Gradient overlays */}
                 <div className='absolute inset-0 z-20 before:absolute before:left-0 before:top-0 before:w-1/4 before:h-full before:bg-gradient-to-r before:from-white before:to-transparent'></div>
                 <div className='absolute inset-0 z-20 after:absolute after:right-0 after:top-0 after:w-1/4 after:h-full after:bg-gradient-to-l after:from-white after:to-transparent'></div>
 
@@ -47,9 +45,7 @@ export default function LogoSlider() {
                 </motion.div>
             </div>
 
-            {/* Second Row - Sliding right */}
             <div className='h-[150px] relative overflow-hidden w-full'>
-                {/* Gradient overlays */}
                 <div className='absolute inset-0 z-20 before:absolute before:left-0 before:top-0 before:w-1/4 before:h-full before:bg-gradient-to-r before:from-white before:to-transparent'></div>
                 <div className='absolute inset-0 z-20 after:absolute after:right-0 after:top-0 after:w-1/4 after:h-full after:bg-gradient-to-l after:from-white after:to-transparent'></div>
 
