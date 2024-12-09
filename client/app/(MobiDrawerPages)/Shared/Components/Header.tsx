@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
+import path from '@/utils/path';
 
 const navLinks = [
     { href: "#products", label: "Sản phẩm" },
@@ -60,11 +61,11 @@ const Navbar = () => {
                         className="flex items-center flex-shrink-0 cursor-pointer"
                         whileHover={{ scale: 1.02 }}
                     >
-                        <a href="/LandingPage" className="flex items-center">
+                        <Link href={path.home} className="flex items-center">
                             <span className="text-2xl font-semibold bg-gradient-to-r from-orange-500 to-orange-800 bg-clip-text text-transparent ">
                                 MobiDrawer
                             </span>
-                        </a>
+                        </Link>
                     </motion.div>
                     <ul className='hidden lg:flex ml-14 space-x-12'>
                         {navLinks.map((link) => (

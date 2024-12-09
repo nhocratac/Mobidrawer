@@ -1,12 +1,19 @@
+
 const path ={
     login: '/login',
     register: '/register',
     home: '/',
+    landingPage : '/LandingPage',
     user : {
         dashboard : '/user/dashboard',
         recent : '/user/recent',
         store : '/user/store',
         post : '/user/post',
+    },
+    product : {
+        Feature : '/Feature',
+        Integration : '/Integration',
+        Security : '/Pricing',
     },
     profile: '/profile',
     post: '/post',
@@ -20,7 +27,7 @@ const path ={
         kanbanFramework:'/board/kanbanFramework/:id',
         mindMap:'/board/mindMap/:id',
         quickRetrospective:'/board/quickRetrospective/:id',
-    }
+    },
 }
 
 export default path
