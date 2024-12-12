@@ -7,7 +7,7 @@ import Jira from '@/assets/IntegrationIcon/Jira.png'
 import Slack from '@/assets/IntegrationIcon/Slack.png'
 import Msteams from '@/assets/IntegrationIcon/Msteams.png'
 import ServiceNow from '@/assets/IntegrationIcon/ServiceNow.png'
-import OpenAI from '@/assets/IntegrationIcon/OpenAI.png'
+import OpenAI from '@/assets/IntegrationIcon/OpenAi.png'
 
 const IntegrationIcons = [
     {
