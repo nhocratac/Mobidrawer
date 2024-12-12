@@ -1,13 +1,13 @@
-import Asana from './Asana.png'
-import Aws from './Aws.png'
-import AzureDevOps from './AzureDevOps.png'
-import Confluence from './Confluence.png'
-import Github from './Github.png'
-import Jira from './Jira.png'
-import Slack from './Slack.png'
-import Msteams from './Msteams.png'
-import ServiceNow from './ServiceNow.png'
-import OpenAI from './OpenAI.png'
+import Asana from '@/assets/IntegrationIcon/Asana.png'
+import Aws from '@/assets/IntegrationIcon/Aws.png'
+import AzureDevOps from '@/assets/IntegrationIcon/AzureDevOps.png'
+import Confluence from '@/assets/IntegrationIcon/Confluence.png'
+import Github from '@/assets/IntegrationIcon/Github.png'
+import Jira from '@/assets/IntegrationIcon/Jira.png'
+import Slack from '@/assets/IntegrationIcon/Slack.png'
+import Msteams from '@/assets/IntegrationIcon/Msteams.png'
+import ServiceNow from '@/assets/IntegrationIcon/ServiceNow.png'
+import OpenAI from '@/assets/IntegrationIcon/OpenAI.png'
 
 const IntegrationIcons = [
     {
