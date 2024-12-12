@@ -18,7 +18,7 @@ interface BoardThumbnailProps {
 }
 
 
-export default function BoardThumbnail({ Thumbnail, title, size, DialogEle, ...props }: BoardThumbnailProps) {
+export default function BoardThumbnail({ Thumbnail, title, DialogEle, ...props }: BoardThumbnailProps) {
 
     return (
         <div {...props} className="flex flex-col gap-4  hover:cursor-pointer" >
@@ -39,7 +39,7 @@ export default function BoardThumbnail({ Thumbnail, title, size, DialogEle, ...p
 
 const BodyDialog = ({ Video, Title, Description, HandleClickCreate, ...props }: DialogElementProps) => {
     return (
-        <DialogContent className="w-[520px] h-[574px]">
+        <DialogContent className="w-[520px] h-[574px]" {...props}>
             {Video}
             <DialogHeader>
                 {Title && <DialogTitle className="text-[2rem]">{Title}</DialogTitle>}

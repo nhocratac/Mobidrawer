@@ -6,11 +6,7 @@ import EnterpriseHero from '@/app/(MobiDrawerPages)/Enterprise/Components/Enterp
 import EnterpriseMisson from '@/app/(MobiDrawerPages)/Enterprise/Components/EnterpriseMisson'
 import EnterpriseMembers from '@/app/(MobiDrawerPages)/Enterprise/Components/EnterpriseMembers'
 import Offices from '@/app/(MobiDrawerPages)/Enterprise/Components/Offices'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

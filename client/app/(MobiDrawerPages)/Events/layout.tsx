@@ -4,11 +4,7 @@ import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
 import EventSection from '@/app/(MobiDrawerPages)/Events/Components/EventSection'
 import EventHero from '@/app/(MobiDrawerPages)/Events/Components/EventHero'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <div>

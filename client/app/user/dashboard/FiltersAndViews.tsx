@@ -5,10 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Dispatch, SetStateAction } from "react";
 
 interface FiltersAndViewProps {
   // Define the props for your component here
-
+  setModeView : Dispatch<SetStateAction<"List" | "Grid">>
   [key: string]: any;
 }
 
@@ -75,7 +76,7 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
         <p className='font-light'>
           Xem theo
         </p>
-        <Select onValueChange={(value) => setModeView(value)}>
+        <Select onValueChange={(value : 'Grid'| 'List') => setModeView(value)}>
           <SelectTrigger className="min-w-[100px] w-1/5">
             <SelectValue placeholder="danh sách" />
           </SelectTrigger>

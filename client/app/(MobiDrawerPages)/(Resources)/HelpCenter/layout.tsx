@@ -5,11 +5,7 @@ import HelpCenterHero from '@/app/(MobiDrawerPages)/(Resources)/HelpCenter/Compo
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
 import KnowledgeBase from '@/app/(MobiDrawerPages)/(Resources)/HelpCenter/Components/KnowledgeBase'
 
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <div>

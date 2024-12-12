@@ -5,7 +5,7 @@ interface NavItemProps {
     Icon: React.ReactNode; // Định nghĩa Icon là một node React
     href: string;
     title: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export default function NavItem({ Icon, href, title, ...props }: NavItemProps) {

@@ -1,13 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Infinity, ArrowLeftRight, MousePointer2, Files, History, Users, LayoutGrid, ClipboardCheck } from "lucide-react"
+import { ArrowLeftRight, ClipboardCheck, Files, History, Infinity, LayoutGrid, MousePointer2, Users } from "lucide-react"
 
-const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 }
-}
 
 interface Feature {
     icon: React.ComponentType<{ className?: string }>

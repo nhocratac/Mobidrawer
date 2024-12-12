@@ -1,11 +1,9 @@
 'use client'
 
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import team from '@/assets/TeamImages/team.png'
 import team4 from '@/assets/TeamImages/team4.png'
+import { Button } from "@/components/ui/button"
 import { motion, useInView } from "framer-motion"
+import Image from "next/image"
 import { useRef } from "react"
 
 export default function HeroSection() {

@@ -1,7 +1,7 @@
 import CommentList from "@/components/Comment/CommentList"
 import { SendHorizontal } from "lucide-react"
 
-const ModalComment = ({ handleToggleModal }: { handleToggleModal: any }) => {
+const ModalComment = ({ handleToggleModal }: { handleToggleModal: () => void }) => {
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             handleToggleModal()

@@ -14,7 +14,7 @@ interface IPLayGroundProps {
 
 type ShapeComponent = React.FC<React.SVGProps<SVGSVGElement>>;
 
-const PlayGroundPage = ({ params }: IPLayGroundProps) => {
+const PlayGroundPage = ({ }: IPLayGroundProps) => {
   useEffect(() => {
     // Disable scrolling
     document.body.style.overflow = 'hidden';
@@ -64,7 +64,9 @@ const PlayGroundPage = ({ params }: IPLayGroundProps) => {
         ))}
 
         {shapeList.map((ShapeComponent, index) => (
-          <RNDBase key={index} parentScale={scale} children={<ShapeComponent />} />
+          <RNDBase key={index} parentScale={scale}  >
+            <ShapeComponent />
+          </RNDBase>
         ))}
       </ZoomableGrid>
     </div>

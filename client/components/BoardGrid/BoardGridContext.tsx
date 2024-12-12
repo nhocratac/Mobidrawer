@@ -1,11 +1,13 @@
 "use client"
 import { useBoardStore } from '@/lib/Zustand/store';
 import { useParams } from 'next/navigation';
-import { forwardRef, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react';
 
-const BoardGridContext = forwardRef<HTMLDivElement, { menuPosition: { x: number, y: number }, isVisible: boolean }>(
-  ({ menuPosition, isVisible }, ref : any) => {
-    ref = useRef<HTMLDivElement>(null)
+const BoardGridContext = ({ menuPosition, isVisible}: {
+  menuPosition: { x: number, y: number },
+  isVisible: boolean
+}) => {
+    const ref = useRef<HTMLDivElement>(null)
     const { id } = useParams();
     // chuyển id thành số
     const setGridVisible = useBoardStore((state) => state.setGridVisible);
@@ -45,6 +47,6 @@ const BoardGridContext = forwardRef<HTMLDivElement, { menuPosition: { x: number,
             </ul>
           </div>
     );
-})
+}
 
 export default BoardGridContext

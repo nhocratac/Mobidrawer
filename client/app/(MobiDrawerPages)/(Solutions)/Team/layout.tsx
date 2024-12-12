@@ -7,11 +7,7 @@ import TeamHero from './Components/TeamHero'
 import TeamPlan from './Components/TeamPlan'
 import TeamCollaborate from './Components/TeamCollaborate'
 import TeamTool from './Components/TeamTool'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

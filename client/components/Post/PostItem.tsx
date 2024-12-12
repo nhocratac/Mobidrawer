@@ -24,7 +24,7 @@ export interface PostItemProps {
 }
 
 
-function PostItem({ owner, image, text, id }: PostItemProps) {
+function PostItem({ owner, image, text }: PostItemProps) {
     const [liked, setLiked] = useState(false)
     const [isCommenting, setIsCommenting] = useState(false)
     const [isSharing, setIsSharing] = useState(false)

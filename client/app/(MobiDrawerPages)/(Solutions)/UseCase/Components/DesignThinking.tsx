@@ -7,11 +7,6 @@ import design2 from '@/assets/UseCaseImages/DesignThinking2.png'
 import design3 from '@/assets/UseCaseImages/DesignThinking3.png'
 import { useState } from 'react'
 
-const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 }
-}
 
 const galleryItems = [
     {

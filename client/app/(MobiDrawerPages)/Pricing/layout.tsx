@@ -3,11 +3,7 @@ import React from 'react'
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
 import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
 import PricingSection from '@/app/(MobiDrawerPages)/Pricing/Components/PricingSection'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

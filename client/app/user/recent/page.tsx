@@ -7,7 +7,7 @@ import {  useState } from "react";
 
 
 export default function RencentPage() {
-    const [modeView, setModeView] = useState('List');
+    const [modeView, setModeView] = useState<'Grid'|'List'>('List');
     return (
         <div className="flex flex-1 flex-col justify-between items-center gap-8 ">
             <div className="w-full flex justify-between">

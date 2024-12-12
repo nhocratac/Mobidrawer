@@ -5,11 +5,7 @@ import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
 import IntegrationHero from '@/app/(MobiDrawerPages)/(Products)/Integration/Components/IntegrationHero'
 import LogoSlider from '@/app/(MobiDrawerPages)/LandingPage/Components/LogoSlider'
 import IntegrationTools from '@/app/(MobiDrawerPages)/(Products)/Integration/Components/IntegrationTools'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

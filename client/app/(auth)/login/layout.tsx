@@ -6,7 +6,7 @@ interface LayoutProps {
     children: React.ReactNode;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function LoginLayout({ children }: LayoutProps) {
     return (
         <main className="flex flex-grow justify-center items-center bg-gray-50">
             <div

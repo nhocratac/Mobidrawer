@@ -20,60 +20,9 @@ interface Board {
 interface ListBoardOfUserProps {
     boardList?: Board[];
     modeView: 'List' | 'Grid';
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
-const tableData = [
-    {
-        id: '1',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_30.png?etag=20230906',
-        name: 'IE104',
-        description: 'This is a board for IE104 class',
-        lastOpened: '2 days ago',
-        owner: 'you',
-    },
-    {
-        id: '2',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_18.png?etag=20230906',
-        name: 'IE105',
-        description: 'This is a board for IE105 class',
-        lastOpened: '3 days ago',
-        owner: 'you',
-    },
-    {
-        id: '3',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906',
-        name: 'IE106',
-        description: 'This is a board for IE106 class',
-        lastOpened: '4 days ago',
-        owner: 'you',
-    },
-
-    {
-        id: '3',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906',
-        name: 'IE106',
-        description: 'This is a board for IE106 class',
-        lastOpened: '4 days ago',
-        owner: 'you',
-    },
-    {
-        id: '3',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906',
-        name: 'IE106',
-        description: 'This is a board for IE106 class',
-        lastOpened: '4 days ago',
-        owner: 'you',
-    },
-    {
-        id: '3',
-        thumnail: 'https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906',
-        name: 'IE106',
-        description: 'This is a board for IE106 class',
-        lastOpened: '4 days ago',
-        owner: 'you',
-    },
-];
 
 function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -91,7 +40,7 @@ function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
     )
 }
 
-function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoardOfUserProps) {
+function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
     const [isMounted, setIsMounted] = useState(false);
     const ListBoard = useBoardStore(state => state.boards)
 
@@ -104,7 +53,7 @@ function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoar
     }
     if (modeView === 'List') {
         return (
-            <div className="px-12  w-full flex-1 overflow-y-auto">
+            <div className={`px-12  w-full flex-1 overflow-y-auto ${props}`} >
                 <table className="w-full">
                     <thead>
                         <tr className="font-light text-2xl text-left">
@@ -157,7 +106,7 @@ function ListBoardOfUser({ boardList = tableData, modeView, ...props }: ListBoar
             <div className="grid grid-cols-5 gap-4 px-12 flex-1 overflow-y-auto ">
                 {
                     ListBoard.map((data, index) => (
-                        <ContextMenuWrapper>
+                        <ContextMenuWrapper key={index}>
                             <Link href={`/board/${data.id}`}>
                                 <div key={index} className=" p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col item">
                                     <img src={data.thumbnail} alt="thumbnail" className="w-[100%] h-[100%] flex-1" />

@@ -7,7 +7,7 @@ import { useState } from 'react'
 import useCasesImg from '@/assets/LandingPageImages/UseCasesImg'
 
 export default function UseCasesSection() {
-    const [ref, inView] = useInView({
+    const [ref] = useInView({
         triggerOnce: false,
         threshold: 0.1,
     })

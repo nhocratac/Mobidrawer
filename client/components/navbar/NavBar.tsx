@@ -2,7 +2,7 @@
 import Link from "next/link"
 interface NavBarProps {
     role?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export default function NavBar({ role  = 'user', ...props}: NavBarProps) {

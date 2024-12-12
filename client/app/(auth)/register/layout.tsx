@@ -4,10 +4,10 @@ import React from "react";
 
 interface LayoutProps {
     children: React.ReactNode;
-    step: number;
 }
 
-export default function Layout({ children, step }: LayoutProps) {
+export default function RegisterLayout({ children}: LayoutProps) {
+    const step = 1;
     return (
         <main className="flex flex-grow justify-center items-center bg-gray-50">
             <div

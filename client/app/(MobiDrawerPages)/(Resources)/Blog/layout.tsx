@@ -4,11 +4,7 @@ import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
 import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer'
 import Blog from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/Blog'
 import BlogListing from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/BlogListing'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

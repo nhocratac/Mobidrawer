@@ -1,13 +1,12 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
-import Image from 'next/image'
-import { useState } from 'react'
 import brain1 from '@/assets/UseCaseImages/brain1.png'
 import brain2 from '@/assets/UseCaseImages/brain2.png'
 import brain3 from '@/assets/UseCaseImages/brain3.png'
-import { title } from 'process'
+import { AnimatePresence, motion } from 'framer-motion'
+import Image from 'next/image'
+import { useState } from 'react'
+import { useInView } from 'react-intersection-observer'
 
 const brainstorming = [
     {
@@ -41,7 +40,7 @@ const brainstorming = [
 ]
 
 export default function Brainstorming() {
-    const [ref, inView] = useInView({
+    const [ref] = useInView({
         triggerOnce: false,
         threshold: 0.1,
     })

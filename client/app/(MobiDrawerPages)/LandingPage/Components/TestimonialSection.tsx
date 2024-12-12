@@ -6,7 +6,7 @@ interface Testimonial {
     color: string
 }
 
-const testimonials = [
+const testimonials: Testimonial[] = [
     {
         content: "MobiDrawer là công cụ lập kế hoạch dự án của chúng tôi, nơi mọi người hợp tác và mở rộng quy mô dễ dàng.",
         author: "Kurtis",
@@ -107,7 +107,7 @@ export default function TestimonialWall() {
     return (
         <div className="max-w-full mx-auto px-4 py-12 mb-20">
             <div className="relative">
-                <motion.h2 
+                <motion.h2
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: false }}
@@ -126,7 +126,7 @@ export default function TestimonialWall() {
                             whileInView="visible"
                             whileHover={{ scale: 1.05 }}
                             custom={index}
-                            viewport={{ 
+                            viewport={{
                                 once: false,
                                 margin: "-50px",
                                 amount: "some"
@@ -134,7 +134,7 @@ export default function TestimonialWall() {
                             className={`${testimonial.color} p-6 rounded-lg shadow-lg transform hover:-translate-y-1 transition-transform duration-200 relative`}
                         >
                             <blockquote className="text-xl mb-2">
-                                "{testimonial.content}"
+                            &quot;{testimonial.content}&quot;
                             </blockquote>
                             <cite className="text-lg text-gray-600 block text-right">
                                 - {testimonial.author}

@@ -5,10 +5,9 @@ import HeaderAuth from "@/app/(auth)/HeaderAuth";
 
 interface layoutProps {
     children: React.ReactNode;
-    [key: string]: any;
 }
 
-export default function AuthLayout({ children, ...props }: layoutProps) {
+export default function AuthLayout({ children }: layoutProps) {
     return (
         <div className="flex flex-col min-h-screen ">
             <HeaderAuth />

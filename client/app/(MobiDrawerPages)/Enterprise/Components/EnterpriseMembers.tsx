@@ -1,11 +1,11 @@
-import Image from "next/image"
-import { Linkedin, Twitter, Dribbble } from 'lucide-react'
-import Link from "next/link"
 import member1 from "@/assets/Members/member1.png"
 import member2 from "@/assets/Members/member2.png"
 import member3 from "@/assets/Members/member3.png"
 import { motion, useAnimation } from 'framer-motion'
-import { useEffect, useRef } from 'react'
+import { Dribbble, Linkedin, Twitter } from 'lucide-react'
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 export default function TeamSection() {

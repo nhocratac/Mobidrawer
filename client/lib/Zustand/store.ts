@@ -7,8 +7,7 @@ import {
   TemplateStoreState,
   ToolDevState,
 } from "@/lib/Zustand/type.type";
-import type {} from "@redux-devtools/extension";
-import { stat } from "fs";
+import type { } from "@redux-devtools/extension";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -16,7 +15,7 @@ import { devtools, persist } from "zustand/middleware";
 const useBoardStore = create<ListBoardState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         boards: [],
         addnewBoard: (newBoard: BoardState) => {
           set((state) => ({
@@ -78,7 +77,7 @@ const useBoardStore = create<ListBoardState>()(
 const useToolDevStore = create<ToolDevState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         mode: ModeType.drag,
         setMode: (mode: ModeType) => {
           switch (mode) {
@@ -166,7 +165,7 @@ const useToolDevStore = create<ToolDevState>()(
 const useTemplateStore = create<TemplateStoreState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         templates: [],
         addTemplate: (newTemplate: ItemProps) => {
           set((state) => ({
@@ -200,3 +199,4 @@ const useTemplateStore = create<TemplateStoreState>()(
   )
 );
 export { useBoardStore, useTemplateStore, useToolDevStore };
+

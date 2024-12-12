@@ -14,9 +14,8 @@ import {
 import { GiArrowCursor } from "react-icons/gi";
 import { HiMiniSparkles } from "react-icons/hi2";
 import { IoColorFillSharp, IoTriangleOutline } from "react-icons/io5";
-import { MdGrid4X4 } from "react-icons/md";
 import { LuShapes } from "react-icons/lu";
-import { MdOutlineRectangle } from "react-icons/md";
+import { MdGrid4X4, MdOutlineRectangle } from "react-icons/md";
 import { RiText } from "react-icons/ri";
 import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 
@@ -101,9 +100,9 @@ const backgroundColors = [
 ];
 
 const LeftToolBar = ({
-  onClickTextButton = () => {},
-  onClickStickyNoteButton = (color) => {},
-  onClickShape = (shape) => {},
+  onClickTextButton ,
+  onClickStickyNoteButton ,
+  onClickShape ,
 }) => {
   // get state from zustand store
   const { id } = useParams();
@@ -128,7 +127,6 @@ const LeftToolBar = ({
   );
   const penColor = useToolDevStore((state) => state.pencil?.color);
   const setPenColor = useToolDevStore((state) => state.pencil?.setColor);
-  const penOpacity = useToolDevStore((state) => state.pencil?.opacity);
   const setHighightPen = useToolDevStore((state) => state.pencil.setOpacity);
 
   const onClickAIButton = () => {
@@ -145,6 +143,7 @@ const LeftToolBar = ({
     setIsSelectShapeVisible(!isSelectShapeVisible);
   };
   const onClickCreateTextButton = (colorName) => {
+    console.log("colorName", colorName);
     resetSelectPopup();
     onClickTextButton();
   };

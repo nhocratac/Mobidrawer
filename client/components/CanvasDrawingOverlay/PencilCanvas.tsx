@@ -11,18 +11,9 @@ interface PencilCanvasProps {
   setPath: (newPath: { x: number, y: number }[]) => void; // Thêm hàm cập nhật path
 }
 
-const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPath }: PencilCanvasProps) => {
+const PencilCanvas = ({ color, thickness, path, scale, translate, opacity }: PencilCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const modeTool = useToolDevStore(state => state.mode)
-
-  const erasePartOfPath = (eraseX: number, eraseY: number) => {
-    const threshold = 10; // Khoảng cách để xác định vùng xóa
-    const newPath = path.filter(point => {
-      const distance = Math.sqrt((point.x - eraseX) ** 2 + (point.y - eraseY) ** 2);
-      return distance > threshold; // Giữ lại các điểm không nằm trong vùng xóa
-    });
-    setPath(newPath); // Cập nhật path
-  };
 
 
 
@@ -68,17 +59,14 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity, setPa
   useEffect(() => {
     const canvasPen = canvasRef.current;
     if (!canvasPen || modeTool !== 'eraser') return;
-    const handleMouseDown = (event: MouseEvent) => {
-      const rect = canvasPen.getBoundingClientRect();
-      const x = (event.clientX - rect.left - translate.x) / scale;
-      const y = (event.clientY - rect.top - translate.y) / scale;
-      erasePartOfPath(x, y);
+    const handleMouseDown = () => {
+
     };
     canvasPen.addEventListener('mousedown', handleMouseDown);
     return () => {
       canvasPen.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [modeTool, scale, translate, path]);
+  }, [modeTool, scale, translate, path,opacity]);
 
   return (
     <canvas

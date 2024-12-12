@@ -7,11 +7,7 @@ import UseCaseHero from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/
 import Brainstorming from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/Brainstorming'
 import DesignThinking from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/DesignThinking'
 import Diagram from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/Diagram'
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <LandingNavbar />

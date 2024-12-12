@@ -7,21 +7,17 @@ import HamburgerMenu from '@/components/header/HamburgerMenu'
 
 
 interface HeaderDefaultProps {
-  role?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export default function HeaderDefault({
-  role,
   ...props
 }: HeaderDefaultProps) {
-  const [isLogin, setIsLogin] = React.useState(false)
-
-
+  const isLogin = false
   return (
     <header className='lg:h-[64px] h-[54px] bg-white text-[black] border  border-[#e0e2e8] lg:px-[24px] lg:py-[8px]  flex justify-between items-center' {...props}>
       <div className='flex items-center place-content-around lg:leading-[64px]  gap-4 '>
-        <HamburgerMenu/>
+        <HamburgerMenu />
         <Link href={path.landingPage}>
           <h1 className='mt-0 text-[3rem] shake-rotate'>
             MOBIDRAWER

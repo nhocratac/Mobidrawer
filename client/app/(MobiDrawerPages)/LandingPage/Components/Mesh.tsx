@@ -1,14 +1,10 @@
-import * as React from "react";
 
-interface MeshProps {
-  className?: string;
-}
 
-const Mesh = ({ className }: MeshProps) => (
+const Mesh = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1920 800"
-        style={{ 
+        style={{
             opacity: 0.2,
             width: '100%',
             height: '100%',

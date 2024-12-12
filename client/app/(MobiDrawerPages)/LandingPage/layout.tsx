@@ -12,11 +12,7 @@ import InnovativeCompaniesSection from '@/app/(MobiDrawerPages)/LandingPage/Comp
 import CustomizablePlatform from '@/app/(MobiDrawerPages)/LandingPage/Components/CustomizablePlatform';
 import TestimonialSection from '@/app/(MobiDrawerPages)/LandingPage/Components/TestimonialSection';
 import Footer from '@/app/(MobiDrawerPages)/Shared/Components/Footer';
-export default function Layout({
-    children,
-}: {
-    children: React.ReactNode,
-}) {
+export default function Layout() {
     return (
         <div>
             <Banner />

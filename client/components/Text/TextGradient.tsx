@@ -1,5 +1,4 @@
 import React from "react";
-import { text } from "stream/consumers";
 
 enum sizeText {
     lagre = 'text-4xl',
@@ -10,7 +9,7 @@ enum sizeText {
 interface TextGradientProps {
     children: React.ReactNode;
     size?: sizeText | undefined;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 const Styles : { [key:string]:React.CSSProperties } = {
@@ -21,7 +20,7 @@ const Styles : { [key:string]:React.CSSProperties } = {
     },
 }
 
-export default function TextGradient({ children, size ,...props  }: TextGradientProps) {
+export default function TextGradient({ children ,...props  }: TextGradientProps) {
   return (
     <p style={Styles.textGradient} {...props}>
       {children}

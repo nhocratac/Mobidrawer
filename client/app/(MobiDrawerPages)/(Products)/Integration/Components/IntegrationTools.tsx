@@ -1,15 +1,15 @@
 'use client'
 
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
 import IntegrationIcons from "@/assets/IntegrationIcon"
+import { Button } from "@/components/ui/button"
 import { motion, useInView } from "framer-motion"
+import Image, { StaticImageData } from "next/image"
 import { useRef } from "react"
 
 interface Tool {
     name: string
     description: string
-    logo: any
+    logo: StaticImageData | string | undefined;
 }
 
 const tools: Tool[] = [
@@ -77,8 +77,8 @@ export default function ToolsIntegration() {
 
     const item = {
         hidden: { opacity: 0, y: 30 },
-        show: { 
-            opacity: 1, 
+        show: {
+            opacity: 1,
             y: 0,
             transition: {
                 duration: 0.5
@@ -89,7 +89,7 @@ export default function ToolsIntegration() {
     return (
         <section ref={ref} className="pb-24">
             <div className="container px-4 md:px-6">
-                <motion.div 
+                <motion.div
                     className="text-center space-y-4 mb-12 md:mb-16"
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -102,7 +102,7 @@ export default function ToolsIntegration() {
                         MobiDrawer hoạt động liền mạch với các công cụ mà nhóm của bạn sử dụng trong công việc hàng ngày.
                     </p>
                 </motion.div>
-                <motion.div 
+                <motion.div
                     className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
                     variants={container}
                     initial="hidden"
@@ -117,13 +117,13 @@ export default function ToolsIntegration() {
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-4">
                                     <div className="w-[52px] h-[52px] relative border border-neutral-200 rounded-2xl">
-                                        <Image
+                                        {tool.logo && <Image
                                             src={tool.logo}
                                             alt={`${tool.name} logo`}
                                             width={52}
                                             height={52}
                                             className="object-contain"
-                                        />
+                                        />}
                                     </div>
                                     <h3 className="text-3xl sm:text-3xl text-left leading-tight my-auto">
                                         {tool.name}
@@ -131,7 +131,7 @@ export default function ToolsIntegration() {
                                 </div>
                                 <p className="text-lg text-gray-600 leading-relaxed group-hover:text-gray-700">
                                     {tool.description}
-                                </p>                          
+                                </p>
                                 <a href="">
                                     <Button className="bg-black text-white hover:bg-black/80 text-md mt-6">
                                         Tìm hiểu thêm
