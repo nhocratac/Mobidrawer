@@ -26,6 +26,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
+        <meta name="google-site-verification" content="STneKsRDm2QioYuvfDcauR_bdyT8tFlOwkyC3gYM3NI" />
       </head>
       <body className={`${roboto.className} antialiased`} suppressHydrationWarning={true}>
         <main>{children}</main>
