@@ -1,4 +1,4 @@
-package com.example.ie213backend.dto.UserDto;
+package com.example.ie213backend.domain.dto.UserDto;
 
 import lombok.Data;
 

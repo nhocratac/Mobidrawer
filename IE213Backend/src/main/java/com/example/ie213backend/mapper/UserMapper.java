@@ -1,8 +1,9 @@
 package com.example.ie213backend.mapper;
 
-import com.example.ie213backend.model.User;
+import com.example.ie213backend.domain.dto.UserDto.userResponse;
+import com.example.ie213backend.domain.dto.UserDto.userUpdateDto;
+import com.example.ie213backend.domain.model.User;
 import org.springframework.stereotype.Component;
-import com.example.ie213backend.dto.UserDto.*;
 
 @Component
 public class UserMapper {

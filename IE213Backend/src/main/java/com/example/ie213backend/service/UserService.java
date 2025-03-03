@@ -1,11 +1,10 @@
 package com.example.ie213backend.service;
 
+import com.example.ie213backend.domain.dto.UserDto.createUserDto;
 import com.example.ie213backend.mapper.UserMapper;
-import com.example.ie213backend.model.User;
-import com.example.ie213backend.dto.UserDto.*;
+import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -30,11 +29,13 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findOneByEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
     }
 
     public User login(String email, String password) {
-        User user = userRepository.findOneByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
         if(passwordEncoder.matches(password, user.getPassword())) {
             return user;
         }
@@ -61,7 +62,8 @@ public class UserService {
     }
 
     public User verifyUser(String email, String Password) {
-        User user = userRepository.findOneByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
         // check
         if(passwordEncoder.matches(Password, user.getPassword())) {
             return user;
