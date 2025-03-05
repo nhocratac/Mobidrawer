@@ -25,7 +25,6 @@ const PlayGroundPage = ({ }: IPLayGroundProps) => {
 
 
   const [scale, setScale] = useState(1);
-
   const [textItemCount, setTextItemCount] = useState(0);
   const [stickyNoteItemCount, setStickyNoteItemCount] = useState(0);
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);

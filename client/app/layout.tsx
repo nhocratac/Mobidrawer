@@ -1,17 +1,18 @@
+import { Toaster } from "@/components/ui/toaster";
+import roboto from "@/fonts/fontRoBoto";
+import { home } from "@/utils/metadata";
 import { Metadata } from "next";
 import "./globals.css";
-import roboto from "@/fonts/fontRoBoto";
-import env from "@/utils/environment";
-import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: env.APP_NAME,
-  description: env.DESCRIPTION,
+  title: home.title,
+  description: home.description,
   icons: {
     icon: "/favicon/favicon.ico",
     apple: "/favicon/apple-icon.png",
     shortcut: "/favicon/favicon.ico",
   },
+  keywords: home.keywords,
 };
 
 export default function RootLayout({
