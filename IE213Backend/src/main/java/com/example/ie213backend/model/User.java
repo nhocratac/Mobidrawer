@@ -1,5 +1,6 @@
 package com.example.ie213backend.model;
 
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +14,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     // Getters and Setters
     @Id
-    private String id;
+    private String _id;
     private String firstName;
     private String lastName;
+    @Email
     private String email;
     private String password;
     private String phone;

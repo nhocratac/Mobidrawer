@@ -8,7 +8,7 @@ import com.example.ie213backend.dto.UserDto.*;
 public class UserMapper {
     public userResponse toDto(User user) {
         userResponse dto = new userResponse();
-        dto.setId(user.getId());
+        dto.setId(user.get_id());
         dto.setEmail(user.getEmail());
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
@@ -18,7 +18,7 @@ public class UserMapper {
 
     public User toEntity (userResponse dto) {
         User user = new User();
-        user.setId(dto.getId());
+        user.set_id(dto.getId());
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());

@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/board/**").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();
