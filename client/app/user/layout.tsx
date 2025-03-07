@@ -1,11 +1,13 @@
 import HeaderDefault from "@/components/header/HeaderDefault"
 import SideBar from "@/components/SideBar/SideBar"
+import WebSocketProvider from "@/components/WebSocketProvider"
 
 export default function Layout({
     children,
 }: { children: React.ReactNode }) {
     return (
         <div className="flex w-full h-screen">
+            <WebSocketProvider />
             <aside className="w-[215px] hidden lg:block h-full">
                 <SideBar />
             </aside>

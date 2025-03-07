@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <script>
+        const Client = require('@stomp/stompjs')
+        const socket = new Client(
+            brokerURL = 'ws://localhost:8080/ws',
+        );
+
+        socket.onopen = () => console.log("✅ WebSocket Connected!");
+        socket.onmessage = (msg) => console.log("📩 Received:", msg.data);
+        socket.onerror = (err) => console.error("❌ WebSocket Error:", err);
+        socket.onclose = () => console.warn("🔌 WebSocket Disconnected!");
+    </script>
+</body>
+</html>
