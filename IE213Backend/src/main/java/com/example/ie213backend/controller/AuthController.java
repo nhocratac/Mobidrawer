@@ -1,78 +1,34 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.dto.AuthDto.*;
-import com.example.ie213backend.model.User;
+import com.example.ie213backend.domain.TokenType;
+import com.example.ie213backend.domain.dto.AuthDto.AuthResponse;
+import com.example.ie213backend.domain.dto.AuthDto.LoginRequest;
 import com.example.ie213backend.service.AuthService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-
-@Controller
-@RequestMapping("/auth")
+@RestController
+@RequestMapping(path = "${api.prefix}/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(
-            @RequestBody LoginRequest loginRequest
-    ) {
-        String email = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
-        User user = authService.login(email, password);
-        if(user != null) {
-            return  ResponseEntity.ok(user);
-        }
-        return  ResponseEntity.notFound().build();
-    }
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+        UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(
-            @RequestBody @Valid RegisterDto registerDto) {
-        String email = registerDto.getEmail();
-        String password = registerDto.getPassword();
-        String firstName = registerDto.getFirstName();
-        String lastName = registerDto.getLastName();
-        String phone = registerDto.getPhone();
-        return ResponseEntity.ok(authService.createRegistrationRequest(email, password, firstName, lastName, phone));
-    }
+        String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
+        String refreshToken = authService.generateToken(userDetails, TokenType.REFRESH);
+        AuthResponse authResponse = AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
 
-    @PostMapping("/verify-register")
-    public ResponseEntity<String> verifyRegister(
-            @RequestBody @Valid VerifyRegistrationRequest verifyRegistrationRequest
-    ) {
-        String code = verifyRegistrationRequest.getCode();
-        String email = verifyRegistrationRequest.getEmail();
-        if (authService.verifyCode(email, code)) {
-            return ResponseEntity.ok("success");
-        }
-        return ResponseEntity.badRequest().body("không thể xác thực");
+        return ResponseEntity.ok(authResponse);
     }
-
-    @PostMapping("/request-forget-password")
-    public ResponseEntity<String> forgetPassword(
-            @RequestBody @Valid RequestForgetPassword requestForgetPassword
-            ) {
-        return ResponseEntity.ok(authService.forgetPassword(requestForgetPassword.getEmail()));
-    }
-
-    @PostMapping("/verify-forget-password")
-    public ResponseEntity<String> verifyPassword(
-            @RequestBody @Valid VerifyForgetPassword verifyForgetPassword
-            ) {
-        String email = verifyForgetPassword.getEmail();
-        String password = verifyForgetPassword.getPassword();
-        String code = verifyForgetPassword.getCode();
-        return ResponseEntity.ok(authService.resetPassword(email, code, password));
-    }
-
 }

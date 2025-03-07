@@ -1,30 +1,29 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.model.User;
-import com.example.ie213backend.dto.UserDto.*;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
+import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.UserService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequiredArgsConstructor
+@RequestMapping(path = "${api.prefix}/users")
 public class UserController {
+    private final UserService userService;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private UserService userService;
-
-
-    @GetMapping()
-    public User getUserByUsername(String email) {
-        return userService.getUserByEmail(email);
-    }
-
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody @Valid createUserDto user) {
-        User userCreated = userService.createUser(user);
-        return new ResponseEntity<>(userCreated, HttpStatus.CREATED);
+    @GetMapping
+    public ResponseEntity<List<UserDto>> listUsers() {
+        List<UserDto> users = userService.getAllUsers()
+                .stream().map(userMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(users);
     }
 }

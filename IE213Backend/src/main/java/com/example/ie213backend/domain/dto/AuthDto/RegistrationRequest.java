@@ -1,4 +1,4 @@
-package com.example.ie213backend.dto.AuthDto;
+package com.example.ie213backend.domain.dto.AuthDto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

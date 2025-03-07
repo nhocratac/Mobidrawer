@@ -1,18 +1,26 @@
-package com.example.ie213backend.dto.AuthDto;
+package com.example.ie213backend.domain.dto.UserDto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class LoginRequest {
-    @NotBlank(message = "Không để trống email")
+@AllArgsConstructor
+@NoArgsConstructor
+public class createUserDto {
+    @NotBlank(message = "khong de trong truong email")
     //@Pattern( regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Vui long nhap dung dinh dang email")
     @Email(message = "Vui lòng nhập đúng định dạng email")
     private String email;
-
-    @NotBlank(message = "Không để trống trường mật khẩu")
+    @NotBlank
+    private String firstName;
+    @NotBlank
+    private String lastName;
+    @NotBlank
     @Size(min = 6, max = 30)
     private String password;
+    private String phone;
 }
