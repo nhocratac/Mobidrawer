@@ -1,4 +1,4 @@
-package com.example.ie213backend.model;
+package com.example.ie213backend.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
