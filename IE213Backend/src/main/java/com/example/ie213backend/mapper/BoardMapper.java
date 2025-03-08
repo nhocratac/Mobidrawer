@@ -1,7 +1,7 @@
 package com.example.ie213backend.mapper;
 
-import com.example.ie213backend.dto.BoardDto.CreateBoard;
-import com.example.ie213backend.model.Board;
+import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
+import com.example.ie213backend.domain.model.Board;
 import org.springframework.stereotype.Component;
 
 @Component

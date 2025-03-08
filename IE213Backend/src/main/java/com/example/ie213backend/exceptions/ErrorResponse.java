@@ -1,6 +1,8 @@
-package com.example.ie213backend.dto;
+package com.example.ie213backend.exceptions;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Getter

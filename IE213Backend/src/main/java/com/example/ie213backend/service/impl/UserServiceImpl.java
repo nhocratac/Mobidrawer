@@ -1,6 +1,6 @@
 package com.example.ie213backend.service.impl;
 
-import com.example.ie213backend.domain.dto.UserDto.createUserDto;
+import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.EmailService;
@@ -25,11 +25,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        return userRepository.findByEmail(email).orElse(null);
+//        return userRepository.findByEmail(email)
+//                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
     }
 
-    public User createUser(createUserDto user) {
+
+
+    public User createUser(CreateUserDto user) {
         User newUser = new User();
         newUser.setEmail(user.getEmail());
 

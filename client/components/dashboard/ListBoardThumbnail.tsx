@@ -30,7 +30,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -47,7 +47,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -64,7 +64,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -81,7 +81,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -98,7 +98,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -115,7 +115,7 @@ export default function ListBoardThumbnail() {
                         // handel error
                     }
                     addnewBoard(newBoard)
-                    router.push(`/board/${newBoard.id}`)
+                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }

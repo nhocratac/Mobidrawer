@@ -1,6 +1,6 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.model.Board;
+import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

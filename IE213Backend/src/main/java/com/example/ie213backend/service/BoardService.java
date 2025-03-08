@@ -1,6 +1,6 @@
 package com.example.ie213backend.service;
 
-import com.example.ie213backend.model.Board;
+import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;

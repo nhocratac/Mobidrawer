@@ -71,7 +71,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                                     <td className="flex">
                                         <ContextMenuWrapper>
                                             <div className="flex">
-                                                <Link href={`/board/${data.id}`} className="flex">
+                                                <Link href={`/user/board/${data.id}`} className="flex">
                                                     <img src={data.thumbnail} alt="thumbnail" className="w-[56px] h-[56px]" />
                                                     <div className="h-[56px] ml-2"> {/* Added margin-left for spacing */}
                                                         <p className="text-2xl font-bold">{data.name}</p>
@@ -82,16 +82,16 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                                         </ContextMenuWrapper>
                                     </td>
                                     <td>
-                                        <Link href={`/board/${data.id}`} className="text-2xl">0</Link>
+                                        <Link href={`/user/board/${data.id}`} className="text-2xl">0</Link>
                                     </td>
                                     <td>
-                                        <Link href={`/board/${data.id}`} className="text-2xl">0</Link>
+                                        <Link href={`/user/board/${data.id}`} className="text-2xl">0</Link>
                                     </td>
                                     <td>
-                                        <Link href={`/board/${data.id}`} className="text-2xl">{data.lastOpened}</Link>
+                                        <Link href={`/user/board/${data.id}`} className="text-2xl">{data.lastOpened}</Link>
                                     </td>
                                     <td>
-                                        <Link href={`/board/${data.id}`} className="text-2xl">{data.owner}</Link>
+                                        <Link href={`/user/board/${data.id}`} className="text-2xl">{data.owner}</Link>
                                     </td>
                                 </tr>
                             ))
@@ -107,7 +107,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                 {
                     ListBoard.map((data, index) => (
                         <ContextMenuWrapper key={index}>
-                            <Link href={`/board/${data.id}`}>
+                            <Link href={`/user/board/${data.id}`}>
                                 <div key={index} className=" p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col item">
                                     <img src={data.thumbnail} alt="thumbnail" className="w-[100%] h-[100%] flex-1" />
                                     <div>

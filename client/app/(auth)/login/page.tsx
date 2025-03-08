@@ -1,6 +1,5 @@
 "use client"
-import Google from '@/assets/logo/google';
-import Microsoft from '@/assets/logo/microsoft';
+import { login } from '@/api/authAPI';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const FormSchema = z.object({
-  username: z.string().min(2, {
+  email: z.string().min(2, {
     message: 'Tên đăng nhập phải ít nhất 2 ký tự.',
   }),
   password: z.string().min(6, {
@@ -22,44 +21,34 @@ export default function InputForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
-      rememberMe: false,  
+      rememberMe: false,
     },
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data);
+    login({
+      email: data.email,
+      password: data.password,
+    }).then((res) => {
+      console.log(res);
+    }).catch((error) => {
+      console.log("errror login", error);
+    });
   }
 
   return (
     <div>
-        <div className="mb-6">
-          <h1 className="text-6xl font-bold text-left">Đăng nhập</h1>
-        </div>
-
-        <div className="grid grid-cols-4 gap-4 min-h-[48px] mb-14 mt-14">
-        <Button variant="outline" className=" text-2xl w-full h-full py-3 border rounded-xl text-center border-black hover:bg-black hover:text-white">
-          SSO
-        </Button>
-        <Button variant="outline" className="w-full h-full py-3 borde rounded-xl flex items-center justify-center border-black hover:bg-black hover:text-white">
-        <Google></Google>
-        </Button>
-        <Button variant="outline" className="w-full h-full py-3 border rounded-xl flex items-center justify-center border-black hover:bg-black hover:text-white">
-          <Microsoft></Microsoft>
-        </Button>
-        <Button variant="outline" className="text-2xl w-full h-full py-3 border rounded-xl text-center border-black hover:bg-black hover:text-white">
-            +
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-6xl font-bold text-left">Đăng nhập</h1>
       </div>
-
       <hr className="border-gray-300 my-4 mb-14" />
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-2xl">Email</FormLabel>
@@ -74,7 +63,6 @@ export default function InputForm() {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="password"
@@ -92,7 +80,6 @@ export default function InputForm() {
               </FormItem>
             )}
           />
-
           <div className="flex items-center justify-between h-[40px]">
             <div className="flex items-center">
               <input

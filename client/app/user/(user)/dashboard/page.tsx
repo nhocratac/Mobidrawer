@@ -1,6 +1,6 @@
 'use client'
 
-import FiltersAndView from "@/app/user/dashboard/FiltersAndViews"
+import FiltersAndView from "@/app/user/(user)/dashboard/FiltersAndViews"
 import ListBoardOfUser from "@/components/dashboard/ListBoardOfUser"
 import ListBoardThumbnail from "@/components/dashboard/ListBoardThumbnail"
 import { Button } from "@/components/ui/button"

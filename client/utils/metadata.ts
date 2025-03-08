@@ -11,6 +11,18 @@ const dashboard ={
     keywords: 'dashboard, quản lý, UIT, mobidrawer',
 }
 
+const login = {
+    title: 'Đăng nhập',
+    description: 'Đăng nhập để sử dụng mobidrawer',
+    keywords: 'đăng nhập, mobidrawer, UIT',
+}
+
+const register = {
+    title: 'Đăng ký',
+    description: 'Đăng ký để sử dụng mobidrawer',
+    keywords: 'đăng ký, mobidrawer, UIT',
+}
+
 export {
-    dashboard, home
+    dashboard, home , login, register
 }

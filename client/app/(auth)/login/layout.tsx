@@ -1,9 +1,16 @@
-// layout.tsx
-"use client";
+
+import { login } from '@/utils/metadata';
+import { Metadata } from 'next';
 import React from 'react';
 
 interface LayoutProps {
     children: React.ReactNode;
+}
+
+export const metadata : Metadata = {
+    title : login.title,
+    description : login.description,
+    keywords : login.keywords
 }
 
 export default function LoginLayout({ children }: LayoutProps) {

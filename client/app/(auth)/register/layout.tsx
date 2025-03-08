@@ -1,9 +1,16 @@
 // layout.tsx
-"use client";
+import { register } from "@/utils/metadata";
+import { Metadata } from "next";
 import React from "react";
 
 interface LayoutProps {
     children: React.ReactNode;
+}
+
+export const metadata : Metadata = {
+    title : register.title,
+    description : register.description,
+    keywords : register.keywords
 }
 
 export default function RegisterLayout({ children}: LayoutProps) {

@@ -1,6 +1,6 @@
 'use client';
-import BoardSubscription from '@/app/board/[id]/BoardSubscription';
-import { useBoard } from '@/app/board/[id]/useBoard';
+import BoardSubscription from '@/app/user/board/[id]/BoardSubscription';
+import { useBoard } from '@/app/user/board/[id]/useBoard';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
 import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
