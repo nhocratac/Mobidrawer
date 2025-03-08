@@ -37,6 +37,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Trạng thái lưu trữ các đường vẽ
   const [canvasPaths, setCanvasPaths] = useState(board?.canvasPaths || []);
+
   useEffect(() => {
     if (board?.canvasPaths) {
       setCanvasPaths(board.canvasPaths);
@@ -63,7 +64,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Hàm tiện ích để chuyển đổi tọa độ
   const getTransformedCoordinates = (x, y) => {
-    // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvass
+    // chuyển điểm hiện tại trên  màn hình thành tọa độ gốc trên canvas
     return {
       x: (x - translate.x - penThickness / 2) / scale,
       y: (y - translate.y - penThickness / 2) / scale,

@@ -1,4 +1,4 @@
-package com.example.ie213backend.dto.AuthDto;
+package com.example.ie213backend.domain.dto.AuthDto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

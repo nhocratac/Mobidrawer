@@ -1,6 +1,6 @@
 package com.example.ie213backend.config;
 
-import com.example.ie213backend.dto.AuthDto.RegistrationRequest;
+import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
