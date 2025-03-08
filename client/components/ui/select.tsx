@@ -15,21 +15,28 @@ const SelectValue = SelectPrimitive.Value
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  return (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
       "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-[1.4rem] ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
+    onPointerDown={() => setIsOpen((prev) => !prev)}
+    onPointerUp={() => setIsOpen((prev) => !prev)}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      {isOpen ? 
+        <ChevronUp className="h-4 w-4 opacity-50" /> : 
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      }
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
-))
+)})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef<
@@ -64,8 +71,7 @@ const SelectScrollDownButton = React.forwardRef<
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ))
-SelectScrollDownButton.displayName =
-  SelectPrimitive.ScrollDownButton.displayName
+SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
