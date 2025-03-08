@@ -61,6 +61,35 @@ const useBoardStore = create<ListBoardState>()(
             }),
           }));
         },
+        selectPath: (boardId: number, pathIndex: number) => {
+          set((state) => ({
+            boards: state.boards.map((board) =>
+              board.id == boardId
+                ? {
+                  ...board,
+                  canvasPaths: board.canvasPaths.map((path, index) => 
+                    index === pathIndex
+                      ? { ...path, isSelected: true}
+                      : { ...path, isSelected: false}
+                  ),
+                } : board
+            ),
+          }));
+        },
+        deselectPath: (boardId: number) => {
+          set((state) => ({
+            boards: state.boards.map((board) =>
+              board.id === boardId
+              ? {
+                  ...board,
+                  canvasPaths: board.canvasPaths.map((path) => ({
+                    ...path,
+                    isSelected: false,
+                  })),
+                } : board
+            ),
+          }));
+        },
       }),
       {
         name: "Boards-storage",

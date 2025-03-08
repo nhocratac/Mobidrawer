@@ -22,7 +22,7 @@ export default function DashboardPage() {
         <div className="flex gap-4 mr-4 text-[1.4rem] items-center">
           <Button className="px-[10px] border lg:h-[32px] text-[1.4rem] rounded-[4px]">
             <Link href={path.user.store}>
-              khám phá
+              Khám phá
             </Link>
           </Button>
           <Button variant={'secondary'} className="px-[10px] text-[1.4rem] border lg:h-[32px] rounded-[4px]  " >

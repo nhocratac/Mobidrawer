@@ -11,6 +11,8 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
     const { id } = useParams();
     // chuyển id thành số
     const setGridVisible = useBoardStore((state) => state.setGridVisible);
+    const boards = useBoardStore((state) => state.boards);
+    const currentBoard = boards.find((board) => board.id == +id);
     useEffect(() => {
         if (isVisible && ref.current) {
             ref.current.style.top = `${menuPosition.y}px`
@@ -30,7 +32,7 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 onClick={handleClickVisibleGrid}
               >
-                Bật lưới 
+                {currentBoard?.options.gird ? "Tắt" : "Bật"} lưới
               </li>
               <li
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"

@@ -103,6 +103,58 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     updateBoard({ ...board, canvasPaths: canvasPaths });
   }, [canvasPaths]);
 
+  // Trạng thái lưu trữ thông tin về vùng chọn hình chữ nhật
+  const [selectionRect, setSelectionRect] = useState(null);
+  // Trạng thái xác định người dùng có đang chọn đường vẽ hay không
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  // Hàm bắt đầu chọn đường vẽ khi nhấn chuột trái
+  const startSelection = (x, y) => {
+    setIsSelecting(true);
+    setSelectionRect({ x1: x, y1: y, x2: x, y2: y });
+  };
+
+  // Hàm cập nhật vùng chọn khi di chuyển chuột
+  const updateSelection = (x, y) => {
+    if(isSelecting) {
+      setSelectionRect((prev) => ({
+        ...prev,
+        x2: x,
+        y2: y,
+      }));
+    }
+  };
+
+  // Hàm kết thúc chọn đường vẽ khi thả chuột
+  const endSelection = () => {
+    if(isSelecting) {
+      setIsSelecting(false);
+      const selectedPaths = canvasPaths.filter((path) =>
+        isPathInSelection(path.path, selectionRect)
+      );
+      // Cập nhật trạng thái chọn đường vẽ
+      setCanvasPaths((prev) =>
+        prev.map((path) => ({
+          ...path,
+          isSelected: selectedPaths.includes(path)
+        }))
+      );
+    setSelectionRect(null);
+    }
+  }
+
+  // Hàm kiểm tra điểm click có nằm trên đường vẽ không
+  const isPathInSelection = (path, selectionRect) => {
+    return path.some(({ x, y }) => {
+      return (
+        x >= Math.min(selectionRect.x1, selectionRect.x2) &&
+        x <= Math.max(selectionRect.x1, selectionRect.x2) &&
+        y >= Math.min(selectionRect.y1, selectionRect.y2) &&
+        y <= Math.max(selectionRect.y1, selectionRect.y2)
+      );
+    });
+  };
+
   useEffect(() => {
     const gridCanvas = gridCanvasRef.current;
     const gridCtx = gridCanvas.getContext("2d");
@@ -210,6 +262,10 @@ const ZoomableGrid = ({ children, onSetScale }) => {
         });
         return newPaths;
       });
+    } else if (mode === "idle" && e.button === 0) {
+      e.preventDefault();
+      const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
+      startSelection(x, y);
     }
   };
   // Hàm xử lý khi di chuyển chuột
@@ -244,6 +300,9 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
       // Cập nhật đường vẽ hiện tại
       addPointToPath(x, y);
+    } else if (isSelecting && mode === "idle") {
+      const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
+      updateSelection(x, y);
     }
   };
 
@@ -256,6 +315,8 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     if (mode === "pen" && e.button === 0) {
       // Left mouse button
       setIsDrawing(false);
+    } else if (mode === "idle" && e.button === 0) {
+      endSelection();
     }
   };
 
@@ -284,6 +345,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       y: mouseY,
     });
   };
+
   return (
     <div
       className={`relative ${
@@ -358,9 +420,21 @@ const ZoomableGrid = ({ children, onSetScale }) => {
               scale={scale}
               translate={translate}
               setPath={setonePathInArrayPath}
+              isSelected={pathData.isSelected || false}
             />
           ))}
       </div>
+      {isSelecting && selectionRect && (
+        <div
+          className="absolute border-2 border-blue-500"
+          style={{
+            left: Math.min(selectionRect.x1, selectionRect.x2) * scale + translate.x,
+            top: Math.min(selectionRect.y1, selectionRect.y2) * scale + translate.y,
+            width: Math.abs(selectionRect.x2 - selectionRect.x1) * scale,
+            height: Math.abs(selectionRect.y2 - selectionRect.y1) * scale,
+          }}
+        ></div>
+      )}
 
       {isVisibleContextMenu && (
         <BoardGridContext
