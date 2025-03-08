@@ -1,5 +1,6 @@
 package com.example.ie213backend.security;
 
+import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.service.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = extractToken(request);
             if(token != null) {
-                UserDetails userDetails = authService.validateToken(token);
+                UserDetails userDetails = authService.validateToken(token, TokenType.ACCESS);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

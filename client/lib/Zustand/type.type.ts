@@ -31,6 +31,7 @@ export interface canvasPath {
   color: string;
   opacity: number;
   path: coordinate[];
+  isSelected?: boolean; // Đánh dấu đường vẽ được chọn
 }
 
 export enum boardType {
@@ -64,6 +65,8 @@ export interface ListBoardState {
   updateBoard: (newBoard: BoardState) => void;
   setBoardColor: (id: number, color: string) => void;
   setGridVisible: (id: number) => void;
+  selectPath: (boardId: number, pathIndex: number) => void; //Chọn đối tượng
+  deselectPath: (boardId: number) => void; // Bỏ chọn tất cả
 }
 
 export interface ItemProps {
@@ -80,6 +83,7 @@ export interface ItemProps {
       rating: number;
   }
 }  
+
 export interface TemplateStoreState {
   templates : ItemProps[];
   addTemplate : (template: ItemProps) => void;

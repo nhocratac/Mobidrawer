@@ -59,7 +59,7 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
           </p>
           <Select>
             <SelectTrigger className="min-w-[100px] w-1/5">
-              <SelectValue placeholder="gần đây" />
+              <SelectValue placeholder="Gần đây" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="gần đây">
@@ -78,7 +78,7 @@ const FiltersAndView: React.FC<FiltersAndViewProps> = ({ setModeView, ...props }
         </p>
         <Select onValueChange={(value : 'Grid'| 'List') => setModeView(value)}>
           <SelectTrigger className="min-w-[100px] w-1/5">
-            <SelectValue placeholder="danh sách" />
+            <SelectValue placeholder="Danh sách" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="List">
