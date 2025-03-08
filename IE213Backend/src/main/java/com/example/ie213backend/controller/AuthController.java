@@ -3,7 +3,9 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.AuthResponse;
 import com.example.ie213backend.domain.dto.AuthDto.LoginRequest;
+import com.example.ie213backend.domain.dto.AuthDto.RefreshRequest;
 import com.example.ie213backend.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,15 +21,22 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
 
         String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
         String refreshToken = authService.generateToken(userDetails, TokenType.REFRESH);
-        AuthResponse authResponse = AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
+        UserDetails userDetails = authService.validateToken(refreshRequest.getRefreshToken(), TokenType.REFRESH);
+
+        String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
+        AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).build();
 
         return ResponseEntity.ok(authResponse);
     }

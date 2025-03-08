@@ -64,8 +64,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDetails validateToken(String token) {
-        String username = extractUsername(token);
+    public UserDetails validateToken(String token, TokenType tokenType) {
+        String username = extractUsername(token, tokenType);
         return userDetailsService.loadUserByUsername(username);
     }
 
@@ -74,16 +74,16 @@ public class AuthServiceImpl implements AuthService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private String extractUsername(String token) {
+    private String extractUsername(String token, TokenType tokenType) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        TokenType tokenType = TokenType.valueOf((String) claims.get("tokenType"));
+        TokenType requestTokenType = TokenType.valueOf((String) claims.get("tokenType"));
 
-        if (tokenType == TokenType.REFRESH) {
-            log.info("Can not access with refresh token!");
+        if (requestTokenType != tokenType) {
+            log.info("Wrong type of token!");
             return null;
         }
 
