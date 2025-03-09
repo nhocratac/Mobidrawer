@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface AuthService {
     UserDetails authenticate(String email, String password);
     String generateToken(UserDetails userDetails, TokenType tokenType);
-    UserDetails validateToken(String token);
+    UserDetails validateToken(String token,TokenType tokenType);
     String createRegistrationRequest(String email, String password,String firstName, String lastName,String phone);
     RegistrationRequest getRegistrationRequest(String email);
     boolean verifyCode(String email, String code);

@@ -55,8 +55,8 @@ public class Board {
         private String id;
 
         private String color ;
-        private String thickness ;
-        private String opacity;
+        private float thickness ;
+        private float opacity;
         private List<Path> paths;
 
         @Data

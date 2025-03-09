@@ -23,6 +23,7 @@ public class BoardController {
     public ResponseEntity<Board> getBoardById(
             @PathVariable String id
     ) {
+        // get Token
         return ResponseEntity.ok(boardService.getBoard(id));
     }
 
@@ -30,11 +31,11 @@ public class BoardController {
     public ResponseEntity<Board> createBoard(
             @RequestBody @Valid CreateBoard board
     ) {
+
         Board.Option option = new Board.Option(
                 board.getOption().isGrid(),
                 board.getOption().getBackgroundColor()
         );
-
         List<CreateBoard.PermissionDTO> perrmisionRaw = board.getPermissionsDTO();
         List<Board.Permission> perrmisions = null;
         if(perrmisionRaw != null) {

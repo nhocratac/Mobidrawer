@@ -25,7 +25,6 @@ public class CreateBoard {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime lastOpened;
 
-    @NotBlank(message = "vui lòng cung cấp chủ sở hữu")
     private String owner;
     private String type;
     private String description;
