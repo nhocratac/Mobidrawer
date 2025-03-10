@@ -1,35 +1,11 @@
 package com.example.ie213backend.service;
 
 import com.example.ie213backend.domain.model.Board;
-import com.example.ie213backend.repository.BoardRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
+import com.example.ie213backend.domain.model.CanvasPath;
 
-
-
-@Service
-public class BoardService {
-    @Autowired private BoardRepository boardRepository;
-
-    @Autowired private MongoTemplate mongoTemplate;
-
-    public Board getBoard(String id ) {
-        return boardRepository.findBy_id(id);
-    }
-
-    public Board createBoard(Board board) {
-        return boardRepository.save(board);
-    }
-
-    public Board.CanvasPath addCanvasPath(String id,Board.CanvasPath canvasPath) {
-        Query query = new Query(Criteria.where("_id").is(id));
-        Update update = new Update().push("canvasPath", canvasPath);
-        mongoTemplate.updateFirst(query, update, Board.class);
-        return canvasPath;
-    }
-
+public interface BoardService {
+    public Board getBoard(String id ) ;
+    public Board createBoard(Board board);
+    public CanvasPath addCanvasPath(String id, CanvasPath canvasPath);
+    public Board addMemberToBoard(String id, String email, Board.ROLE role);
 }

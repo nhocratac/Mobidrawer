@@ -1,31 +1,22 @@
 package com.example.ie213backend.mapper;
 
+import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
 import com.example.ie213backend.domain.model.Board;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Component
-public class BoardMapper {
-    public static CreateBoard toDTO(Board board) {
-        if (board == null) {
-            return null;
-        }
 
-        CreateBoard dto = new CreateBoard();
-        dto.setId(board.get_id());
-        dto.setName(board.getName());
-        dto.setLastOpened(board.getLastOpened());
-        dto.setOwner(board.getOwner());
-        dto.setType(board.getType());
-        dto.setDescription(board.getDescription());
+import org.mapstruct.factory.Mappers;
 
-        if (board.getOption() != null) {
-            CreateBoard.OptionDTO optionDTO = new CreateBoard.OptionDTO();
-            optionDTO.setGrid(board.getOption().isGrid());
-            optionDTO.setBackgroundColor(board.getOption().getBackgroundColor());
-            dto.setOption(optionDTO);
-        }
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface BoardMapper {
+    BoardMapper INSTANCE = Mappers.getMapper(BoardMapper.class);
 
-        return dto;
-    }
+    BoardDTO toDTO(Board board);
+
+    Board toEntity(BoardDTO boardDTO);
+
+    Board createBoardToEntity(CreateBoard createBoard);
+
 }
