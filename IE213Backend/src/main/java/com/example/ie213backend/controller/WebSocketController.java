@@ -1,6 +1,6 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.domain.model.Board;
+import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +19,8 @@ public class WebSocketController {
 
     @MessageMapping("/board/add-new-path/{id}")  // Nhận message từ client
     @SendTo("/topic/board/{id}")  // Gửi đến tất cả client đăng ký "/topic/messages"
-    public ResponseEntity<Board.CanvasPath> handleWebSocketMessage(
-            @Payload @Valid Board.CanvasPath canvasPath,
+    public ResponseEntity<CanvasPath> handleWebSocketMessage(
+            @Payload @Valid CanvasPath canvasPath,
             @PathVariable String id
     ) {
          return ResponseEntity.ok(boardService.addCanvasPath(id,canvasPath));

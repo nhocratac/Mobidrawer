@@ -1,31 +1,29 @@
 package com.example.ie213backend.mapper;
 
+import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
 import com.example.ie213backend.domain.model.Board;
-import org.springframework.stereotype.Component;
+import jakarta.validation.Valid;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Component
-public class BoardMapper {
-    public static CreateBoard toDTO(Board board) {
-        if (board == null) {
-            return null;
-        }
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
-        CreateBoard dto = new CreateBoard();
-        dto.setId(board.get_id());
-        dto.setName(board.getName());
-        dto.setLastOpened(board.getLastOpened());
-        dto.setOwner(board.getOwner());
-        dto.setType(board.getType());
-        dto.setDescription(board.getDescription());
+@Mapper(componentModel = "spring", uses = ObjectIdMapper.class, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface BoardMapper {
+    BoardMapper INSTANCE = Mappers.getMapper(BoardMapper.class);
 
-        if (board.getOption() != null) {
-            CreateBoard.OptionDTO optionDTO = new CreateBoard.OptionDTO();
-            optionDTO.setGrid(board.getOption().isGrid());
-            optionDTO.setBackgroundColor(board.getOption().getBackgroundColor());
-            dto.setOption(optionDTO);
-        }
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "owner", target = "owner")
+    @Mapping(source = "canvasPaths", target = "canvasPaths")
+    BoardDTO toDTO(Board board);
 
-        return dto;
-    }
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "owner", target = "owner")
+    @Mapping(source = "canvasPaths", target = "canvasPaths")
+    Board toEntity(BoardDTO boardDTO);
+
+    @Mapping(source = "owner", target = "owner")
+    Board createBoardToEntity(@Valid CreateBoard boardDTO);
 }

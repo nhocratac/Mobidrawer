@@ -16,7 +16,7 @@ const BoardSubscription = ({ boardId } : { boardId :string}) => {
       console.log("Received message: ", message.body);
     });
 
-    return () => {
+    return () => {  
       console.log("Unsubscribing from /topic/board/" + boardId);
       subscription.unsubscribe();
     };
