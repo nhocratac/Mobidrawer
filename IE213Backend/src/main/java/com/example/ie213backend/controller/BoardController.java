@@ -29,7 +29,7 @@ public class BoardController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Board> getBoardById(
-            @PathVariable ObjectId id
+            @PathVariable String id
     ) {
         return ResponseEntity.ok(boardService.getBoard(id));
     }

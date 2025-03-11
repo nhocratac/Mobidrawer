@@ -56,19 +56,12 @@ public class Board {
     @Data
     @AllArgsConstructor
     public static class Member {
-<<<<<<< HEAD
         @Field(targetType = FieldType.OBJECT_ID)
-=======
->>>>>>> 4a26bbaa40530bbecd1cb1a21afb58d07c73a7e4
         private String memberId;
         private ROLE role;
     }
 
-<<<<<<< HEAD
      public enum ROLE {
-=======
-     public static enum ROLE {
->>>>>>> 4a26bbaa40530bbecd1cb1a21afb58d07c73a7e4
          EDITOR,VIEWER
     }
 
