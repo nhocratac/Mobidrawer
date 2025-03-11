@@ -3,11 +3,11 @@ package com.example.ie213backend.service.impl;
 import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.repository.UserRepository;
-import com.example.ie213backend.service.EmailService;
 import com.example.ie213backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    private final EmailService emailService;
+    private final EmailServiceImpl emailService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -31,6 +31,10 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public User getUserById(String id) {
+        return userRepository.findById(id).orElse(null);
+    }
 
     public User createUser(CreateUserDto user) {
         User newUser = new User();

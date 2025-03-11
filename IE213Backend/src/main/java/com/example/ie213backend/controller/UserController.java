@@ -1,7 +1,6 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
-import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,4 +25,6 @@ public class UserController {
                 .toList();
         return ResponseEntity.ok(users);
     }
+
+
 }

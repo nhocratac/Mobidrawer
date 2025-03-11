@@ -4,6 +4,8 @@ import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
 import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
 import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.mapper.UserMapper;
+import com.example.ie213backend.security.DrawUserDetails;
 import com.example.ie213backend.service.AuthService;
 import com.example.ie213backend.service.EmailService;
 import com.example.ie213backend.service.UserService;
@@ -65,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
             case REFRESH -> refreshTokenExpiration;
         };
 
-        log.warn(tokenType + String.valueOf(expiration));
+        claims.put("user", UserMapper.INSTANCE.toDto(((DrawUserDetails) userDetails).getUser()));
 
         claims.put("tokenType", tokenType);
         return Jwts.builder()

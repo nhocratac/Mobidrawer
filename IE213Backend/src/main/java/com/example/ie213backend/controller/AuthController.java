@@ -3,14 +3,13 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.*;
 import com.example.ie213backend.service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,22 +21,36 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
 
         String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
         String refreshToken = authService.generateToken(userDetails, TokenType.REFRESH);
+
         AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
 
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        refreshTokenCookie.setPath("/");
+
+        response.addCookie(refreshTokenCookie);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
-        UserDetails userDetails = authService.validateToken(refreshRequest.getRefreshToken(), TokenType.REFRESH);
+    public ResponseEntity<AuthResponse> refreshToken(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
+        if(refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
+        }
 
-        String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
-        AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).build();
+        UserDetails userDetails = authService.validateToken(refreshToken, TokenType.REFRESH);
+
+        String newAccessToken = authService.generateToken(userDetails, TokenType.ACCESS);
+        if (newAccessToken == null) {
+            return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
+        }
+        AuthResponse authResponse = AuthResponse.builder().accessToken(newAccessToken).build();
 
         return ResponseEntity.ok(authResponse);
     }
