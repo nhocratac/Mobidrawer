@@ -1,7 +1,7 @@
 package com.example.ie213backend.security;
 
 import com.example.ie213backend.domain.model.User;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
+@Data
 @RequiredArgsConstructor
 public class DrawUserDetails implements UserDetails {
     private final User user;
@@ -29,6 +29,15 @@ public class DrawUserDetails implements UserDetails {
     public String getUsername() {
         return user.getEmail();
     }
+
+    public String getUserId() { return user.getId(); }
+
+    public String getPhone () { return user.getPhone(); }
+
+    public String getFirstName () { return user.getFirstName(); };
+
+    public String getLastName () { return user.getLastName(); }
+
 
     @Override
     public boolean isAccountNonExpired() {

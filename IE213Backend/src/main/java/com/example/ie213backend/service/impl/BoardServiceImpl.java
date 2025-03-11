@@ -1,11 +1,14 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.mapper.BoardMapper;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,16 +18,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
 @Service
+@RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
-    @Autowired private BoardRepository boardRepository;
+    private final BoardRepository boardRepository;
 
-    @Autowired private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public Board getBoard(String id ) {
@@ -52,31 +57,51 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board addMemberToBoard(String id, String email, Board.ROLE role) {
-        Optional<Board> optionalBoard = boardRepository.findById(id);
-        if (optionalBoard.isEmpty()) {
-            throw new RuntimeException("Board not found with id: " + id);
+    public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
+
+        if (!Objects.equals(board.getOwner(), ownerID)) {
+            throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found with email: " + email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Kiểm tra xem user đã là member hay chưa
+        boolean isMember = board.getMembers().stream()
+                .anyMatch(member -> member.getMemberId().equals(user.getId()));
+
+        if (isMember || ownerID.equals(user.getId())) {
+            throw new RuntimeException("User has already joined this board: " + boardId);
         }
+        // Thêm user vào board
+        board.getMembers().add(new Board.Member(user.getId(), role));
 
-        User user = optionalUser.get();
-
-        Board findBoard = optionalBoard.get();
-
-        Board.Member newMember = new Board.Member(user.getId(),role);
-
-        if(findBoard.getMembers().isEmpty() ) {
-            findBoard.setMembers(new ArrayList<>());
-        }
-        findBoard.getMembers().add(newMember);
-
-
-        return boardRepository.save(findBoard);
+        return boardRepository.save(board);
     }
 
+    @Override
+    public Board  changeRoleOfMember(String boardId, String userId, Board.ROLE role,String ownerID) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
 
+        if (!Objects.equals(board.getOwner(), ownerID)) {
+            throw new RuntimeException("You are not the owner of this board: " + boardId);
+        }
+
+        board.getMembers().forEach(member -> {
+            if (member.getMemberId().equals(userId)) {
+                member.setRole(role);
+            }
+        });
+
+        return boardRepository.save(board);
+    }
+
+    @Override
+    public List<BoardDTO> findAllBoardofUser(String userId) {
+        List<Board> a = boardRepository.findByOwnerOrMembersMemberId(userId);
+        return a.stream().map(BoardMapper.INSTANCE::toDTO).toList();
+    }
 }

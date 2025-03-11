@@ -1,12 +1,15 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
+import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,4 +29,6 @@ public class UserController {
                 .toList();
         return ResponseEntity.ok(users);
     }
+
+
 }

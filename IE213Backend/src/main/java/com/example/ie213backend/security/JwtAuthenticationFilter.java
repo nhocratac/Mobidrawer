@@ -1,6 +1,7 @@
 package com.example.ie213backend.security;
 
 import com.example.ie213backend.domain.TokenType;
+import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if(userDetails instanceof DrawUserDetails) {
                     request.setAttribute("userId", ((DrawUserDetails) userDetails).getId());
+                    request.setAttribute("user", UserMapper.INSTANCE.toDto(((DrawUserDetails) userDetails).getUser()));
                 }
             }
         } catch (Exception e) {

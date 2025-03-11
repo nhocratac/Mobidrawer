@@ -61,7 +61,7 @@ public class Board {
         private ROLE role;
     }
 
-     public static enum ROLE {
+     public enum ROLE {
          EDITOR,VIEWER
     }
 

@@ -3,7 +3,10 @@ package com.example.ie213backend.domain.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import java.util.List;
 import java.util.Objects;
 
 @Setter
@@ -19,6 +22,7 @@ public class User {
     private String email;
     private String password;
     private String phone;
+
 
     @Override
     public boolean equals(Object o) {
