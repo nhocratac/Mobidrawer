@@ -1,7 +1,9 @@
 package com.example.ie213backend.service;
 
+import java.util.Date;
+
 public interface EmailService {
-    public void sendSimpleMessage(String to, String subject, String text) ;
-    public void sendHtmlMessage(String to, String subject, String html);
-    public void sendVerificationEmail(String to, String code);
+    void sendSimpleMessage(String to, String subject, String text) ;
+    void sendHtmlMessage(String to, String subject, String html);
+    void sendVerificationEmail( String email,String verificationCode);
 }

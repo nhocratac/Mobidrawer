@@ -1,6 +1,7 @@
 package com.example.ie213backend.controller;
 
 
+import com.example.ie213backend.domain.dto.BoardDto.AddMember;
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.ChangeRole;
 import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
@@ -11,10 +12,8 @@ import com.example.ie213backend.mapper.BoardMapper;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.ie213backend.domain.dto.BoardDto.AddMember;
 
 import java.util.List;
 

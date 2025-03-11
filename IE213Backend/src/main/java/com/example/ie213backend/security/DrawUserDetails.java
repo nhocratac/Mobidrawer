@@ -34,7 +34,7 @@ public class DrawUserDetails implements UserDetails {
 
     public String getPhone () { return user.getPhone(); }
 
-    public String getFirstName () { return user.getFirstName(); };
+    public String getFirstName () { return user.getFirstName(); }
 
     public String getLastName () { return user.getLastName(); }
 
