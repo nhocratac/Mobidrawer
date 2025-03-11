@@ -65,6 +65,8 @@ public class AuthServiceImpl implements AuthService {
             case REFRESH -> refreshTokenExpiration;
         };
 
+        log.warn(tokenType + String.valueOf(expiration));
+
         claims.put("tokenType", tokenType);
         return Jwts.builder()
                 .setClaims(claims)

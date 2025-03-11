@@ -10,4 +10,5 @@ public interface UserService {
     User getUserByEmail(String email);
     User createUser(CreateUserDto user);
     void changePassword(User user);
+    User getUserById(String userId);
 }
