@@ -11,4 +11,5 @@ public interface UserService {
     User getUserById(String userId);
     User createUser(CreateUserDto user);
     void changePassword(User user);
+    User getUserById(String userId);
 }

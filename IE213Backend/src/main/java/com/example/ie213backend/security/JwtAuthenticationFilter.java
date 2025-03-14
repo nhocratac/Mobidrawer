@@ -3,6 +3,7 @@ package com.example.ie213backend.security;
 import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.AuthService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,9 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     request.setAttribute("user", UserMapper.INSTANCE.toDto(((DrawUserDetails) userDetails).getUser()));
                 }
             }
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
             // Do not throw exception, just don't authenticate the user;
-            log.warn("Received invalid auth token");
+            log.warn(e.getMessage() + "Received invalid auth token");
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\":401, \"message\":\"Access token expired\"}");
+            return; // Ngăn request tiếp tục đi qua filterChain
         }
 
         filterChain.doFilter(request, response);
