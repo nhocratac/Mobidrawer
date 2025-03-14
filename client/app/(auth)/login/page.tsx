@@ -1,5 +1,5 @@
 "use client"
-import { login } from '@/api/authAPI';
+import { useLogin } from '@/app/(auth)/login/useLogin';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ const FormSchema = z.object({
 });
 
 export default function InputForm() {
+  const { handleLogin } = useLogin()
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -27,17 +28,9 @@ export default function InputForm() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    login({
-      email: data.email,
-      password: data.password,
-    }).then((res) => {
-      console.log(res);
-    }).catch((error) => {
-      console.log("errror login", error);
-    });
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    await handleLogin(data.email, data.password);
   }
-
   return (
     <div>
       <div className="mb-6">

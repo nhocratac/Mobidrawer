@@ -35,6 +35,7 @@ public class AuthController {
         refreshTokenCookie.setPath("/");
 
         response.addCookie(refreshTokenCookie);
+        response.addHeader("Authorization", "Bearer " + accessToken);
         return ResponseEntity.ok(authResponse);
     }
 
