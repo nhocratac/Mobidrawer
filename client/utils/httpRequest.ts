@@ -1,134 +1,51 @@
+import axios from "axios";
 import { refreshAccessToken } from "@/api/authAPI";
+import useTokenStore from "@/lib/Zustand/tokenStore";
 
-const configDefault = {
-  baseUrl: "http://localhost:8080/api/v1",
-};
+const API_URL = "http://localhost:8080/api/v1";
 
-async function fetchInstance(
-  endpoint: string,
-  options: RequestInit = {},
-  isRetry = false
-) {
-  // Lấy accessToken từ storage (ví dụ từ Context, Redux, hoặc localStorage)
-  let accessToken = localStorage.getItem("accessToken");
+const httpRequest = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Để gửi cookie refreshToken
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  // Cấu hình mặc định cho request
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      ...options.headers,
-    },
-  };
+// ✅ Thêm accessToken vào headers trước mỗi request
+httpRequest.interceptors.request.use((config) => {
+  if (
+    config.url?.includes("/auth/login") ||
+    config.url?.includes("/auth/register")
+  ) {
+    return config;
+  }
+  const token = useTokenStore.getState().token; // Lấy từ Zustand
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-  try {
-    const response = await fetch(
-      `${configDefault.baseUrl}/${endpoint}`,
-      config
-    );
-
-    // Nếu token hết hạn, tự động gọi refresh token và thử lại request
-    if (response.status === 401 && !isRetry) {
-      const newAccessToken = await refreshAccessToken();
-      if (newAccessToken) {
-        return fetchInstance(endpoint, options, true);
+// ✅ Tự động refresh token nếu gặp lỗi 401
+httpRequest.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      try {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          useTokenStore.getState().setToken(newToken);
+          error.config.headers.Authorization = `Bearer ${newToken}`;
+          return axios(error.config); // Gửi lại request cũ
+        }
+      } catch (refreshError) {
+        useTokenStore.getState().clearToken();
+        window.location.href = "/login";
       }
     }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Fetch error:", error);
-    throw error;
+    return Promise.reject(error);
   }
-}
-
-const get = (url: string, options?: RequestInit): Promise<Response> => {
-  url = `${configDefault.baseUrl}${url}`;
-  if (!options) return fetch(url);
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-    },
-  });
-};
-
-const post = (
-  url: string,
-  data: any,
-  options?: RequestInit
-): Promise<Response> => {
-  url = `${configDefault.baseUrl}${url}`;
-  if (!options)
-    return fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  return fetch(url, {
-    ...options,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    body: JSON.stringify(data),
-  });
-};
-
-const put = (
-  url: string,
-  data: any,
-  options?: RequestInit
-): Promise<Response> => {
-  url = `${configDefault.baseUrl}${url}`;
-  if (!options)
-    return fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  return fetch(url, {
-    ...options,
-    method: "PUT",
-    headers: {
-      ...options.headers,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-};
-
-const remove = (url: string, options?: RequestInit): Promise<Response> => {
-  url = `${configDefault.baseUrl}${url}`;
-  if (!options)
-    return fetch(url, {
-      method: "DELETE",
-    });
-  return fetch(url, {
-    method: "DELETE",
-    ...options,
-    headers: {
-      ...options.headers,
-    },
-  });
-};
-
-const httpRequest = {
-  get,
-  post,
-  put,
-  remove,
-  fetchInstance,
-};
+);
 
 export default httpRequest;

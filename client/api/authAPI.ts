@@ -1,10 +1,12 @@
-
 import httpRequest from "@/utils/httpRequest";
+import useTokenStore from "@/lib/Zustand/tokenStore"; // Zustand store để quản lý token
+
 interface AuthResponse {
   accessToken: string;
   refreshToken: string;
 }
 
+// ✅ Register
 const register = async (data: {
   email: string;
   firstName: string;
@@ -13,62 +15,62 @@ const register = async (data: {
   password: string;
 }) => {
   try {
-    const res = await httpRequest.post("/auth/register", data);
-    if (res.status === 200) {
-      return res.json();
-    }
-    throw new Error(res.statusText);
+    const res = await httpRequest.post<AuthResponse>("/auth/register", data);
+    return res.data;
   } catch (error) {
+    console.error("Register error:", error);
     throw error;
   }
 };
 
+// ✅ Verify Register
 const verifyRegister = async (data: { code: string; email: string }) => {
   try {
-    const res = await httpRequest.post("/auth/verify-register", data);
-    if (res.status === 200) {
-      return res.json();
-    }
-    throw new Error(res.statusText);
+    const res = await httpRequest.post<AuthResponse>("/auth/verify-register", data);
+    return res.data;
   } catch (error) {
+    console.error("Verify register error:", error);
     throw error;
   }
 };
 
-const login = async (data: { email: string; password: string })  => {
+// ✅ Login
+const login = async (data: { email: string; password: string }) => {
   try {
-    const res = await httpRequest.post("/auth/login", data, {
-      credentials : 'include'
+    const res = await httpRequest.post<AuthResponse>("/auth/login", data, {
+      withCredentials: true, // Gửi cookies refreshToken
     });
-    console.log(res);
+
     if (res.status === 200) {
-      return res;
+      const  accessToken  = res.headers["authorization"].split(' ')[1];
+      useTokenStore.getState().setToken(accessToken); // Lưu vào Zustand
+      return res.data;
     }
+
     throw new Error(res.statusText);
   } catch (error) {
+    console.error("Login error:", error);
     throw error;
   }
 };
 
+// ✅ Refresh Token
 export async function refreshAccessToken() {
   try {
-    const res = await fetch("https://backend.example.com/api/v1/auth/refresh", {
-      method: "GET",
-      credentials: "include", // Để gửi cookie refreshToken
+    const res = await httpRequest.get("/auth/refresh", {
+      withCredentials: true, // Gửi cookie refreshToken
     });
 
-    if (!res.ok) {
-      throw new Error("Unable to refresh token");
+    if (res.status === 200) {
+      const newAccessToken = res.headers['authorization'].split(' ')[1]
+      useTokenStore.getState().setToken(newAccessToken);
+      return newAccessToken;
     }
-
-    const data = await res.json();
-    localStorage.setItem("accessToken", data.accessToken); // Lưu token mới vào localStorage
-
-    return data.accessToken;
+    throw new Error("Unable to refresh token");
   } catch (error) {
     console.error("Refresh token failed:", error);
-    localStorage.removeItem("accessToken");
-    window.location.href = "/login"; // Chuyển hướng đến trang đăng nhập
+    useTokenStore.getState().clearToken();
+    window.location.href = "/login";
     return null;
   }
 }

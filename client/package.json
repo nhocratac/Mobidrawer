@@ -24,7 +24,7 @@
     "@redux-devtools/extension": "^3.3.0",
     "@stomp/stompjs": "^7.0.0",
     "@svgr/webpack": "^8.1.0",
-    "axios": "^1.7.7",
+    "axios": "^1.8.3",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

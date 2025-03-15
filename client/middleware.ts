@@ -4,9 +4,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(req: NextRequest) {
   // Giả sử bạn lưu accessToken trong cookie (hoặc nếu không có, kiểm tra cookie refreshToken)
-  console.log("Middleware running...");
   const token = req.cookies.get('refreshToken');
-  console.log(token)
   
   // Nếu không có token, chuyển hướng về trang login
   if (!token) {
