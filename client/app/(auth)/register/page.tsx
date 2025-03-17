@@ -3,9 +3,11 @@ import { register, verifyRegister } from "@/api/authAPI";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -47,6 +49,8 @@ const FormCode = z.object({
 });
 
 export default function RegisterForm() {
+  const { toast } = useToast()
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -92,7 +96,7 @@ export default function RegisterForm() {
         setStep(2);
       }
     ).catch(err => {
-      console.log("error register: ",err);
+      console.log("error register: ", err);
     }
     )
   };
@@ -103,6 +107,11 @@ export default function RegisterForm() {
     verifyRegister({ code: data.code, email: formValues.email })
       .then(res => {
         console.log(res);
+        toast({
+          title: "Thành công",
+          description: "Bạn đã thêm mẫu thành công",
+        })
+        router.push('/login')
       })
       .catch(err => {
         console.log(err);

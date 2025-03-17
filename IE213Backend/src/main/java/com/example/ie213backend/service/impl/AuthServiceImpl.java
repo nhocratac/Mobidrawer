@@ -81,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserDetails validateToken(String token, TokenType tokenType) {
+        System.out.println(token);
         String username = extractUsername(token, tokenType);
         return userDetailsService.loadUserByUsername(username);
     }

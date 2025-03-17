@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button'
 import path from '@/utils/path'
 import Link from 'next/link'
-import React from 'react'
 import HamburgerMenu from '@/components/header/HamburgerMenu'
+import useTokenStore from '@/lib/Zustand/tokenStore'
 
 
 interface HeaderDefaultProps {
@@ -13,7 +13,7 @@ interface HeaderDefaultProps {
 export default function HeaderDefault({
   ...props
 }: HeaderDefaultProps) {
-  const isLogin = false
+  const {token} = useTokenStore()
   return (
     <header className='lg:h-[64px] h-[54px] bg-white text-[black] border  border-[#e0e2e8] lg:px-[24px] lg:py-[8px]  flex justify-between items-center' {...props}>
       <div className='flex items-center place-content-around lg:leading-[64px]  gap-4 '>
@@ -28,7 +28,7 @@ export default function HeaderDefault({
         </span>
       </div>
       <div className='flex gap-4 text-[2rem]'>
-        {isLogin ? (
+        {token ? (
           <Link href={path.post}>
             <p>Post</p>
           </Link>

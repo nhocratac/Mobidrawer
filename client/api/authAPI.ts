@@ -55,7 +55,7 @@ const login = async (data: { email: string; password: string }) => {
 };
 
 // ✅ Refresh Token
-export async function refreshAccessToken() {
+ async function refreshAccessToken() {
   try {
     const res = await httpRequest.get("/auth/refresh", {
       withCredentials: true, // Gửi cookie refreshToken
@@ -75,4 +75,4 @@ export async function refreshAccessToken() {
   }
 }
 
-export { register, login, verifyRegister };
+export { register, login, verifyRegister ,refreshAccessToken};

@@ -19,6 +19,12 @@ const useTokenStore = create<TokenState>()(
       }),
       {
         name: "access-token", // Tên key lưu vào localStorage
+        merge: (persistedState: any, currentState) => ({
+          ...currentState,
+          ...persistedState,
+          setToken: currentState.setToken,
+          clearToken: currentState.clearToken
+        }),
       }
     )
   )

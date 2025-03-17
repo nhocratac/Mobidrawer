@@ -1,4 +1,5 @@
 import { BoardState, boardType } from "@/lib/Zustand/type.type";
+import httpRequest from "@/utils/httpRequest";
 
 const boardAvatar = [
   "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906",
@@ -35,7 +36,22 @@ const createBoard = (type: boardType, id: number) => {
   }
 };
 
+const getAllBoardOfUser = async () => {
+  try {
+    const boardResponse = await httpRequest.get('/board/get-boards')
+    console.log(boardResponse.data)
+    return boardResponse.data
+  } catch (error) {
+    throw error
+  } 
+}
+const getBoardById = () => {
+
+}
+
 const BoardAPI = {
   createBoard,
+  getAllBoardOfUser,
+  getBoardById
 };
 export default BoardAPI;

@@ -1,7 +1,7 @@
 'use client'
 
 
-import ListBoardOfUser from "@/components/dashboard/ListBoardOfUser";
+import ListBoardOfUser from "@/app/user/(user)/dashboard/ListBoardOfUser";
 import { LayoutGrid, LayoutList } from "lucide-react";
 import {  useState } from "react";
 

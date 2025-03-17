@@ -5,17 +5,16 @@ const BoardSubscription = ({ boardId } : { boardId :string}) => {
   const { client } = useStompStore()
 
   useEffect(() => {
-    console.log("Client: ", client);
-    if(client) {
-      console.log("Connected: ", client.connected);
-    }
     if (!client || !client.connected) return;
-
-    console.log("Subscribing to /topic/board/" + boardId);
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
       console.log("Received message: ", message.body);
     });
-
+    client.publish({
+      destination: `/app/board/join/${boardId}`,
+      body: JSON.stringify({
+        userid:'12121112'
+      })
+    })
     return () => {  
       console.log("Unsubscribing from /topic/board/" + boardId);
       subscription.unsubscribe();

@@ -28,6 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
+            String path = request.getServletPath();
+            if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/register") || path.startsWith("/api/v1/auth/refresh")) {
+                filterChain.doFilter(request, response);
+                return; // 🚀 Bỏ qua kiểm tra token
+            }
+
             String token = extractToken(request);
             if(token != null) {
                 UserDetails userDetails = authService.validateToken(token, TokenType.ACCESS);

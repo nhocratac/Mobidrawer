@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -30,8 +31,21 @@ public class BoardServiceImpl implements BoardService {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Board getBoard(String id ) {
-        return boardRepository.findByid(id);
+    public Board getBoard(String id, String userId ) {
+        //
+        Optional<Board> board = boardRepository.findById(id);
+        if (board.isEmpty()) throw new IllegalArgumentException("board not found");
+        Board foundBoard = board.get();
+
+        // Kiểm tra nếu user không phải chủ sở hữu và cũng không phải thành viên
+        boolean isOwner = Objects.equals(userId, foundBoard.getOwner());
+        boolean isMember = foundBoard.getMembers().stream()
+                .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
+
+        if (!isOwner && !isMember) {
+            throw new RuntimeException("You are not allowed to get this board");
+        }
+        return foundBoard;
     }
 
     @Override
@@ -57,14 +71,14 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
+                .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
         // Kiểm tra xem user đã là member hay chưa
         boolean isMember = board.getMembers().stream()
