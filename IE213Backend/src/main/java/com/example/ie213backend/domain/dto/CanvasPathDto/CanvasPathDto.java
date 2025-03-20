@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 
 import java.util.List;
 
+@Data
 public class CanvasPathDto {
     @Id
     private String id;
@@ -16,6 +17,7 @@ public class CanvasPathDto {
     private List<CanvasPathDto.CoordinateDto> paths;
 
     private String owner;
+    private String boardId;
 
     @Data
     @AllArgsConstructor

@@ -1,27 +1,31 @@
+"use client";
 import { useStompStore } from '@/lib/Zustand/socketStore';
 import { useEffect } from 'react';
 
-const BoardSubscription = ({ boardId } : { boardId :string}) => {
-  const { client } = useStompStore()
+const BoardSubscription = ({ boardId }: { boardId: string }) => {
+  const { client, connect, isConnected } = useStompStore();
 
   useEffect(() => {
-    if (!client || !client.connected) return;
+    if (!client || !isConnected || !client.connected ) {
+      return;
+    }
+    // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
       console.log("Received message: ", message.body);
     });
     client.publish({
       destination: `/app/board/join/${boardId}`,
       body: JSON.stringify({
-        userid:'12121112'
+        userId: '12121112'
       })
-    })
-    return () => {  
-      console.log("Unsubscribing from /topic/board/" + boardId);
+    });
+
+    return () => {
       subscription.unsubscribe();
     };
-  }, [client, boardId, client?.connected]);
+  }, [client, boardId, isConnected, connect]);
 
-  return null; // Không cần hiển thị gì
+  return null;
 };
 
 export default BoardSubscription;

@@ -65,7 +65,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String,String>> register(
             @RequestBody @Valid RegisterDto registerDto) {
-        System.out.println(registerDto);
         String email = registerDto.getEmail();
         String password = registerDto.getPassword();
         String firstName = registerDto.getFirstName();

@@ -17,7 +17,7 @@ public class SocketSessionSubscribeEvent implements
 
         if (destination != null && destination.startsWith("/topic/board/")) {
             String boardId = destination.substring("/topic/board/".length());
-            System.out.println("User " + userId + " joined board " + boardId);
+            //System.out.println("User " + userId + " joined board " + boardId);
         }
     }
 

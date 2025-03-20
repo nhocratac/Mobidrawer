@@ -1,10 +1,12 @@
 package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
+import com.example.ie213backend.domain.dto.BoardDto.BoardFullDetailResponse;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.BoardMapper;
+import com.example.ie213backend.repository.BoardCustomRepository;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
@@ -28,35 +30,44 @@ public class BoardServiceImpl implements BoardService {
 
     private final UserRepository userRepository;
 
+    private final BoardCustomRepository boardCustomRepository;
+
     private final MongoTemplate mongoTemplate;
 
     @Override
     public Board getBoard(String id, String userId ) {
         //
-        Optional<Board> board = boardRepository.findById(id);
-        if (board.isEmpty()) throw new IllegalArgumentException("board not found");
-        Board foundBoard = board.get();
+        BoardFullDetailResponse foundBoard = boardCustomRepository.getBoardWithCanvasPaths(id);
 
-        // Kiểm tra nếu user không phải chủ sở hữu và cũng không phải thành viên
+        if (foundBoard == null) {
+            throw new IllegalArgumentException("Board not found");
+        }
+
+        // Kiểm tra quyền truy cập
         boolean isOwner = Objects.equals(userId, foundBoard.getOwner());
         boolean isMember = foundBoard.getMembers().stream()
                 .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
 
         if (!isOwner && !isMember) {
-            throw new RuntimeException("You are not allowed to get this board");
+            throw new RuntimeException("You are not allowed to access this board");
         }
+
         return foundBoard;
     }
 
     @Override
-    public Board createBoard(Board board) {
+    public Board createBoard(Board board,String ownerId) {
         if (board.getMembers() == null) {
             board.setMembers(new ArrayList<>());
         }
 
-        if (board.getCanvasPaths() == null) {
-            board.setCanvasPaths(new ArrayList<>());
+        if(board.getOption() == null) {
+            board.setOption(new Board.Option(
+                    true,
+                    "bg-slate-700"
+            ));
         }
+        board.setOwner(ownerId);
         return boardRepository.save(board);
     }
 

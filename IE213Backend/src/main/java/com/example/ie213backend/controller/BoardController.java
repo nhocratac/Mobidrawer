@@ -30,7 +30,6 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    private RequestBody addMember;
 
     @GetMapping("/{id}")
     public ResponseEntity<Board> getBoardById(
@@ -42,9 +41,10 @@ public class BoardController {
 
     @PostMapping("/create")
     public ResponseEntity<Board> createBoard(
-            @RequestBody @Valid CreateBoard board
+            @RequestBody @Valid CreateBoard board,
+            @RequestAttribute("user") UserDto userDto
     ) {
-        return ResponseEntity.ok(boardService.createBoard(BoardMapper.INSTANCE.createBoardToEntity(board)));
+        return ResponseEntity.ok(boardService.createBoard(BoardMapper.INSTANCE.createBoardToEntity(board), userDto.getId()));
     }
 
     @PostMapping("/addPath/{id}")
@@ -80,34 +80,6 @@ public class BoardController {
         return ResponseEntity.ok(boardService.findAllBoardofUser(userDto.getId()));
     }
 
-    @MessageMapping("/board/add-new-path/{id}")  // Nhận message từ client
-    @SendTo("/topic/board/{id}")  // Gửi đến tất cả client đăng ký "/topic/messages"
-    public ResponseEntity<CanvasPath> handleWebSocketMessage(
-            @Payload @Valid CanvasPath canvasPath,
-            @DestinationVariable String id
-    ) {
-        return ResponseEntity.ok(boardService.addCanvasPath(id, canvasPath));
-    }
 
-    @MessageMapping("/board/join/{boardId}")
-    @SendTo("/topic/board/{boardId}")
-    public String handleUserJoin(
-            @Payload JoinRequest joinRequest,
-            @DestinationVariable String boardId
-    ) {
-        String userId = joinRequest.getUserId();
-        System.out.println("User " + userId + " joined board " + boardId);
-
-        // Trả về thông báo cho tất cả client trong topic
-        return "User " + userId + " has joined board " + boardId;
-    }
-
-
-    @MessageMapping("/draw")  // Nhận tin nhắn từ client gửi đến "/app/draw"
-    @SendTo("/topic/draw")    // Gửi tin nhắn đến tất cả client đăng ký "/topic/draw"
-    public String handleDrawEvent(String message) {
-        System.out.println("Received: " + message);
-        return message;  // Gửi lại tin nhắn tới các client khác
-    }
 
 }

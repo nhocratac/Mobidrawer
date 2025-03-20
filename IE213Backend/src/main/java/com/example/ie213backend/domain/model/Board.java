@@ -42,9 +42,6 @@ public class Board {
 
     private List<Member> members = new ArrayList<>();
 
-    @Field(targetType = FieldType.OBJECT_ID)
-    private List<String> canvasPaths = new ArrayList<>();
-
 
     @Data
     @AllArgsConstructor

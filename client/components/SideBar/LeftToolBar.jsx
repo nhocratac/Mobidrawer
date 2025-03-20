@@ -21,7 +21,7 @@ import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 
 import { FaDotCircle } from "react-icons/fa";
 
-import { useBoardStore, useToolDevStore } from "@/lib/Zustand/store";
+import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
 import { useParams } from "next/navigation";
 const stickyNoteColor = [
   "bg-blue-500",
@@ -108,8 +108,8 @@ const LeftToolBar = ({
   const { id } = useParams();
   const ModeTool = useToolDevStore((state) => state.mode);
   const setMode = useToolDevStore((state) => state.setMode);
-  const setGridVisible = useBoardStore((state) => state.setGridVisible);
-  const setBoardColor = useBoardStore((state) => state.setBoardColor);
+  const setGridVisible = useBoardStoreof((state) => state.setGridVisible);
+  const setBoardColor = useBoardStoreof((state) => state.setBoardColor);
   // local state
   const [isAIGenerationPopupVisible, setIsPopupVisible] = useState(false);
   const [isSelectNotePopupVisible, setIsSelectNotePopupVisible] =
@@ -142,8 +142,7 @@ const LeftToolBar = ({
     resetSelectPopup();
     setIsSelectShapeVisible(!isSelectShapeVisible);
   };
-  const onClickCreateTextButton = (colorName) => {
-    console.log("colorName", colorName);
+  const onClickCreateTextButton = () => {
     resetSelectPopup();
     onClickTextButton();
   };
@@ -180,7 +179,7 @@ const LeftToolBar = ({
   };
 
   const handleClickVisibleGrid = () => {
-    setGridVisible(id);
+    setGridVisible();
   };
 
   const shapeIcons = [
@@ -219,7 +218,7 @@ const LeftToolBar = ({
   };
 
   const onClickBackgroundColor = (color) => {
-    setBoardColor(id, color);
+    setBoardColor( color);
   };
 
   return (

@@ -1,6 +1,8 @@
 "use client";
-import { useBoardStore, useToolDevStore } from "@/lib/Zustand/store";
-import { useParams } from "next/navigation";
+import {
+  useBoardStoreof,
+  useToolDevStore
+} from "@/lib/Zustand/store";
 import { useEffect, useRef, useState } from "react";
 import PencilCanvas from "../CanvasDrawingOverlay/PencilCanvas";
 import BoardGridContext from "./BoardGridContext";
@@ -8,8 +10,6 @@ import BoardGridContext from "./BoardGridContext";
 const ZoomableGrid = ({ children, onSetScale }) => {
   const gridCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
-
-  const boardId = useParams().id;
   // Trạng thái quản lý scale và dịch chuyển
   const penColor = useToolDevStore((state) => state.pencil?.color);
   const [scale, setScale] = useState(1);
@@ -18,11 +18,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const [gridVisible, setGridVisible] = useState();
   const penThickness = useToolDevStore((state) => state.pencil?.thickness);
   const penOpacity = useToolDevStore((state) => state.pencil?.opacity);
-  const board = useBoardStore((state) =>
-    state?.boards.find((board) => board.id == boardId)
-  );
-
-  const updateBoard = useBoardStore((state) => state.updateBoard);
+  const { board } = useBoardStoreof();
   // Trạng thái quản lý chế độ và hành động hiện tại
   // const [mode, setMode] = useState('idle'); // Các chế độ: 'drag', 'pen', 'idle'
   const mode = useToolDevStore((state) => state.mode);
@@ -31,6 +27,11 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   const [undoPressed, setUndoPressed] = useState(false);
   const [isVisibleContextMenu, setIsVisibleContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+
+  // Trạng thái lưu trữ thông tin về vùng chọn hình chữ nhật
+  const [selectionRect, setSelectionRect] = useState(null);
+  // Trạng thái xác định người dùng có đang chọn đường vẽ hay không
+  const [isSelecting, setIsSelecting] = useState(false);
 
   // Trạng thái lưu vị trí bắt đầu của thao tác
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -41,8 +42,8 @@ const ZoomableGrid = ({ children, onSetScale }) => {
   useEffect(() => {
     if (board?.canvasPaths) {
       setCanvasPaths(board.canvasPaths);
-      setBackgroundColor(board?.options?.backgroundColor);
-      setGridVisible(board?.options?.gird);
+      setBackgroundColor(board?.option?.backgroundColor);
+      setGridVisible(board?.option?.grid);
     }
   }, [board]);
 
@@ -100,15 +101,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     };
   }, []);
 
-  useEffect(() => {
-    updateBoard({ ...board, canvasPaths: canvasPaths });
-  }, [canvasPaths]);
-
-  // Trạng thái lưu trữ thông tin về vùng chọn hình chữ nhật
-  const [selectionRect, setSelectionRect] = useState(null);
-  // Trạng thái xác định người dùng có đang chọn đường vẽ hay không
-  const [isSelecting, setIsSelecting] = useState(false);
-
   // Hàm bắt đầu chọn đường vẽ khi nhấn chuột trái
   const startSelection = (x, y) => {
     setIsSelecting(true);
@@ -117,7 +109,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Hàm cập nhật vùng chọn khi di chuyển chuột
   const updateSelection = (x, y) => {
-    if(isSelecting) {
+    if (isSelecting) {
       setSelectionRect((prev) => ({
         ...prev,
         x2: x,
@@ -128,21 +120,21 @@ const ZoomableGrid = ({ children, onSetScale }) => {
 
   // Hàm kết thúc chọn đường vẽ khi thả chuột
   const endSelection = () => {
-    if(isSelecting) {
+    if (isSelecting) {
       setIsSelecting(false);
-      const selectedPaths = canvasPaths.filter((path) =>
-        isPathInSelection(path.path, selectionRect)
+      const selectedPaths = canvasPaths.filter((paths) =>
+        isPathInSelection(paths.paths, selectionRect)
       );
       // Cập nhật trạng thái chọn đường vẽ
       setCanvasPaths((prev) =>
-        prev.map((path) => ({
-          ...path,
-          isSelected: selectedPaths.includes(path)
+        prev.map((paths) => ({
+          ...paths,
+          isSelected: selectedPaths.includes(paths),
         }))
       );
-    setSelectionRect(null);
+      setSelectionRect(null);
     }
-  }
+  };
 
   // Hàm kiểm tra điểm click có nằm trên đường vẽ không
   const isPathInSelection = (path, selectionRect) => {
@@ -194,7 +186,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       ) {
         gridCtx.beginPath();
         gridCtx.moveTo(x, -gridCanvas.height);
-        gridCtx.lineTo(x, (gridCanvas.height *10) / scale);
+        gridCtx.lineTo(x, (gridCanvas.height * 10) / scale);
         gridCtx.stroke();
       }
 
@@ -259,7 +251,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
           color: penColor,
           thickness: penThickness,
           opacity: penOpacity,
-          path: [{ x, y }],
+          paths: [{ x, y }],
         });
         return newPaths;
       });
@@ -281,11 +273,11 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       // Tạo một bản sao của currentPathObj
       const newPathObj = {
         ...currentPathObj,
-        path: [...currentPathObj.path], // Sao chép mảng path hiện tại
+        paths: [...currentPathObj.paths], // Sao chép mảng path hiện tại
       };
 
       // Thêm điểm mới vào path
-      newPathObj.path.push({ x, y });
+      newPathObj.paths.push({ x, y });
 
       // Thay thế đối tượng cuối cùng bằng bản sao đã cập nhật
       newPaths[newPaths.length - 1] = newPathObj;
@@ -346,7 +338,6 @@ const ZoomableGrid = ({ children, onSetScale }) => {
       y: mouseY,
     });
   };
-
   return (
     <div
       className={`relative ${
@@ -416,7 +407,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
               key={index}
               color={pathData.color}
               thickness={pathData.thickness}
-              path={pathData.path}
+              paths={pathData.paths}
               opacity={pathData.opacity}
               scale={scale}
               translate={translate}
@@ -429,8 +420,12 @@ const ZoomableGrid = ({ children, onSetScale }) => {
         <div
           className="absolute border-2 border-blue-500"
           style={{
-            left: Math.min(selectionRect.x1, selectionRect.x2) * scale + translate.x,
-            top: Math.min(selectionRect.y1, selectionRect.y2) * scale + translate.y,
+            left:
+              Math.min(selectionRect.x1, selectionRect.x2) * scale +
+              translate.x,
+            top:
+              Math.min(selectionRect.y1, selectionRect.y2) * scale +
+              translate.y,
             width: Math.abs(selectionRect.x2 - selectionRect.x1) * scale,
             height: Math.abs(selectionRect.y2 - selectionRect.y1) * scale,
           }}

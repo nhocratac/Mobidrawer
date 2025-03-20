@@ -30,7 +30,7 @@ export interface canvasPath {
   thickness: number;
   color: string;
   opacity: number;
-  path: coordinate[];
+  paths: coordinate[];
   isSelected?: boolean; // Đánh dấu đường vẽ được chọn
 }
 
@@ -89,4 +89,39 @@ export interface TemplateStoreState {
   addTemplate : (template: ItemProps) => void;
   updateTemplate : (template: ItemProps) => void;
   deleteTemplate : (id: string) => void;
+}
+
+export interface Member {
+  memberId : string,
+  role : ROLE
+}
+
+ export type ROLE = "VIEWER" | "EDITOR"
+
+export interface Board {
+  id: string,
+  name : string,
+  owner :string ,
+  type: string,
+  description : string,
+  option : {
+    grid : boolean;
+    backgroundColor : string;
+  },
+  thumbnail: string,
+  updateAt: string,
+  members: Member[],
+  canvasPaths : canvasPath[]
+}
+
+export interface BoardStore {
+  board: Board | null;
+  setBoard: (board: Board) => void;
+  setBoardColor: ( color: string) => void;
+  setGridVisible: () => void;
+  updateBoard: (updates: Partial<Board>) => void;
+  clearBoard: () => void;
+}
+
+export interface CreateCanvasPath extends canvasPath {
 }
