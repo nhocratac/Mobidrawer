@@ -1,17 +1,16 @@
 package com.example.ie213backend.config.socket;
 
 import com.example.ie213backend.domain.TokenType;
-import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.security.DrawUserDetails;
 import com.example.ie213backend.service.AuthService;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Map;
-import java.util.List;
 
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 

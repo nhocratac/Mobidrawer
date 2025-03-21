@@ -12,7 +12,7 @@ export interface ToolDevState {
   mode: ModeType;
   setMode: (mode: ModeType) => void;
   pencil: {
-    color?: string;
+    color: string;
     thickness?: number;
     opacity?: number;
     setColor?: (color: string) => void;
@@ -124,4 +124,5 @@ export interface BoardStore {
 }
 
 export interface CreateCanvasPath extends canvasPath {
+  
 }

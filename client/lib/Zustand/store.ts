@@ -68,10 +68,10 @@ const useBoardStore = create<ListBoardState>()(
               board.id == boardId
                 ? {
                     ...board,
-                    canvasPaths: board.canvasPaths.map((path, index) =>
+                    canvasPaths: board.canvasPaths.map((paths, index) =>
                       index === pathIndex
-                        ? { ...path, isSelected: true }
-                        : { ...path, isSelected: false }
+                        ? { ...paths, isSelected: true }
+                        : { ...paths, isSelected: false }
                     ),
                   }
                 : board
@@ -84,8 +84,8 @@ const useBoardStore = create<ListBoardState>()(
               board.id === boardId
                 ? {
                     ...board,
-                    canvasPaths: board.canvasPaths.map((path) => ({
-                      ...path,
+                    canvasPaths: board.canvasPaths.map((paths) => ({
+                      ...paths,
                       isSelected: false,
                     })),
                   }

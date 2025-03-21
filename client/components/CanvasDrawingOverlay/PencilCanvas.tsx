@@ -8,7 +8,6 @@ interface PencilCanvasProps {
   opacity : number;
   translate: { x: number, y: number };
   paths: { x: number, y: number }[];
-  setPath: (newPath: { x: number, y: number }[]) => void; // Thêm hàm cập nhật path
   isSelected?: boolean; // Đánh dấu đường vẽ được chọn
 }
 

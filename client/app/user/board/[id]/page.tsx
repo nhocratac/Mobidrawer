@@ -35,27 +35,30 @@ const PlayGroundPage = ({ }: {
 
   return (
     <div className="w-screen h-screen bg-slate-500">
-      {id &&<BoardSubscription boardId={id.toString()} />}
-      <LeftToolBar
-        onClickTextButton={() => setTextItemCount(textItemCount + 1)}
-        onClickStickyNoteButton={onClickCreateStickyNote}
-        onClickShape={onClickAddShape}
-      />
-      <ZoomableGrid onSetScale={setScaleHandle}>
-        {Array.from({ length: textItemCount }).map((_, index) => (
-          <RNDText key={index} parentScale={scale} />
-        ))}
+      {id &&
+        (<>
+          (  <BoardSubscription boardId={id.toString()} />
+          <LeftToolBar
+            onClickTextButton={() => setTextItemCount(textItemCount + 1)}
+            onClickStickyNoteButton={onClickCreateStickyNote}
+            onClickShape={onClickAddShape}
+          />
+          <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
+            {Array.from({ length: textItemCount }).map((_, index) => (
+              <RNDText key={index} parentScale={scale} />
+            ))}
 
-        {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
-          <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColors[index]} />
-        ))}
+            {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
+              <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColors[index]} />
+            ))}
 
-        {shapeList.map((ShapeComponent, index) => (
-          <RNDBase key={index} parentScale={scale}  >
-            <ShapeComponent />
-          </RNDBase>
-        ))}
-      </ZoomableGrid>
+            {shapeList.map((ShapeComponent, index) => (
+              <RNDBase key={index} parentScale={scale}  >
+                <ShapeComponent />
+              </RNDBase>
+            ))}
+          </ZoomableGrid>
+          (</>)}
     </div>
   );
 };

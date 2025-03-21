@@ -23,8 +23,6 @@ public class CreateCanvasPath {
     @NotEmpty(message = "vui lòng cung cấp paths")
     private List<CoordinateDto> paths;
 
-    @NotBlank( message = "vui lòng cung cấp owner") String owner;
-
     @NotBlank( message = "vui lòng cung cấp boardId") String boardId;
 
     @Data

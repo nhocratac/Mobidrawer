@@ -16,9 +16,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Objects;
 
@@ -58,14 +55,13 @@ public class BoardSocketController {
     }
 
     @MessageMapping("/board/draw/{boardId}")  // Nhận tin nhắn từ client gửi đến "/app/draw"
-    @SendTo("/board/draw/{boardId}")
-    public ResponseEntity<CanvasPath> createCanvasPath(
+    @SendTo("/topic/draw/board/{boardId}")
+    public CanvasPath  createCanvasPath(
             @DestinationVariable String boardId,
             SimpMessageHeaderAccessor headerAccessor,
-            @Payload @Valid CreateCanvasPath canvasPath
+            @Payload  CreateCanvasPath canvasPath
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-
-        return ResponseEntity.ok(canvasPathService.CreateCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath),userDto.getId() ));
+        return (canvasPathService.CreateCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath),userDto.getId() ));
     }
 }
