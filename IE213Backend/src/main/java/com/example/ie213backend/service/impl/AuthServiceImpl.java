@@ -147,7 +147,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean verifyCode(String email, String code) {
         RegistrationRequest request = redisTemplate.opsForValue().get(email);
-        System.out.println(request);
         if (request != null && request.getCode().equals(code)) {
             deleteRegistrationRequest(email); // Xóa yêu cầu sau khi xác thực thành công
             // tạo User lưu vào database

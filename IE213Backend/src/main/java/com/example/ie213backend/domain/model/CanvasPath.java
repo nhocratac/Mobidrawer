@@ -22,7 +22,9 @@ public class CanvasPath {
     private List<Coordinate> paths;
 
     @Field(targetType = FieldType.OBJECT_ID)
-    private String ownerId;
+    private String owner;
+    @Field(targetType = FieldType.OBJECT_ID)
+    private String boardId;
 
     @Data
     @AllArgsConstructor

@@ -84,6 +84,8 @@ public class EmailServiceImpl implements EmailService {
             helper.setSubject("Xác thực email");
             helper.setTo(email);
 
+
+
             // Tạo context cho template
             Context context = new Context(Locale.getDefault());
             context.setVariable("verificationCode", verificationCode);

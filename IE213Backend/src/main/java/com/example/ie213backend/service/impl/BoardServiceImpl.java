@@ -1,10 +1,12 @@
 package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
+import com.example.ie213backend.domain.dto.BoardDto.BoardFullDetailResponse;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.BoardMapper;
+import com.example.ie213backend.repository.BoardCustomRepository;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -27,22 +30,44 @@ public class BoardServiceImpl implements BoardService {
 
     private final UserRepository userRepository;
 
+    private final BoardCustomRepository boardCustomRepository;
+
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Board getBoard(String id ) {
-        return boardRepository.findByid(id);
+    public Board getBoard(String id, String userId ) {
+        //
+        BoardFullDetailResponse foundBoard = boardCustomRepository.getBoardWithCanvasPaths(id);
+
+        if (foundBoard == null) {
+            throw new IllegalArgumentException("Board not found");
+        }
+
+        // Kiểm tra quyền truy cập
+        boolean isOwner = Objects.equals(userId, foundBoard.getOwner());
+        boolean isMember = foundBoard.getMembers().stream()
+                .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
+
+        if (!isOwner && !isMember) {
+            throw new RuntimeException("You are not allowed to access this board");
+        }
+
+        return foundBoard;
     }
 
     @Override
-    public Board createBoard(Board board) {
+    public Board createBoard(Board board,String ownerId) {
         if (board.getMembers() == null) {
             board.setMembers(new ArrayList<>());
         }
 
-        if (board.getCanvasPaths() == null) {
-            board.setCanvasPaths(new ArrayList<>());
+        if(board.getOption() == null) {
+            board.setOption(new Board.Option(
+                    true,
+                    "bg-slate-700"
+            ));
         }
+        board.setOwner(ownerId);
         return boardRepository.save(board);
     }
 
@@ -57,14 +82,14 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
+                .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
         // Kiểm tra xem user đã là member hay chưa
         boolean isMember = board.getMembers().stream()

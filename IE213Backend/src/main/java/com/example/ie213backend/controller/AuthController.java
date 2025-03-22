@@ -21,7 +21,9 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response) {
         UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
 
         String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
@@ -40,7 +42,10 @@ public class AuthController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
+    public ResponseEntity<AuthResponse> refreshToken(
+            @CookieValue(name = "refreshToken", required = true) String refreshToken,
+            HttpServletResponse response
+            ) {
         if(refreshToken == null || refreshToken.isEmpty()) {
             return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
@@ -51,6 +56,7 @@ public class AuthController {
         if (newAccessToken == null) {
             return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
+        response.addHeader("Authorization", "Bearer " + newAccessToken);
         AuthResponse authResponse = AuthResponse.builder().accessToken(newAccessToken).build();
 
         return ResponseEntity.ok(authResponse);
@@ -59,7 +65,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String,String>> register(
             @RequestBody @Valid RegisterDto registerDto) {
-        System.out.println(registerDto);
         String email = registerDto.getEmail();
         String password = registerDto.getPassword();
         String firstName = registerDto.getFirstName();

@@ -13,16 +13,20 @@ const httpRequest = axios.create({
 });
 
 // ✅ Thêm accessToken vào headers trước mỗi request
-httpRequest.interceptors.request.use((config) => {
+httpRequest.interceptors.request.use(async (config) =>  {
   if (
     config.url?.includes("/auth/login") ||
-    config.url?.includes("/auth/register")
+    config.url?.includes("/auth/register") ||
+    config.url?.includes("/auth/refresh")
   ) {
     return config;
   }
   const token = useTokenStore.getState().token; // Lấy từ Zustand
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    const newAccessToken = await refreshAccessToken();
+    config.headers.Authorization = `Bearer ${newAccessToken}`;
   }
   return config;
 });
@@ -35,13 +39,11 @@ httpRequest.interceptors.response.use(
       try {
         const newToken = await refreshAccessToken();
         if (newToken) {
-          useTokenStore.getState().setToken(newToken);
           error.config.headers.Authorization = `Bearer ${newToken}`;
           return axios(error.config); // Gửi lại request cũ
         }
       } catch (refreshError) {
         useTokenStore.getState().clearToken();
-        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

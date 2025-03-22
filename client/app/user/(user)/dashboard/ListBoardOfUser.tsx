@@ -1,28 +1,11 @@
+import useDashBoard, { ListBoardOfUserProps } from "@/app/user/(user)/dashboard/useDashBoard";
 import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
     ContextMenuTrigger,
-} from "@/components/ui/context-menu"
-import { useBoardStore } from "@/lib/Zustand/store";
+} from "@/components/ui/context-menu";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-interface Board {
-    id: string;
-    name: string;
-    thumnail?: string;
-    description?: string;
-    owner?: string;
-    members?: string[];
-}
-
-interface ListBoardOfUserProps {
-    boardList?: Board[];
-    modeView: 'List' | 'Grid';
-    [key: string]: unknown;
-}
-
 
 function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -41,16 +24,9 @@ function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
 }
 
 function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
-    const [isMounted, setIsMounted] = useState(false);
-    const ListBoard = useBoardStore(state => state.boards)
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    if (!isMounted) {
-        return null; // Trả về null hoặc một loading state
-    }
+    const { boards } = useDashBoard();
+    if (!boards)
+        return (<p>loading</p>)
     if (modeView === 'List') {
         return (
             <div className={`px-12  w-full flex-1 overflow-y-auto ${props}`} >
@@ -66,7 +42,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                     </thead>
                     <tbody>
                         {
-                            ListBoard.map((data, index) => (
+                            boards.map((data, index) => (
                                 <tr className="p-10 hover:cursor-pointer hover:bg-slate-100" key={index}>
                                     <td className="flex">
                                         <ContextMenuWrapper>
@@ -88,7 +64,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                                         <Link href={`/user/board/${data.id}`} className="text-2xl">0</Link>
                                     </td>
                                     <td>
-                                        <Link href={`/user/board/${data.id}`} className="text-2xl">{data.lastOpened}</Link>
+                                        <Link href={`/user/board/${data.id}`} className="text-2xl">{data.updateAt}</Link>
                                     </td>
                                     <td>
                                         <Link href={`/user/board/${data.id}`} className="text-2xl">{data.owner}</Link>
@@ -105,7 +81,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
         return (
             <div className="grid grid-cols-5 gap-4 px-12 flex-1 overflow-y-auto ">
                 {
-                    ListBoard.map((data, index) => (
+                    boards.map((data, index) => (
                         <ContextMenuWrapper key={index}>
                             <Link href={`/user/board/${data.id}`}>
                                 <div key={index} className=" p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col item">

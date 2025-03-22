@@ -5,6 +5,7 @@ import com.example.ie213backend.domain.dto.BoardDto.AddMember;
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.ChangeRole;
 import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
+import com.example.ie213backend.domain.dto.BoardDto.socket.JoinRequest;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
@@ -13,6 +14,10 @@ import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,20 +30,21 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    private RequestBody addMember;
 
     @GetMapping("/{id}")
     public ResponseEntity<Board> getBoardById(
-            @PathVariable String id
+            @PathVariable String id,
+            @RequestAttribute("user") UserDto userDto
     ) {
-        return ResponseEntity.ok(boardService.getBoard(id));
+        return ResponseEntity.ok(boardService.getBoard(id, userDto.getId()));
     }
 
     @PostMapping("/create")
     public ResponseEntity<Board> createBoard(
-            @RequestBody @Valid CreateBoard board
+            @RequestBody @Valid CreateBoard board,
+            @RequestAttribute("user") UserDto userDto
     ) {
-        return ResponseEntity.ok(boardService.createBoard(BoardMapper.INSTANCE.createBoardToEntity(board)));
+        return ResponseEntity.ok(boardService.createBoard(BoardMapper.INSTANCE.createBoardToEntity(board), userDto.getId()));
     }
 
     @PostMapping("/addPath/{id}")
@@ -73,5 +79,7 @@ public class BoardController {
     ) {
         return ResponseEntity.ok(boardService.findAllBoardofUser(userDto.getId()));
     }
+
+
 
 }
