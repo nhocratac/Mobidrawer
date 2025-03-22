@@ -52,7 +52,7 @@ const useBoardStore = create<ListBoardState>()(
                   ...board,
                   options: {
                     ...board.options,
-                    gird: !board.options.gird,
+                    grid: !board.options.grid,
                   },
                 };
               } else {

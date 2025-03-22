@@ -19,15 +19,17 @@ const createBoard = (type: boardType, id: number) => {
     const response: BoardState = {
       id: id,
       name: `${type} ${id}`,
-      lastOpened : customDate,
-      description: `Đây là ${type} bảng đã được tạo tại${new Date().toISOString()}`,
-      canvasPaths: [],
-      thumbnail: boardAvatar[id % boardAvatar.length],
+      owner: "",
       type: type,
+      description: `Đây là ${type} bảng đã được tạo tại${new Date().toISOString()}`,
       options: {
-        gird: true,
+        grid: true,
         backgroundColor: 'bg-slate-700',
       },
+      thumbnail: boardAvatar[id % boardAvatar.length],
+      updateAt : customDate,
+      members: [],
+      canvasPaths: [],
     };
     return response;
   } catch (error) {

@@ -42,7 +42,7 @@ const ZoomableGrid = ({ children, onSetScale }) => {
     if (board?.canvasPaths) {
       setCanvasPaths(board.canvasPaths);
       setBackgroundColor(board?.options?.backgroundColor);
-      setGridVisible(board?.options?.gird);
+      setGridVisible(board?.options?.grid);
     }
   }, [board]);
 

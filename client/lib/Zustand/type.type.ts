@@ -8,6 +8,11 @@ export enum ModeType {
   eraser = "eraser",
 }
 
+export enum ModeRole {
+  editor = "editor",
+  viewer = "viewer"
+}
+
 export interface ToolDevState {
   mode: ModeType;
   setMode: (mode: ModeType) => void;
@@ -34,6 +39,11 @@ export interface canvasPath {
   isSelected?: boolean; // Đánh dấu đường vẽ được chọn
 }
 
+export interface member {
+  memberId: string,
+  role: ModeRole,
+}
+
 export enum boardType {
     flowchart = 'flowchart',
     brainWritting='brainwritting',
@@ -45,18 +55,18 @@ export enum boardType {
 
 export interface BoardState {
   id: number;
-  backgroundColor?: "string";
   name ?: string ;
-  description ?: string ,
-  lastOpened ?: string ,
   owner ?: string ,
   type : boardType;
-  thumbnail : string;
-  canvasPaths: canvasPath[];
+  description ?: string ,
   options: {
-    gird ?: boolean;
+    grid ?: boolean;
     backgroundColor ?: string;
   };
+  thumbnail : string;
+  updateAt ?: string,
+  members: member[],
+  canvasPaths: canvasPath[];
 }
 
 export interface ListBoardState {

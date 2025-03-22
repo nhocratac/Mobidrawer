@@ -14,3 +14,5 @@ public interface BoardService {
      Board changeRoleOfMember(String boardId, String userId, Board.ROLE role,String ownerID);
      List<BoardDTO> findAllBoardofUser(String userId);
 }
+
+
