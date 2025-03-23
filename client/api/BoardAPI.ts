@@ -1,11 +1,11 @@
 import { Board } from "@/lib/Zustand/type.type";
 import httpRequest from "@/utils/httpRequest";
 
-const boardAvatar = [
-  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906",
-  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_30.png?etag=20230906",
-  "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_18.png?etag=20230906",
-];
+// const boardAvatar = [
+//   "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_6.png?etag=20230906",
+//   "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_30.png?etag=20230906",
+//   "https://miro.com/app/images/application/icons/board_vis_230905/icon/board_icon_18.png?etag=20230906",
+// ];
 
 const createBoard = async (name: string, description: string) => {
   try {
@@ -66,7 +66,7 @@ export default BoardAPI;
 //       thumbnail: boardAvatar[id % boardAvatar.length],
 //       type: type,
 //       options: {
-//         gird: true,
+//         grid: true,
 //         backgroundColor: 'bg-slate-700',
 //       },
 //     };
