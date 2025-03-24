@@ -182,7 +182,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   };
 
   // Thêm canvasPathBatch
-  const BATCH_INTERVAL = 1500; // 100ms
+  const BATCH_INTERVAL = 1000;
   let canvasPathBatch: CanvasPath[] = [];
 
   // Hàm gửi batch

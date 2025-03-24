@@ -170,12 +170,14 @@ const LeftToolBar = ({
 
   const handleClickPenButton = () => {
     setIsSelectPenVisible(!isSelectPenVisible);
+    setIsPenConfigPopupVisible(false);
     setMode("pen");
     setHighlightPen(1);
   }
 
   const handleClickHighlightButton = () => {
     setIsSelectPenVisible(!isSelectPenVisible);
+    setIsPenConfigPopupVisible(false);
     setMode("pen");
     setHighlightPen(0.5);
   };
