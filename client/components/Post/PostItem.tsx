@@ -5,11 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Share2 } from "lucide-react";
 import { useState } from "react";
 
-
-
-
 export interface PostItemProps {
-    // Define the props of PostItem
     id: string,
     owner: {
         name: string,
@@ -22,7 +18,6 @@ export interface PostItemProps {
         description: string,
     }
 }
-
 
 function PostItem({ owner, image, text }: PostItemProps) {
     const [liked, setLiked] = useState(false)
@@ -66,11 +61,13 @@ function PostItem({ owner, image, text }: PostItemProps) {
                 <p className='text-2xl font-normal'>{text.description}</p>
             </div>
             <div className='p-4 flex justify-center'>
-                <img
-                    className='w-[500px] h-[500px]'
-                    src= {image}
-                    alt='team'
-                />
+                <div className='max-w-full overflow-hidden'>
+                    <img
+                        className='w-full max-h-[500px] object-contain'
+                        src={image}
+                        alt='post image'
+                    />
+                </div>
             </div>
             <div className="p-4 flex justify-around items-center gap-2 ">
                 <Button className='text-2xl rounded-2xl px-6 py-6 flex-1' variant={'outline'} onClick={toggleLike}>

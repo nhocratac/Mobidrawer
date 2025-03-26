@@ -7,7 +7,7 @@ import usecasehero from "@/assets/UseCaseImages/usecasehero.png"
 import Link from 'next/link'
 export default function UseCaseHero() {
     return (
-        <div className="relative min-h-[800px]">
+        <div className="relative min-h-[400px]">
             <div className="container mx-auto">
                 <motion.div
                     className="flex flex-col items-center relative z-10"

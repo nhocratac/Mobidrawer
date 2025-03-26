@@ -9,7 +9,7 @@ export default function Layout() {
         <div>
             <LandingNavbar />
             <div>
-                <div className="max-w-[calc(100%-250px)] mx-auto ">
+                <div className="w-full px-4 md:px-6 lg:px-8 max-w-full md:max-w-[90%] lg:max-w-[calc(100%-250px)] mx-auto">
                     <div className='relative z-20'>
                         <Blog />
                         <BlogListing />

@@ -11,7 +11,7 @@ export default function Layout() {
         <div>
             <LandingNavbar />
             <div className='bg-[#FBF7EF]'>
-                <div className="max-w-[calc(100%-250px)] mx-auto ">
+                <div className="w-[90%] md:w-[85%] lg:max-w-[calc(100%-250px)] mx-auto px-4 md:px-6 lg:px-8">
                     <div className='relative z-20'>
                         <EnterpriseHero />
                         <EnterpriseMisson />
