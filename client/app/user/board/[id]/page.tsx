@@ -9,8 +9,7 @@ import LeftToolBar from '@/components/SideBar/LeftToolBar';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
-const PlayGroundPage = ({ }: {
-}) => {
+const PlayGroundPage = () => {
   useEffect(() => {
     // Disable scrolling
     document.body.style.overflow = 'hidden';
@@ -38,7 +37,7 @@ const PlayGroundPage = ({ }: {
     <div className="w-screen h-screen bg-slate-500">
       {id &&
         (<>
-          (  <BoardSubscription boardId={id.toString()} />
+          <BoardSubscription boardId={id.toString()} />
           <LeftToolBar
             onClickTextButton={() => setTextItemCount(textItemCount + 1)}
             onClickStickyNoteButton={onClickCreateStickyNote}

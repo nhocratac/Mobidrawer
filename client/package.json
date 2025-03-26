@@ -22,7 +22,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@redux-devtools/extension": "^3.3.0",
-    "@stomp/stompjs": "^7.0.0",
+    "@stomp/stompjs": "^7.0.1",
     "@svgr/webpack": "^8.1.0",
     "axios": "^1.8.3",
     "buffer": "^6.0.3",

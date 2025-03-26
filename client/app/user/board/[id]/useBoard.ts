@@ -28,6 +28,20 @@ export function useBoard() {
       });
   }, [id]);
 
+  // xóa shape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        setShapeList([]);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  })
+
   const onClickCreateStickyNote = (colorName: string) => {
     const newStickyNote = {
       color: colorName,

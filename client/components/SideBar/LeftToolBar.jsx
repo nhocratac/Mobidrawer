@@ -11,18 +11,17 @@ import {
   FaRegStar,
   FaRegStickyNote,
 } from "react-icons/fa";
-import { GiArrowCursor } from "react-icons/gi";
 import { HiMiniSparkles } from "react-icons/hi2";
 import { IoColorFillSharp, IoTriangleOutline } from "react-icons/io5";
 import { LuShapes } from "react-icons/lu";
 import { MdGrid4X4, MdOutlineRectangle } from "react-icons/md";
+import { PiHandGrabbingFill } from "react-icons/pi";
 import { RiText } from "react-icons/ri";
 import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 
 import { FaDotCircle } from "react-icons/fa";
 
 import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
-import { useParams } from "next/navigation";
 const stickyNoteColor = [
   "bg-blue-500",
   "bg-red-500",
@@ -105,7 +104,6 @@ const LeftToolBar = ({
   onClickShape ,
 }) => {
   // get state from zustand store
-  const { id } = useParams();
   const ModeTool = useToolDevStore((state) => state.mode);
   const setMode = useToolDevStore((state) => state.setMode);
   const setGridVisible = useBoardStoreof((state) => state.setGridVisible);
@@ -127,10 +125,21 @@ const LeftToolBar = ({
   );
   const penColor = useToolDevStore((state) => state.pencil?.color);
   const setPenColor = useToolDevStore((state) => state.pencil?.setColor);
-  const setHighightPen = useToolDevStore((state) => state.pencil.setOpacity);
+  const setHighlightPen = useToolDevStore((state) => state.pencil.setOpacity);
 
   const onClickAIButton = () => {
     setIsPopupVisible(!isAIGenerationPopupVisible);
+  };
+
+  const OnClickPiHandGrabbingFillButton = () => {
+    resetSelectPopup();
+    if(ModeTool == "drag") setMode("idle");
+    else setMode("drag");
+  };
+
+  const onClickCreateTextButton = () => {
+    resetSelectPopup();
+    onClickTextButton();
   };
 
   const onClickNoteButton = () => {
@@ -142,44 +151,44 @@ const LeftToolBar = ({
     resetSelectPopup();
     setIsSelectShapeVisible(!isSelectShapeVisible);
   };
-  const onClickCreateTextButton = () => {
-    resetSelectPopup();
-    onClickTextButton();
+
+  const handleClickVisibleGridButton = () => {
+    setGridVisible();
   };
 
   const onClickBackgroundButton = () => {
     resetSelectPopup();
     setIsSelectBackgroundVisible(!isSelectBackgroundVisible);
   };
-  const handleThicknessChange = (e) => {
-    setPenThickness(e.target.value);
-  };
 
-  const OnClickArrowButton = () => {
-    resetSelectPopup();
-    if (ModeTool == "drag") setMode("idle");
-    else setMode("drag");
-  };
-
-  const onClickPenButton = () => {
+  const onClickPenVisibleButton = () => {
     resetSelectPopup();
     setIsSelectPenVisible(!isSelectPenVisible);
     setIsPenConfigPopupVisible(false);
-    // set state to zustand store
+    setMode("idle");
+  };
+
+  const handleClickPenButton = () => {
+    setIsSelectPenVisible(!isSelectPenVisible);
+    setIsPenConfigPopupVisible(false);
     setMode("pen");
-    setHighightPen(1);
+    setHighlightPen(1);
+  }
+
+  const handleClickHighlightButton = () => {
+    setIsSelectPenVisible(!isSelectPenVisible);
+    setIsPenConfigPopupVisible(false);
+    setMode("pen");
+    setHighlightPen(0.5);
   };
 
   const handleClickEraserButton = () => {
+    setIsSelectPenVisible(!isSelectPenVisible);
     setMode("eraser");
   };
 
-  const handleClickHighlightButton = () => {
-    setHighightPen(0.5);
-  };
-
-  const handleClickVisibleGrid = () => {
-    setGridVisible();
+  const handleThicknessChange = (e) => {
+    setPenThickness(e.target.value);
   };
 
   const shapeIcons = [
@@ -234,24 +243,23 @@ const LeftToolBar = ({
         <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
           <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
           <ToolBarBtn
-            onclick={OnClickArrowButton}
-            icon={GiArrowCursor}
+            onclick={OnClickPiHandGrabbingFillButton}
+            icon={PiHandGrabbingFill}
             isChoosing={ModeTool == "drag"}
           />
           <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
           <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
           <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
 
-          <ToolBarBtn onclick={handleClickVisibleGrid} icon={MdGrid4X4} />
+          <ToolBarBtn onclick={handleClickVisibleGridButton} icon={MdGrid4X4} />
 
           <ToolBarBtn
             onclick={onClickBackgroundButton}
             icon={IoColorFillSharp}
           />
           <ToolBarBtn
-            onclick={onClickPenButton}
+            onclick={onClickPenVisibleButton}
             icon={FaPen}
-            isChoosing={ModeTool == "pen"}
           />
         </div>
 
@@ -332,7 +340,7 @@ const LeftToolBar = ({
             <div className="grid grid-cols-1 gap-1 p-1 w-fit justify-center items-center">
               <button
                 className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
-                onClick={onClickPenButton}
+                onClick={handleClickPenButton}
               >
                 <FaPen className="w-10 h-10" />
               </button>

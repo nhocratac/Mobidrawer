@@ -65,7 +65,8 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
   const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
-  const { canvasPaths, setCanvasPaths, updateCanvasPath ,setSelectedPath,addCanvasPaths,addPointToLastPath} = useCanvasPathsStore();
+  const { canvasPaths, setCanvasPaths ,setSelectedPath,addCanvasPaths,addPointToLastPath} = useCanvasPathsStore();
+  // const { canvasPaths, setCanvasPaths, updateCanvasPath ,setSelectedPath,addCanvasPaths,addPointToLastPath} = useCanvasPathsStore();
 
   // socket 
   const {client} = useStompStore()
@@ -79,9 +80,9 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     }
   }, [board]);
 
-  const setonePathInArrayPath = (index: number, newPath: CanvasPath) => {
-    updateCanvasPath( index,newPath)
-  };
+  // const setonePathInArrayPath = (index: number, newPath: CanvasPath) => {
+  //   updateCanvasPath( index,newPath)
+  // };
 
   // Hàm chuyển đổi tọa độ từ màn hình sang canvas gốc
   const getTransformedCoordinates = (x: number, y: number): Point => ({
@@ -99,6 +100,12 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
           setUndoPressed(true);
         }
       }
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        const updatedPaths = canvasPaths.filter((path) => path.isSelected);
+        setCanvasPaths(updatedPaths);
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -114,19 +121,19 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [undoPressed]);
+  }, []);
 
   // Các hàm xử lý chọn vùng
-  const startSelection = (x: number, y: number) => {
-    setIsSelecting(true);
-    setSelectionRect({ x1: x, y1: y, x2: x, y2: y });
-  };
+  // const startSelection = (x: number, y: number) => {
+  //   setIsSelecting(true);
+  //   setSelectionRect({ x1: x, y1: y, x2: x, y2: y });
+  // };
 
-  const updateSelection = (x: number, y: number) => {
-    if (isSelecting && selectionRect) {
-      setSelectionRect({ ...selectionRect, x2: x, y2: y });
-    }
-  };
+  // const updateSelection = (x: number, y: number) => {
+  //   if (isSelecting && selectionRect) {
+  //     setSelectionRect({ ...selectionRect, x2: x, y2: y });
+  //   }
+  // };
 
   const endSelection = () => {
     if (isSelecting && selectionRect) {
@@ -174,6 +181,29 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     if (onSetScale) onSetScale(newScale);
   };
 
+  // Thêm canvasPathBatch
+  const BATCH_INTERVAL = 1000;
+  let canvasPathBatch: CanvasPath[] = [];
+
+  // Hàm gửi batch
+  const sendBatch = () => {
+    if (canvasPathBatch.length > 0) {
+      canvasPathBatch.forEach(path => {
+        client?.publish({
+          destination: `/app/board/draw/${boardId}`,
+          body: JSON.stringify({
+            ...path,
+            boardId: boardId
+          }),
+        });
+      });
+
+      console.log(canvasPathBatch);
+  
+      canvasPathBatch = []; // Reset batch sau khi gửi
+    }
+  };
+
   // Xử lý sự kiện chuột
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (mode === "drag" && e.button === 0) {
@@ -214,13 +244,15 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   const handleMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (mode === "drag" && e.button === 0) setIsPanning(false);
     if (mode === "pen" && e.button === 0) {
-      client?.publish({
-        destination:`/app/board/draw/${boardId}`,
-        body: JSON.stringify({
-          ...canvasPaths[canvasPaths.length-1],
-          boardId: boardId
-        })
-      })
+      // Thêm nét vẽ vào batch
+      canvasPathBatch.push(canvasPaths[canvasPaths.length - 1]);
+  
+      // Gửi canvasPathBatch nếu đủ lớn hoặc sau một khoảng thời gian
+      if (canvasPathBatch.length >= 10) { // Ví dụ: gửi khi có 10 nét vẽ
+        sendBatch();
+      } else {
+        setTimeout(sendBatch, BATCH_INTERVAL);
+      }
       setIsDrawing(false)
     };
     if (mode === "idle" && e.button === 0)     endSelection();;

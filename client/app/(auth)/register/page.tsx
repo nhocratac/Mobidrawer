@@ -92,7 +92,7 @@ export default function RegisterForm() {
       lastName: data.lastName,
       phone: data.phone,
     }).then(
-      res => {
+      () => {
         setStep(2);
       }
     ).catch(err => {
