@@ -1,10 +1,7 @@
 package com.example.ie213backend.controller;
 
 
-import com.example.ie213backend.domain.dto.BoardDto.AddMember;
-import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
-import com.example.ie213backend.domain.dto.BoardDto.ChangeRole;
-import com.example.ie213backend.domain.dto.BoardDto.CreateBoard;
+import com.example.ie213backend.domain.dto.BoardDto.*;
 import com.example.ie213backend.domain.dto.BoardDto.socket.JoinRequest;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Board;
@@ -32,7 +29,7 @@ public class BoardController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Board> getBoardById(
+    public ResponseEntity<BoardFullDetailResponse> getBoardById(
             @PathVariable String id,
             @RequestAttribute("user") UserDto userDto
     ) {

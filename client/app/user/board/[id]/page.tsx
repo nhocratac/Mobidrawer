@@ -6,6 +6,7 @@ import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDText from '@/components/BoxResizable/RNDText';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
+import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
 const PlayGroundPage = ({ }: {
@@ -26,13 +27,13 @@ const PlayGroundPage = ({ }: {
     setScaleHandle,
     textItemCount,
     setTextItemCount,
-    stickyNoteItemCount,
-    stickyNoteColors,
     onClickCreateStickyNote,
     shapeList,
     onClickAddShape,
+    handleMoveStickyNote
   } = useBoard();
 
+  const { stickyNotes } = useStickyNoteStore();
   return (
     <div className="w-screen h-screen bg-slate-500">
       {id &&
@@ -47,9 +48,8 @@ const PlayGroundPage = ({ }: {
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />
             ))}
-
-            {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
-              <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColors[index]} />
+            {stickyNotes.map((stickyNote, index) => (
+              <RNDStickyNote key={stickyNote.id} parentScale={scale} stickyNote={stickyNote} handlemoveStickyNote={handleMoveStickyNote}/>
             ))}
 
             {shapeList.map((ShapeComponent, index) => (

@@ -1,5 +1,6 @@
 import BoardAPI from "@/api/BoardAPI";
 import { useStompStore } from "@/lib/Zustand/socketStore";
+import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,27 +12,42 @@ export function useBoard() {
   const { client } = useStompStore();
   const [scale, setScale] = useState(1);
   const [textItemCount, setTextItemCount] = useState(0);
-  const [stickyNoteItemCount, setStickyNoteItemCount] = useState(0);
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
-  const [stickyNoteColors, setStickyNoteColors] = useState<string[]>([]);
-  const {setBoard} = useBoardStoreof()
+  const {  setBoard } = useBoardStoreof();
+  const { setStickyNotes  } = useStickyNoteStore();
 
   useEffect(() => {
     if (!id) return;
     BoardAPI.getBoardById(id.toString())
       .then((res) => {
         setBoard(res);
+        setStickyNotes(res.stickyNotes ? res.stickyNotes : []);
       })
-      .catch((err) => {
+      .catch(() => {
         console.log("get board by id error:");
-        console.log(err);
       });
   }, [id]);
 
   const onClickCreateStickyNote = (colorName: string) => {
-    setStickyNoteItemCount((prev) => prev + 1);
-    setStickyNoteColors((prevColors) => [...prevColors, colorName]);
+    const newStickyNote = {
+      color: colorName,
+      position: { x: 100, y: 100 },
+      size: { width: 200, height: 200 },
+      text: "Type here...",
+    };
+    client?.publish({
+      destination: `/app/board/addStickyNote/${id}`,
+      body: JSON.stringify(newStickyNote),
+    });
   };
+
+  const handleMoveStickyNote = (stickyNoteId: string, newPosition: { x: number; y: number }) => {
+    client?.publish({
+      destination: `/app/board/moveStickyNote/${id}`,
+      body: JSON.stringify({ id : stickyNoteId, position: newPosition }),
+    }); 
+    
+  }
 
   const onClickAddShape = (shape: ShapeComponent) => {
     setShapeList((prevShapes) => [...prevShapes, shape]);
@@ -41,27 +57,15 @@ export function useBoard() {
     setScale(s);
   };
 
-  const sendMessage = () => {
-    client?.publish({
-      destination: "/app/board/join/" + id,
-      body: JSON.stringify({
-        userId: "thang12121",
-      }),
-    });
-  };
-
   return {
     id,
     scale,
     setScaleHandle,
     textItemCount,
     setTextItemCount,
-    stickyNoteItemCount,
-    setStickyNoteItemCount,
-    stickyNoteColors,
     onClickCreateStickyNote,
     shapeList,
     onClickAddShape,
-    sendMessage,
+    handleMoveStickyNote
   };
 }

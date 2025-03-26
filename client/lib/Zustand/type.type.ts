@@ -111,7 +111,8 @@ export interface Board {
   thumbnail: string,
   updateAt: string,
   members: Member[],
-  canvasPaths : canvasPath[]
+  canvasPaths : canvasPath[],
+  stickyNotes : StickyNote[]
 }
 
 export interface BoardStore {
@@ -125,4 +126,21 @@ export interface BoardStore {
 
 export interface CreateCanvasPath extends canvasPath {
   
+}
+
+export interface StickyNote {
+  id: string;
+  color: string;
+  text : string;
+  size :{
+    width: number;
+    height: number;
+  }
+  position : {
+    x: number;
+    y: number;
+  },
+  owner : string;
+  boardId : string;
+  updateAt: string;
 }

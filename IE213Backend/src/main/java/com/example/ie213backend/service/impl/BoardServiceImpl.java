@@ -35,10 +35,9 @@ public class BoardServiceImpl implements BoardService {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Board getBoard(String id, String userId ) {
+    public BoardFullDetailResponse getBoard(String id, String userId ) {
         //
         BoardFullDetailResponse foundBoard = boardCustomRepository.getBoardWithCanvasPaths(id);
-
         if (foundBoard == null) {
             throw new IllegalArgumentException("Board not found");
         }

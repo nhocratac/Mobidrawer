@@ -26,6 +26,12 @@ public class BoardCustomRepository {
                         "_id",         // Trường `_id` trong `boards`
                         "boardId",     // Trường `boardId` trong `canvasPaths`
                         "canvasPaths"  // Tên field chứa dữ liệu join
+                ),
+                Aggregation.lookup(
+                        "stickyNote",
+                        "_id",
+                        "boardId",
+                        "stickyNotes"
                 )
         );
 
