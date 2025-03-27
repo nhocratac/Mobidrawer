@@ -6,7 +6,7 @@ function Layout({
     children: React.ReactNode
 }) {
   return (
-    <div className=' p-10  flex  flex-col ' >
+    <div className='p-4 md:p-6 lg:p-10 flex flex-col' >
       {children}
     </div>
   )

@@ -1,7 +1,9 @@
 import React from 'react'
 
-export default function page() {
+export default function Page() {
   return (
-    <div>page</div>
+    <main className="w-full">
+      {/* Content will be rendered through layout.tsx */}
+    </main>
   )
 }

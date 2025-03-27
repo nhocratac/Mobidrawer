@@ -9,9 +9,9 @@ import TeamCollaborate from './Components/TeamCollaborate'
 import TeamTool from './Components/TeamTool'
 export default function Layout() {
     return (
-        <div>
+        <div className="min-h-screen w-full overflow-x-hidden">
             <LandingNavbar />
-            <div className="max-w-[calc(100%-250px)] mx-auto">
+            <div className="w-full px-4 sm:px-6 md:px-8 lg:max-w-[calc(100%-250px)] lg:mx-auto">
                 <div className='relative z-20'>
                     <TeamHero />
                     <LogoSlider />
