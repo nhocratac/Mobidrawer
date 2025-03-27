@@ -7,4 +7,6 @@ public interface StickyNoteService {
     StickyNote createStickyNote(StickyNote stickyNote);
 
     StickyNote updateStickyNotePosition(String id,String boardId,String owner, int x, int y);
+
+    StickyNote updateStickyNoteSize(StickyNote stickyNote);
 }

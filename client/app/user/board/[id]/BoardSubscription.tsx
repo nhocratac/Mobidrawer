@@ -5,9 +5,9 @@ import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
-  const { client, isConnected,sessionId } = useStompStore();
+  const { client,sessionId } = useStompStore();
   const { addCanvasPath } = useCanvasPathsStore()
-  const { addStickyNote, moveStickyNote } = useStickyNoteStore()
+  const { addStickyNote, moveStickyNote ,resizeStickyNote} = useStickyNoteStore()
 
   useEffect(() => {
     if (!client || !client.connected) {
@@ -31,7 +31,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     const moveStickyNoteSubscription = client.subscribe(`/topic/board/moveStickyNote/${boardId}`, (message) => {
       const payload = JSON.parse(message.body);
       const stickyNote = payload.stickyNote;
-
       const senderSessionId = payload.senderSessionId;
       // Bỏ qua nếu tin nhắn đến từ chính mình
       if (senderSessionId === sessionId) {
@@ -39,6 +38,16 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       }
       moveStickyNote(stickyNote.id, stickyNote.position);
     });
+
+    const reSizeStickyNoteSubcription = client.subscribe(`/topic/board/reSizeStickyNote/${boardId}`,(message) => {
+      const payload = JSON.parse(message.body);
+      const stickyNote = payload.stickyNote;
+      const senderSessionId = payload.senderSessionId;
+      if (senderSessionId === sessionId) {
+        return;
+      }
+      resizeStickyNote(stickyNote.id, stickyNote.size)
+    })
 
     client.publish({
       destination: `/app/board/join/${boardId}`,
@@ -52,6 +61,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       drawSubcription.unsubscribe()
       addStickyNoteSubscription.unsubscribe()
       moveStickyNoteSubscription.unsubscribe()
+      reSizeStickyNoteSubcription.unsubscribe()
     };
   }, [client, boardId,sessionId]);
 

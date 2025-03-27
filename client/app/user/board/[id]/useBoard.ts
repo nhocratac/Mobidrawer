@@ -13,8 +13,8 @@ export function useBoard() {
   const [scale, setScale] = useState(1);
   const [textItemCount, setTextItemCount] = useState(0);
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
-  const {  setBoard } = useBoardStoreof();
-  const { setStickyNotes  } = useStickyNoteStore();
+  const { setBoard } = useBoardStoreof();
+  const { setStickyNotes } = useStickyNoteStore();
 
   useEffect(() => {
     if (!id) return;
@@ -39,8 +39,8 @@ export function useBoard() {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-    }
-  })
+    };
+  });
 
   const onClickCreateStickyNote = (colorName: string) => {
     const newStickyNote = {
@@ -55,13 +55,44 @@ export function useBoard() {
     });
   };
 
-  const handleMoveStickyNote = (stickyNoteId: string, newPosition: { x: number; y: number }) => {
+  const handleMoveStickyNote = (
+    stickyNoteId: string,
+    newPosition: { x: number; y: number }
+  ) => {
     client?.publish({
       destination: `/app/board/moveStickyNote/${id}`,
-      body: JSON.stringify({ id : stickyNoteId, position: newPosition }),
-    }); 
+      body: JSON.stringify({ id: stickyNoteId, position: newPosition }),
+    });
+  };
+
+  const handleReSizeStickyNote = (
+    stickyNoteId: string,
+    newSize: { width: number | string; height: number | string }
+  ) => {
+    // Chuẩn hóa width
+    let width =
+      typeof newSize.width === "string"
+        ? parseInt(newSize.width.replace("px", ""), 10)
+        : newSize.width;
+
+    // Chuẩn hóa height
+    let height =
+      typeof newSize.height === "string"
+        ? parseInt(newSize.height.replace("px", ""), 10)
+        : newSize.height;
+
+    // Đảm bảo width và height là số hợp lệ
+    width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
+    height = isNaN(height) ? 0 : height;
     
-  }
+    client?.publish({
+      destination: `/app/board/reSizeStickyNote/${id}`,
+      body: JSON.stringify({ id: stickyNoteId, size: {
+        width,
+        height
+      } }),
+    });
+  };
 
   const onClickAddShape = (shape: ShapeComponent) => {
     setShapeList((prevShapes) => [...prevShapes, shape]);
@@ -80,6 +111,7 @@ export function useBoard() {
     onClickCreateStickyNote,
     shapeList,
     onClickAddShape,
-    handleMoveStickyNote
+    handleMoveStickyNote,
+    handleReSizeStickyNote,
   };
 }

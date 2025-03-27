@@ -50,4 +50,16 @@ public class StickyNoteServiceImpl implements StickyNoteService {
                 StickyNote.class
         );
     }
+
+    public StickyNote updateStickyNoteSize(StickyNote stickyNote) {
+        Query query = new Query(Criteria.where("_id").is(stickyNote.getId()));
+        Update update = new Update()
+                .set("size", stickyNote.getSize());
+        return mongoTemplate.findAndModify(
+                query,
+                update,
+                FindAndModifyOptions.options().returnNew(true),
+                StickyNote.class
+        );
+    }
 }

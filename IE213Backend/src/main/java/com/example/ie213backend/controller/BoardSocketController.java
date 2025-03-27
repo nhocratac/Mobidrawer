@@ -1,9 +1,9 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.config.socket.SubscriptionListener;
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
 import com.example.ie213backend.domain.dto.StickyNote.CreateStickyNote;
 import com.example.ie213backend.domain.dto.StickyNote.MoveStickyNote;
+import com.example.ie213backend.domain.dto.StickyNote.ResizeStickyNote;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.StickyNote;
@@ -22,7 +22,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
@@ -123,6 +122,27 @@ public class BoardSocketController {
         return Map.of(
                 "stickyNote", response,
                 "senderSessionId", senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/reSizeStickyNote/{boardId}")
+    @SendTo("/topic/board/reSizeStickyNote/{boardId}")
+    public Map<String, Object> handleReSizeStickyNote(
+            @DestinationVariable String boardId,
+            SimpMessageHeaderAccessor headerAccessor,
+            @Payload ResizeStickyNote resizeStickyNote
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        StickyNote stickyNote = StickyNoteMapper.INSTANCE.ResizeToEntity(resizeStickyNote);
+        stickyNote.setBoardId(boardId);
+        stickyNote.setOwner(userDto.getId());
+
+        ResizeStickyNote response = StickyNoteMapper.INSTANCE.toResizeStickyNote(stickyNoteService.updateStickyNoteSize(stickyNote));
+        String senderSessionId = headerAccessor.getSessionId();
+        assert senderSessionId != null;
+        return Map.of(
+                "stickyNote" , response,
+        "senderSessionId", senderSessionId
         );
     }
 }
