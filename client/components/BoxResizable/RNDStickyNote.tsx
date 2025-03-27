@@ -1,6 +1,6 @@
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { StickyNote } from "@/lib/Zustand/type.type";
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { DraggableData, DraggableEvent } from "react-draggable";
 import { Rnd } from "react-rnd";
 
@@ -11,17 +11,17 @@ interface RNDStickyNoteProps {
   handleReSizeStickyNote: (id: string, size: { width: number | string, height: number | string }) => void;
 }
 
-const RNDStickyNote: React.FC<RNDStickyNoteProps> = ({ parentScale, stickyNote, handlemoveStickyNote, handleReSizeStickyNote }) => {
+const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyNote, handlemoveStickyNote, handleReSizeStickyNote }) => {
+  //console.log(`Rendering ${stickyNote.id}`);
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
-  const { moveStickyNote } = useStickyNoteStore()
+  const { moveStickyNote, resizeStickyNote } = useStickyNoteStore()
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
   };
-
   useEffect(() => {
     if (RndRef.current) {
       RndRef.current.updatePosition(stickyNote.position)
@@ -29,7 +29,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = ({ parentScale, stickyNote, 
   }, [stickyNote.position])
   useEffect(() => {
     RndRef.current?.updateSize(stickyNote.size)
-  }, [stickyNote])
+  }, [stickyNote.size])
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
     // useDebouce
@@ -45,7 +45,8 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = ({ parentScale, stickyNote, 
     if (RndRef.current) {
       RndRef.current.updatePosition({ x: d.x, y: d.y });
     }
-    handlemoveStickyNote(stickyNote.id, { x: d.x, y: d.y }); // Cập nhật vị trí cuối cùng
+    handlemoveStickyNote(stickyNote.id, { x: d.x, y: d.y });
+    moveStickyNote(stickyNote.id, { x: d.x, y: d.y }) // Cập nhật vị trí cuối cùng
     onBlurTextArea()
   };
 
@@ -56,8 +57,11 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = ({ parentScale, stickyNote, 
     delta: { width: number; height: number },
     pos: { x: number; y: number }
   ) => {
-
     handleReSizeStickyNote(stickyNote.id, {
+      width: ref.style.width,
+      height: ref.style.height
+    })
+    resizeStickyNote(stickyNote.id, {
       width: ref.style.width,
       height: ref.style.height
     })
@@ -131,6 +135,13 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = ({ parentScale, stickyNote, 
       </div>
     </Rnd>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.stickyNote === nextProps.stickyNote &&
+    prevProps.parentScale === nextProps.parentScale &&
+    prevProps.handlemoveStickyNote === nextProps.handlemoveStickyNote &&
+    prevProps.handleReSizeStickyNote === nextProps.handleReSizeStickyNote)
+}
+);
 
 export default RNDStickyNote;

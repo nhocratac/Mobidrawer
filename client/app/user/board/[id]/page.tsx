@@ -18,8 +18,6 @@ const PlayGroundPage = () => {
     document.body.style.height = '100%';
 
   }, []);
-
-
   const {
     id,
     scale,

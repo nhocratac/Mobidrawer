@@ -8,10 +8,9 @@ interface StickyNoteState {
   moveStickyNote: (id: string, newPosition: { x: number; y: number }) => void;
   resizeStickyNote: (
     id: string,
-    newSize: { height: number; width: number }
+    newSize: { height: number | string; width: number | string }
   ) => void;
 }
-
 const useStickyNoteStore = create<StickyNoteState>((set) => ({
   stickyNotes: [],
   setStickyNotes: (notes) => set({ stickyNotes: notes }),
@@ -31,7 +30,21 @@ const useStickyNoteStore = create<StickyNoteState>((set) => ({
       stickyNotes: produce(state.stickyNotes, (draft) => {
         const findItem = draft.find((item) => item.id === id);
         if (findItem) {
-          findItem.size = { ...findItem.size, ...newSize };
+          let width =
+            typeof newSize.width === "string"
+              ? parseInt(newSize.width.replace("px", ""), 10)
+              : newSize.width;
+
+          // Chuẩn hóa height
+          let height =
+            typeof newSize.height === "string"
+              ? parseInt(newSize.height.replace("px", ""), 10)
+              : newSize.height;
+
+          // Đảm bảo width và height là số hợp lệ
+          width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
+          height = isNaN(height) ? 0 : height;
+          findItem.size = { ...findItem.size, height, width };
         }
       }),
     })),
