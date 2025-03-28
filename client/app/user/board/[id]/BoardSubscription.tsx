@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
   const { addCanvasPath } = useCanvasPathsStore()
-  const { addStickyNote, moveStickyNote ,resizeStickyNote} = useStickyNoteStore()
+  const { addStickyNote, moveStickyNote ,resizeStickyNote,changTextStickNote} = useStickyNoteStore()
 
   useEffect(() => {
     if (!client || !client.connected) {
@@ -49,6 +49,16 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       resizeStickyNote(stickyNote.id, stickyNote.size)
     })
 
+    const changeTextSubcription = client.subscribe(`/topic/board/ChangeTextStickyNote/${boardId}`,(message) => {
+      const payload = JSON.parse(message.body);
+      const stickyNote = payload.stickyNote;
+      const senderSessionId = payload.senderSessionId;
+      if (senderSessionId === sessionId) {
+        return;
+      }
+      changTextStickNote(stickyNote.id,stickyNote.text)
+    })
+
     client.publish({
       destination: `/app/board/join/${boardId}`,
       body: JSON.stringify({
@@ -62,6 +72,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       addStickyNoteSubscription.unsubscribe()
       moveStickyNoteSubscription.unsubscribe()
       reSizeStickyNoteSubcription.unsubscribe()
+      changeTextSubcription.unsubscribe()
     };
   }, [client, boardId,sessionId]);
 

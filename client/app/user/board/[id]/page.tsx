@@ -29,6 +29,7 @@ const PlayGroundPage = () => {
     onClickAddShape,
     handleMoveStickyNote,
     handleReSizeStickyNote,
+    handleChangeTextStickyNote
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
@@ -50,7 +51,8 @@ const PlayGroundPage = () => {
               <RNDStickyNote key={stickyNote.id} parentScale={scale}
                 stickyNote={stickyNote}
                 handlemoveStickyNote={handleMoveStickyNote}
-                handleReSizeStickyNote={handleReSizeStickyNote} />
+                handleReSizeStickyNote={handleReSizeStickyNote}
+                handleChangeTextStickyNote={handleChangeTextStickyNote} />
             ))}
 
             {shapeList.map((ShapeComponent, index) => (

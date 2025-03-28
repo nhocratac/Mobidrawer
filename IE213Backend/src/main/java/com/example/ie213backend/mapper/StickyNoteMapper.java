@@ -1,9 +1,6 @@
 package com.example.ie213backend.mapper;
 
-import com.example.ie213backend.domain.dto.StickyNote.CreateStickyNote;
-import com.example.ie213backend.domain.dto.StickyNote.MoveStickyNote;
-import com.example.ie213backend.domain.dto.StickyNote.ResizeStickyNote;
-import com.example.ie213backend.domain.dto.StickyNote.StickyNoteDto;
+import com.example.ie213backend.domain.dto.StickyNote.*;
 import com.example.ie213backend.domain.model.StickyNote;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -24,4 +21,8 @@ public interface StickyNoteMapper {
     StickyNote ResizeToEntity (ResizeStickyNote resizeStickyNote);
 
     ResizeStickyNote toResizeStickyNote(StickyNote stickyNote);
+
+    StickyNote ChangeTextToEntity ( ChangeText changeText);
+
+    ChangeText toChangeText(StickyNote stickyNote);
 }

@@ -1,3 +1,4 @@
+import useDebounce from "@/hooks/useDebounce";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { StickyNote } from "@/lib/Zustand/type.type";
 import React, { memo, useEffect, useRef, useState } from "react";
@@ -9,45 +10,90 @@ interface RNDStickyNoteProps {
   stickyNote: StickyNote;
   handlemoveStickyNote: (id: string, position: { x: number; y: number }) => void;
   handleReSizeStickyNote: (id: string, size: { width: number | string, height: number | string }) => void;
+  handleChangeTextStickyNote: (stickyNoteId: string, text: string) => void;
 }
 
-const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyNote, handlemoveStickyNote, handleReSizeStickyNote }) => {
-  //console.log(`Rendering ${stickyNote.id}`);
+const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
+  parentScale,
+  stickyNote,
+  handlemoveStickyNote,
+  handleReSizeStickyNote,
+  handleChangeTextStickyNote,
+}) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
-  const { moveStickyNote, resizeStickyNote } = useStickyNoteStore()
-  const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value);
-  };
+  const { moveStickyNote, resizeStickyNote, changTextStickNote } = useStickyNoteStore();
+  const debouncedText = useDebounce(text, 1000);
+
   useEffect(() => {
-    if (RndRef.current) {
-      RndRef.current.updatePosition(stickyNote.position)
+    handleChangeTextStickyNote(stickyNote.id, debouncedText);
+  }, [debouncedText]);
+
+  useEffect(() => {
+    const blockEvents = (e: Event) => {
+       e.stopPropagation();
+      // e.preventDefault();
+    };
+    const handleFocus = () => {
+      document.addEventListener("keydown", blockEvents, true);
+      document.addEventListener("mousedown", blockEvents, true);
+    };
+    const handleBlur = () => {
+      document.removeEventListener("keydown", blockEvents, true);
+      document.removeEventListener("mousedown", blockEvents, true);
+    };
+    const textarea = textAreaRef.current;
+    if (textarea) {
+      textarea.addEventListener("focus", handleFocus);
+      textarea.addEventListener("blur", handleBlur);
     }
-  }, [stickyNote.position])
+    return () => {
+      if (textarea) {
+        textarea.removeEventListener("focus", handleFocus);
+        textarea.removeEventListener("blur", handleBlur);
+      }
+      document.removeEventListener("keydown", blockEvents, true);
+      document.removeEventListener("mousedown", blockEvents, true);
+    };
+  }, []);
+
   useEffect(() => {
-    RndRef.current?.updateSize(stickyNote.size)
-  }, [stickyNote.size])
+    if (!isTyping && text !== stickyNote.text) {
+      setText(stickyNote.text);
+    }
+  }, [stickyNote.text, isTyping]);
+
+  useEffect(() => {
+    RndRef.current?.updatePosition(stickyNote.position);
+  }, [stickyNote.position]);
+
+  useEffect(() => {
+    RndRef.current?.updateSize(stickyNote.size);
+  }, [stickyNote.size]);
+
+  const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setText(newValue);
+   // handleChangeTextStickyNote(stickyNote.id, newValue);
+  };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
-    // useDebouce
     const now = Date.now();
-    if (now - lastUpdateRef.current > 1000) { // Chỉ gọi API nếu đã hơn 1000ms
+    if (now - lastUpdateRef.current > 1000) {
       lastUpdateRef.current = now;
-      //updateNotePosition({ x: d.x, y: d.y });
       handlemoveStickyNote(stickyNote.id, { x: d.x, y: d.y });
     }
-  }
+  };
 
   const onDragStop = (e: DraggableEvent, d: DraggableData) => {
-    if (RndRef.current) {
-      RndRef.current.updatePosition({ x: d.x, y: d.y });
-    }
+    RndRef.current?.updatePosition({ x: d.x, y: d.y });
     handlemoveStickyNote(stickyNote.id, { x: d.x, y: d.y });
-    moveStickyNote(stickyNote.id, { x: d.x, y: d.y }) // Cập nhật vị trí cuối cùng
-    onBlurTextArea()
+    moveStickyNote(stickyNote.id, { x: d.x, y: d.y });
+    // Nếu người dùng không đang nhập, mới blur
+    if (!isTyping) onBlurTextArea();
   };
 
   const handleResizeStop = (
@@ -60,34 +106,30 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyN
     handleReSizeStickyNote(stickyNote.id, {
       width: ref.style.width,
       height: ref.style.height
-    })
+    });
     resizeStickyNote(stickyNote.id, {
       width: ref.style.width,
       height: ref.style.height
-    })
+    });
     RndRef.current?.updateSize({
       width: ref.style.width,
       height: ref.style.height
-    })
-    RndRef.current?.updatePosition(pos)
-    onBlurTextArea()
+    });
+    RndRef.current?.updatePosition(pos);
+    if (!isTyping) onBlurTextArea();
   };
+
   const onBlurTextArea = () => {
-    textAreaRef.current?.blur();
+    // Kiểm tra xem textarea có đang focus không
+    if (textAreaRef.current && textAreaRef.current === document.activeElement) {
+      textAreaRef.current.blur();
+    }
     setIsTyping(false);
   };
 
   return (
     <Rnd
       ref={RndRef}
-      // position={{
-      //   x: stickyNote.position.x,
-      //   y: stickyNote.position.y,
-      // }}
-      // size={{
-      //   height: stickyNote.size.height,
-      //   width: stickyNote.size.width
-      // }}
       default={{
         x: stickyNote.position.x,
         y: stickyNote.position.y,
@@ -104,7 +146,11 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyN
       onDrag={onDrag}
       onDragStop={onDragStop}
       onResizeStop={handleResizeStop}
-      onMouseDown={(e) => e.stopPropagation()}
+      onMouseDown={(e) => {
+        // Nếu click ra ngoài, blur textarea (nếu cần)
+        e.stopPropagation();
+        if (!isTyping) onBlurTextArea();
+      }}
     >
       <div className="w-full h-full relative flex items-center justify-center">
         <textarea
@@ -113,13 +159,18 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyN
           onChange={onChangeTextArea}
           value={text}
           onBlur={onBlurTextArea}
+          onFocus={() => setIsTyping(true)}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+          }}
+          onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => {
             e.stopPropagation();
             setIsTyping(true);
+            setTimeout(() => textAreaRef.current?.focus(), 50);
           }}
         />
-
-        {/* Resize handles */}
+        {/* Các resize handles */}
         {[
           { top: "-5px", left: "-5px", cursor: "nw-resize" },
           { top: "-5px", right: "-5px", cursor: "ne-resize" },
@@ -136,12 +187,14 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({ parentScale, stickyN
     </Rnd>
   );
 }, (prevProps, nextProps) => {
+  // Kiểm tra các props cơ bản để tránh render lại không cần thiết
   return (
     prevProps.stickyNote === nextProps.stickyNote &&
     prevProps.parentScale === nextProps.parentScale &&
     prevProps.handlemoveStickyNote === nextProps.handlemoveStickyNote &&
-    prevProps.handleReSizeStickyNote === nextProps.handleReSizeStickyNote)
-}
-);
+    prevProps.handleReSizeStickyNote === nextProps.handleReSizeStickyNote &&
+    prevProps.handleChangeTextStickyNote === nextProps.handleChangeTextStickyNote
+  );
+});
 
 export default RNDStickyNote;
