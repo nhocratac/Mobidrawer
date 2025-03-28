@@ -55,7 +55,7 @@ export function useBoard() {
         body: JSON.stringify(newStickyNote),
       });
     },
-    [client]
+    [client, id]
   );
 
   const handleMoveStickyNote = useCallback(
@@ -65,7 +65,7 @@ export function useBoard() {
         body: JSON.stringify({ id: stickyNoteId, position: newPosition }),
       });
     },
-    [client]
+    [client, id]
   );
 
   const handleReSizeStickyNote = useCallback(
@@ -100,7 +100,20 @@ export function useBoard() {
         }),
       });
     },
-    [client]
+    [client, id]
+  );
+
+  const handleChangeTextStickyNote = useCallback(
+    (stickyNoteId: string, text: string) => {
+      client?.publish({
+        destination: `/app/board/ChangeTextStickyNote/${id}`,
+        body: JSON.stringify({
+          id: stickyNoteId,
+          text: text,
+        }),
+      });
+    },
+    [client, id]
   );
 
   const onClickAddShape = useCallback(
@@ -128,5 +141,6 @@ export function useBoard() {
     onClickAddShape,
     handleMoveStickyNote,
     handleReSizeStickyNote,
+    handleChangeTextStickyNote,
   };
 }

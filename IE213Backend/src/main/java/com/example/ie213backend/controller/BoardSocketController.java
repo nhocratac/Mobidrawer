@@ -1,6 +1,7 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
+import com.example.ie213backend.domain.dto.StickyNote.ChangeText;
 import com.example.ie213backend.domain.dto.StickyNote.CreateStickyNote;
 import com.example.ie213backend.domain.dto.StickyNote.MoveStickyNote;
 import com.example.ie213backend.domain.dto.StickyNote.ResizeStickyNote;
@@ -143,6 +144,27 @@ public class BoardSocketController {
         return Map.of(
                 "stickyNote" , response,
         "senderSessionId", senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/ChangeTextStickyNote/{boardId}")
+    @SendTo("/topic/board/ChangeTextStickyNote/{boardId}")
+    public Map<String, Object> handleChangeTextStickyNote(
+            @DestinationVariable String boardId,
+            SimpMessageHeaderAccessor headerAccessor,
+            @Payload ChangeText changeTextStickyNote
+    )  {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        StickyNote stickyNote = StickyNoteMapper.INSTANCE.ChangeTextToEntity(changeTextStickyNote);
+        stickyNote.setBoardId(boardId);
+        stickyNote.setOwner(userDto.getId());
+
+        ChangeText response  = StickyNoteMapper.INSTANCE.toChangeText(stickyNoteService.chaneTextStickyNote(stickyNote));
+        String senderSessionId = headerAccessor.getSessionId();
+        assert senderSessionId != null;
+        return Map.of(
+                "stickyNote" , response,
+                "senderSessionId", senderSessionId
         );
     }
 }

@@ -10,6 +10,7 @@ interface StickyNoteState {
     id: string,
     newSize: { height: number | string; width: number | string }
   ) => void;
+  changTextStickNote: (id: string, text: string) => void;
 }
 const useStickyNoteStore = create<StickyNoteState>((set) => ({
   stickyNotes: [],
@@ -45,6 +46,15 @@ const useStickyNoteStore = create<StickyNoteState>((set) => ({
           width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
           height = isNaN(height) ? 0 : height;
           findItem.size = { ...findItem.size, height, width };
+        }
+      }),
+    })),
+  changTextStickNote: (id: string, text: string) =>
+    set((state) => ({
+      stickyNotes: produce(state.stickyNotes, (draft) => {
+        const findItem = draft.find((item) => item.id === id);
+        if (findItem) {
+          findItem.text = text;
         }
       }),
     })),

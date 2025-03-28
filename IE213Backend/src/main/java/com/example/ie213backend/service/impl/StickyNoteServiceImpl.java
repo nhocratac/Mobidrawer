@@ -62,4 +62,16 @@ public class StickyNoteServiceImpl implements StickyNoteService {
                 StickyNote.class
         );
     }
+
+    public StickyNote chaneTextStickyNote(StickyNote stickyNote) {
+        Query query = new Query(Criteria.where("_id").is(stickyNote.getId()));
+        Update update = new Update()
+                .set("text", stickyNote.getText());
+        return mongoTemplate.findAndModify(
+                query,
+                update,
+                FindAndModifyOptions.options().returnNew(true),
+                StickyNote.class
+        );
+    }
 }
