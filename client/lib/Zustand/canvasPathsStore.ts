@@ -1,5 +1,5 @@
 // src/lib/Zustand/canvasPathsStore.ts
-import { canvasPath } from "@/lib/Zustand/type.type";
+// import { canvasPath } from "@/lib/Zustand/type.type";
 import { create } from "zustand";
 
 export interface Point {
@@ -8,6 +8,7 @@ export interface Point {
 }
 
 export interface CanvasPath {
+  id?: string;
   color: string;
   thickness: number;
   opacity: number;
@@ -20,7 +21,7 @@ interface CanvasPathsState {
   setCanvasPaths: (paths: CanvasPath[]) => void;
   addCanvasPath: (newPath: CanvasPath) => void;
   updateCanvasPath: (index: number, newPath: CanvasPath) => void;
-  setSelectedPath: (selectedPaths: canvasPath[]) => void;
+  setSelectedPath: (selectedPaths: CanvasPath[]) => void;
   addCanvasPaths: (
     x: number,
     y: number,
@@ -47,14 +48,12 @@ export const useCanvasPathsStore = create<CanvasPathsState>((set) => ({
       return { canvasPaths: updatedPaths };
     }),
   setSelectedPath: (selectedPaths) =>
-    set((prev) => {
-      return {
+    set((prev) => ({
         canvasPaths: prev.canvasPaths.map((paths) => ({
           ...paths,
-          isSelected: selectedPaths.includes(paths),
-        })),
-      };
-    }),
+          isSelected: selectedPaths.some((selected) => selected.id === paths.id),
+          })),
+    })),
   // Hàm mới để thêm điểm vào đường vẽ cuối cùng hoặc tạo đường vẽ mới nếu cần
   addCanvasPaths: (x, y, penColor, penThickness, penOpacity) =>
     set((state) => {

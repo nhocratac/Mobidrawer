@@ -28,6 +28,7 @@ interface SelectionRect {
 
 // Interface cho một đường vẽ trên canvas
 export interface CanvasPath {
+  _id?: string; // ID từ MongoDB
   color: string;
   thickness: number;
   opacity: number;
@@ -103,7 +104,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
 
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
-        const updatedPaths = canvasPaths.filter((path) => path.isSelected);
+        const updatedPaths = canvasPaths.filter((path) => !path.isSelected);
         setCanvasPaths(updatedPaths);
       }
     };
@@ -123,25 +124,13 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     };
   }, []);
 
-  // Các hàm xử lý chọn vùng
-  // const startSelection = (x: number, y: number) => {
-  //   setIsSelecting(true);
-  //   setSelectionRect({ x1: x, y1: y, x2: x, y2: y });
-  // };
-
-  // const updateSelection = (x: number, y: number) => {
-  //   if (isSelecting && selectionRect) {
-  //     setSelectionRect({ ...selectionRect, x2: x, y2: y });
-  //   }
-  // };
-
   const endSelection = () => {
     if (isSelecting && selectionRect) {
       setIsSelecting(false);
-      const selectedPaths = canvasPaths.filter((paths) =>
-        isPathInSelection(paths.paths, selectionRect)
-      );
-      setSelectedPath(selectedPaths)
+      const selectedPaths = canvasPaths.
+        filter((paths) => isPathInSelection(paths.paths, selectionRect));
+
+      setSelectedPath(selectedPaths);
       setSelectionRect(null);
     }
   };
@@ -253,9 +242,9 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
       } else {
         setTimeout(sendBatch, BATCH_INTERVAL);
       }
-      setIsDrawing(false)
+      setIsDrawing(false);
     };
-    if (mode === "idle" && e.button === 0)     endSelection();;
+    if (mode === "idle" && e.button === 0) endSelection();
   };
 
   const handleMouseLeave = () => {
