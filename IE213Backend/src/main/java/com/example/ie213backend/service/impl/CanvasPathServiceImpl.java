@@ -6,6 +6,7 @@ import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.CanvaPathRepository;
 import com.example.ie213backend.service.CanvasPathService;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,5 +35,37 @@ public class CanvasPathServiceImpl implements CanvasPathService {
             return canvasPathRepository.save(canvas);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này");
+    }
+
+    public void deleteCanvas(String id, String userId) {
+        ObjectId objectId;
+        try {
+            objectId = new ObjectId(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID không hợp lệ");
+        }
+
+        CanvasPath canvasPath = canvasPathRepository.findById(objectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy canvas"));
+
+        String boardId = canvasPath.getBoardId();
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bảng"));
+
+        // Cho phép owner hoặc member có quyền EDIT xóa canvas
+        if (board.getOwner().equals(userId)) {
+            canvasPathRepository.delete(canvasPath);
+            return;
+        }
+
+        boolean isEditor = board.getMembers().stream()
+                .anyMatch(member -> member.getMemberId().equals(userId) && member.getRole() == Board.ROLE.EDITOR);
+
+        if (isEditor) {
+            canvasPathRepository.delete(canvasPath);
+            return;
+        }
+
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa canvas này");
     }
 }

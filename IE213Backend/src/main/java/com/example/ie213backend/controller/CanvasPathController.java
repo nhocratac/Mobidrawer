@@ -24,4 +24,13 @@ public class CanvasPathController {
     ) {
         return ResponseEntity.ok(canvasPathService.CreateCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath),userDto.getId() ));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCanvasPath(
+            @RequestAttribute("user") UserDto userDto,
+            @PathVariable String id
+    ) {
+        canvasPathService.deleteCanvas(id, userDto.getId());
+        return ResponseEntity.noContent().build();
+    }
 }

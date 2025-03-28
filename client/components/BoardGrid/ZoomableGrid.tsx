@@ -28,7 +28,7 @@ interface SelectionRect {
 
 // Interface cho một đường vẽ trên canvas
 export interface CanvasPath {
-  _id?: string; // ID từ MongoDB
+  id?: string; // ID từ MongoDB
   color: string;
   thickness: number;
   opacity: number;
@@ -104,8 +104,18 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
 
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
-        const updatedPaths = canvasPaths.filter((path) => !path.isSelected);
-        setCanvasPaths(updatedPaths);
+        const hasSelectedPaths = canvasPaths.some(path => path.isSelected);
+        if (hasSelectedPaths) {
+          const updatedPaths = canvasPaths.filter(path => !path.isSelected);
+          setCanvasPaths(updatedPaths);
+
+          const pathIds = canvasPaths.filter(path => path.isSelected).map(path => path.id);
+          // Gửi thông báo xóa đường vẽ
+          client?.publish({
+            destination: `/app/board/delete-paths/${boardId}`,
+            body: JSON.stringify(pathIds)
+          });
+        }
       }
     };
 
@@ -122,7 +132,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [canvasPaths, undoPressed, boardId, client]);
 
   const endSelection = () => {
     if (isSelecting && selectionRect) {
@@ -319,7 +329,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
               opacity={pathData.opacity}
               scale={scale}
               translate={translate}
-              isSelected={!!pathData.isSelected}
+              isSelected={!!pathData.isSelected || false}
             />
           ))}
       </div>

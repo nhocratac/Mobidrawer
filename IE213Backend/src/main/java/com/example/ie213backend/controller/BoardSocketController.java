@@ -25,6 +25,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -84,6 +85,25 @@ public class BoardSocketController {
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
         return (canvasPathService.CreateCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath),userDto.getId() ));
+    }
+
+    @MessageMapping("/board/delete-paths/{id}")
+    @SendTo("/topic/board/{id}")
+    public ResponseEntity<List<String>> handleDeletePaths(
+            @DestinationVariable String id,
+            @Payload List<String> pathIds,          // Danh sách ID các path cần xóa
+            SimpMessageHeaderAccessor headerAccessor // Để lấy thông tin user (nếu cần)
+    ) {
+        // Xác thực user (nếu cần)
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+
+        // Xóa từng path một (phù hợp với service hiện có)
+        pathIds.forEach(pathId -> {
+            canvasPathService.deleteCanvas(pathId, userDto.getId());
+        });
+
+        // Trả về danh sách ID đã xóa để client cập nhật UI
+        return ResponseEntity.ok(pathIds);
     }
 
     @MessageMapping("/board/addStickyNote/{boardId}")
