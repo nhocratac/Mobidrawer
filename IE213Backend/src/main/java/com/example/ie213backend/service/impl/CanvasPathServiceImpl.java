@@ -1,5 +1,6 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateCanvasPath;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.repository.BoardRepository;
@@ -10,6 +11,9 @@ import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -67,5 +71,50 @@ public class CanvasPathServiceImpl implements CanvasPathService {
         }
 
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa canvas này");
+    }
+
+    public CanvasPath updateCanvas(UpdateCanvasPath updatePath, String userId) {
+        // 1. Validate ObjectId
+        ObjectId objectId;
+        try {
+            objectId = new ObjectId(updatePath.getId());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID không hợp lệ");
+        }
+
+        // 2. Kiểm tra tồn tại path
+        CanvasPath existingPath = canvasPathRepository.findById(objectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đường vẽ"));
+
+        // 3. Validate owner
+        if (!existingPath.getOwner().equals(updatePath.getOwner())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa path này");
+        }
+
+        // 4. Kiểm tra quyền trên board (dùng owner từ DTO)
+        Board board = boardRepository.findUserRoleInBoard(updatePath.getBoardId(), updatePath.getOwner())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền chỉnh sửa"));
+
+        boolean isOwner = board.getOwner().equals(updatePath.getOwner());
+        boolean isEditor = board.getMembers().stream()
+                .anyMatch(member -> member.getMemberId().equals(updatePath.getOwner())
+                        && member.getRole() == Board.ROLE.EDITOR);
+
+        if (!isOwner && !isEditor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền chỉnh sửa");
+        }
+
+        // 5. Cập nhật thông tin
+        existingPath.setColor(updatePath.getColor());
+        existingPath.setThickness(updatePath.getThickness());
+        existingPath.setOpacity(updatePath.getOpacity());
+        existingPath.setPaths(
+                updatePath.getPaths().stream()
+                        .map(dto -> new CanvasPath.Coordinate(dto.getX(), dto.getY()))
+                        .collect(Collectors.toList())
+        );
+
+        existingPath.setUpdateAt(LocalDateTime.now()); // Cập nhật thời gian tự động
+        return canvasPathRepository.save(existingPath);
     }
 }

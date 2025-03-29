@@ -1,6 +1,7 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
+import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateCanvasPath;
 import com.example.ie213backend.domain.dto.StickyNote.ChangeText;
 import com.example.ie213backend.domain.dto.StickyNote.CreateStickyNote;
 import com.example.ie213backend.domain.dto.StickyNote.MoveStickyNote;
@@ -105,6 +106,18 @@ public class BoardSocketController {
 
         // Trả về danh sách ID đã xóa để client cập nhật UI
         return ResponseEntity.ok(pathIds);
+    }
+
+    @MessageMapping("/board/update-path/{boardId}")
+    @SendTo("/topic/board/{boardId}")
+    public ResponseEntity<CanvasPath> handleUpdatePaths(
+            @DestinationVariable String boardId,
+            @Payload @Valid UpdateCanvasPath canvas,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+        UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
+        CanvasPath updatedCanvas = canvasPathService.updateCanvas(canvas, userDto.getId());
+        return ResponseEntity.ok(updatedCanvas);
     }
 
     @MessageMapping("/board/addStickyNote/{boardId}")

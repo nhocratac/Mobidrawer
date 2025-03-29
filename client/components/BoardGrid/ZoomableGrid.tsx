@@ -348,15 +348,24 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         // Debounce gửi update
         if (moveUpdateTimeout) clearTimeout(moveUpdateTimeout);
         moveUpdateTimeout = setTimeout(() => {
-          // const selectedPaths = canvasPaths.filter(p => p.isSelected);
-          // if (selectedPaths.length > 0 && client) {
-          //   client.publish({
-          //     destination: `/app/board/update-paths/${boardId}`,
-          //     body: JSON.stringify(selectedPaths)
-          //   });
-          // }
-          console.log("Gửi cập nhật vị trí đường vẽ đã chọn qua WebSocket");
-        }, 1500);
+          const selectedPaths = canvasPaths.filter(p => p.isSelected);
+          if (selectedPaths.length > 0 && client) {
+            selectedPaths.forEach((path) => {
+              const pathWithBoardId = {
+                ...path,
+                boardId: boardId,     // Thêm boardId
+              };
+
+              delete pathWithBoardId.isSelected; // Xóa thuộc tính isSelected trước khi gửi
+            
+              console.log("send update path", pathWithBoardId);
+              client?.publish({
+                destination: `/app/board/update-path/${boardId}`,  // Endpoint mới (singular)
+                body: JSON.stringify(pathWithBoardId),
+              });
+            });
+          }
+        }, 500);
       } else {
         setSelectedPath([]);
       }
