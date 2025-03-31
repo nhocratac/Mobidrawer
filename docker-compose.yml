@@ -9,7 +9,57 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - mobidrawer-network
+
+  backend:
+    build:
+      context: ./IE213Backend
+      dockerfile: Dockerfile
+    container_name: mobidrawer-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/mobidrawer
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+    depends_on:
+      - redis
+      - mongodb
+    restart: always
+    networks:
+      - mobidrawer-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: mobidrawer-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - mobidrawer-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    networks:
+      - mobidrawer-network
 
 volumes:
   redis_data:
     driver: local
+  mongodb_data:
+    driver: local
+
+networks:
+  mobidrawer-network:
+    driver: bridge
