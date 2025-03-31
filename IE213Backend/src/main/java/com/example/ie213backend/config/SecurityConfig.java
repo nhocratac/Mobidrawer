@@ -50,10 +50,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://51.79.250.11:3000")); // Update with your actual VPS domain
+        // Allow both HTTP and HTTPS connections from the specified domain
+        configuration.setAllowedOrigins(List.of(
+            "http://51.79.250.11:3000",  // HTTP
+            "https://51.79.250.11:3000"  // HTTPS
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 🔹 Nếu dùng cookies/token
+        configuration.setAllowCredentials(true); // For cookies/tokens
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
