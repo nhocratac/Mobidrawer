@@ -50,15 +50,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow both HTTP and HTTPS connections from the specified domain
-        configuration.setAllowedOrigins(List.of(
-            "http://51.79.250.11:3000",  // HTTP
-            "https://51.79.250.11:3000"  // HTTPS
-        ));
+        // Allow connections from all origins
+        configuration.addAllowedOrigin("*");  // Allow all origins
+        // If you need to maintain allowCredentials but allow all origins, use this approach instead:
+        // configuration.setAllowedOriginPatterns(List.of("*"));  // Alternative that works with allowCredentials=true
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // For cookies/tokens
         configuration.setExposedHeaders(List.of("Authorization"));
+        // Note: When using allowedOrigin="*", allowCredentials must be false
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
