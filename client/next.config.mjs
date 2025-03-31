@@ -30,7 +30,7 @@ const nextConfig = {
     experimental: {
         cpus: 1,
         optimizeCss: false,
-        optimizePackageImports: false,
+        optimizePackageImports: [], // Changed from false to empty array
     },
     // Reduce image optimization memory usage
     images: {

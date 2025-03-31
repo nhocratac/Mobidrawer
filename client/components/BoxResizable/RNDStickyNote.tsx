@@ -13,24 +13,26 @@ interface RNDStickyNoteProps {
   handleChangeTextStickyNote: (stickyNoteId: string, text: string) => void;
 }
 
-const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
+// Add display name to the component
+const RNDStickyNote = memo(({
   parentScale,
   stickyNote,
   handlemoveStickyNote,
   handleReSizeStickyNote,
   handleChangeTextStickyNote,
-}) => {
+}: RNDStickyNoteProps) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
-  const { moveStickyNote, resizeStickyNote, changTextStickNote } = useStickyNoteStore();
+  // Remove unused changTextStickNote from the destructuring
+  const { moveStickyNote, resizeStickyNote } = useStickyNoteStore();
   const debouncedText = useDebounce(text, 1000);
 
   useEffect(() => {
     handleChangeTextStickyNote(stickyNote.id, debouncedText);
-  }, [debouncedText]);
+  }, [debouncedText, handleChangeTextStickyNote, stickyNote.id]);
 
   useEffect(() => {
     const blockEvents = (e: Event) => {
@@ -64,7 +66,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     if (!isTyping && text !== stickyNote.text) {
       setText(stickyNote.text);
     }
-  }, [stickyNote.text, isTyping]);
+  }, [stickyNote.text, isTyping, text]);
 
   useEffect(() => {
     RndRef.current?.updatePosition(stickyNote.position);
@@ -77,7 +79,6 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setText(newValue);
-   // handleChangeTextStickyNote(stickyNote.id, newValue);
   };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
@@ -196,5 +197,8 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     prevProps.handleChangeTextStickyNote === nextProps.handleChangeTextStickyNote
   );
 });
+
+// Set display name explicitly
+RNDStickyNote.displayName = 'RNDStickyNote';
 
 export default RNDStickyNote;

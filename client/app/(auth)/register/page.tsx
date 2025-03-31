@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,8 +48,8 @@ const FormCode = z.object({
 });
 
 export default function RegisterForm() {
-  const { toast } = useToast()
-  const router = useRouter;
+  const { toast } = useToast();
+  // Removed unused router variable
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -111,7 +110,7 @@ export default function RegisterForm() {
           title: "Thành công",
           description: "Bạn đã thêm mẫu thành công",
         })
-       // router.push('/login')
+       // router.push('/login') - Comment for future implementation
       })
       .catch(err => {
         console.log(err);
