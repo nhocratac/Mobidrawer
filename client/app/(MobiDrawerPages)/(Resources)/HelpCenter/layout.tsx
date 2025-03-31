@@ -7,12 +7,12 @@ import KnowledgeBase from '@/app/(MobiDrawerPages)/(Resources)/HelpCenter/Compon
 
 export default function Layout() {
     return (
-        <div>
-            <div>
+        <div className="min-h-screen flex flex-col">
+            <div className="flex-1">
                 <LandingNavbar />
                 <HelpCenterHero />
-                <div className="max-w-[calc(100%-250px)] mx-auto ">
-                    <div className='relative z-20'>
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className='relative z-20 w-full max-w-7xl mx-auto'>
                         <KnowledgeBase />
                     </div>
                 </div>

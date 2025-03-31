@@ -52,7 +52,7 @@ const FormCode = z.object({
 
 export default function RegisterForm() {
   const { toast } = useToast()
-  const router = useRouter();
+  const router = useRouter;
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -94,7 +94,7 @@ export default function RegisterForm() {
       lastName: data.lastName,
       phone: data.phone,
     }).then(
-      res => {
+      () => {
         setStep(2);
       }
     ).catch(err => {
@@ -113,7 +113,7 @@ export default function RegisterForm() {
           title: "Thành công",
           description: "Bạn đã thêm mẫu thành công",
         })
-        router.push('/login')
+       // router.push('/login')
       })
       .catch(err => {
         console.log(err);
@@ -122,9 +122,9 @@ export default function RegisterForm() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-6xl font-bold text-left my-4">Đăng ký</h2>
-        <p className="text-2xl">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-left my-2 sm:my-4">Đăng ký</h2>
+        <p className="text-lg sm:text-xl lg:text-2xl">
           {step === 1
             ? "Nhập thông tin cá nhân của bạn để đăng ký tài khoản"
             : "Nhập mã xác nhận đã được gửi đến email của bạn"}
@@ -134,18 +134,18 @@ export default function RegisterForm() {
       {step === 1 && (
         // Step 1: Registration Form
         <Form {...formRegister}>
-          <form onSubmit={formRegister.handleSubmit(onSubmitForm)} className="space-y-6">
+          <form onSubmit={formRegister.handleSubmit(onSubmitForm)} className="space-y-4 sm:space-y-6">
             <FormField
               control={formRegister.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Email</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       placeholder="Điền địa chỉ mail của bạn"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -157,12 +157,12 @@ export default function RegisterForm() {
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Tên</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Tên</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
                       placeholder="Tên"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -174,12 +174,12 @@ export default function RegisterForm() {
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Họ</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Họ</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
                       placeholder="Họ"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -191,12 +191,12 @@ export default function RegisterForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Số điện thoại</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Số điện thoại</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
                       placeholder="Số điện thoại"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -208,12 +208,12 @@ export default function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Mật khẩu</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Mật khẩu</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="Mật khẩu"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -225,12 +225,12 @@ export default function RegisterForm() {
               name="rePassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl">Nhập lại mật khẩu</FormLabel>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Nhập lại mật khẩu</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="Nhập lại mật khẩu"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                       {...field}
                     />
                   </FormControl>
@@ -239,7 +239,7 @@ export default function RegisterForm() {
             />
             <Button
               type="submit"
-              className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+              className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
             >
               Đăng ký
             </Button>
@@ -249,18 +249,18 @@ export default function RegisterForm() {
         step === 2 && (
           // Step 2: Confirmation Code Form
           <Form {...formCode}>
-            <form onSubmit={formCode.handleSubmit(onSubmitCode)} className="space-y-6">
+            <form onSubmit={formCode.handleSubmit(onSubmitCode)} className="space-y-4 sm:space-y-6">
               <FormField
                 control={formCode.control}
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-2xl">Mã xác nhận</FormLabel>
+                    <FormLabel className="text-base sm:text-lg lg:text-2xl">Mã xác nhận</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
                         placeholder="Mã xác nhận"
-                        className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                        className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                         {...field}
                       />
                     </FormControl>
@@ -269,13 +269,13 @@ export default function RegisterForm() {
               />
               <Button
                 type="submit"
-                className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+                className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
               >
                 Xác nhận
               </Button>
               <Button
                 type="button"
-                className="text-2xl w-full h-[48px] py-3 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-red-600 text-white rounded-xl hover:bg-red-700"
                 onClick={() => setStep(1)}
               >
                 Quay lại
@@ -283,9 +283,9 @@ export default function RegisterForm() {
             </form>
           </Form>
         ))}
-      <hr className="border-gray-300 my-4 mb-14 mt-14" />
-      <footer className="mt-14">
-        <p className="text-lg">
+      <hr className="border-gray-300 my-4 sm:my-8 lg:my-14" />
+      <footer className="mt-4 sm:mt-8 lg:mt-14">
+        <p className="text-sm sm:text-base lg:text-lg">
           Khi đăng ký, bạn đồng ý với{" "}
           <Link className="text-blue-500" href="#">
             Điều khoản & Điều kiện

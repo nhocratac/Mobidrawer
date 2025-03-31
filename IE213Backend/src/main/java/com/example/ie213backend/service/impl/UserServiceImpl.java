@@ -60,4 +60,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
     }
+
+    @Override
+    public User getBaseInFormation(String userId) {
+        return userRepository.getBaseInformation(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+    }
 }

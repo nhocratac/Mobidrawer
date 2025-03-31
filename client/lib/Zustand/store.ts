@@ -1,13 +1,14 @@
 "use client";
 import {
   BoardState,
+  BoardStore,
   ItemProps,
   ListBoardState,
   ModeType,
   TemplateStoreState,
   ToolDevState,
 } from "@/lib/Zustand/type.type";
-import type { } from "@redux-devtools/extension";
+import type {} from "@redux-devtools/extension";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -52,7 +53,7 @@ const useBoardStore = create<ListBoardState>()(
                   ...board,
                   options: {
                     ...board.options,
-                    gird: !board.options.gird,
+                    grid: !board.options.grid,
                   },
                 };
               } else {
@@ -66,13 +67,14 @@ const useBoardStore = create<ListBoardState>()(
             boards: state.boards.map((board) =>
               board.id == boardId
                 ? {
-                  ...board,
-                  canvasPaths: board.canvasPaths.map((path, index) => 
-                    index === pathIndex
-                      ? { ...path, isSelected: true}
-                      : { ...path, isSelected: false}
-                  ),
-                } : board
+                    ...board,
+                    canvasPaths: board.canvasPaths.map((paths, index) =>
+                      index === pathIndex
+                        ? { ...paths, isSelected: true }
+                        : { ...paths, isSelected: false }
+                    ),
+                  }
+                : board
             ),
           }));
         },
@@ -80,13 +82,14 @@ const useBoardStore = create<ListBoardState>()(
           set((state) => ({
             boards: state.boards.map((board) =>
               board.id === boardId
-              ? {
-                  ...board,
-                  canvasPaths: board.canvasPaths.map((path) => ({
-                    ...path,
-                    isSelected: false,
-                  })),
-                } : board
+                ? {
+                    ...board,
+                    canvasPaths: board.canvasPaths.map((paths) => ({
+                      ...paths,
+                      isSelected: false,
+                    })),
+                  }
+                : board
             ),
           }));
         },
@@ -227,5 +230,43 @@ const useTemplateStore = create<TemplateStoreState>()(
     )
   )
 );
-export { useBoardStore, useTemplateStore, useToolDevStore };
 
+export const useBoardStoreof = create<BoardStore>((set) => ({
+  board: null,
+
+  setBoard: (board) => set({ board }),
+
+  updateBoard: (updates) =>
+    set((state) => ({
+      board: state.board ? { ...state.board, ...updates } : null,
+    })),
+  clearBoard: () => set({ board: null }),
+  setBoardColor: (color: string) => {
+    set((state) => ({
+      board: state.board
+        ? {
+            ...state.board,
+            option: {
+              ...state.board?.option,
+              backgroundColor: color,
+            },
+          }
+        : null,
+    }));
+  },
+  setGridVisible: () => {
+    set((state ) => ({
+      board: state.board
+      ? {
+          ...state.board,
+          option: {
+            ...state.board?.option,
+            grid: !state.board?.option.grid,
+          },
+        }
+      : null,
+    }))
+  },
+}));
+
+export { useBoardStore, useTemplateStore, useToolDevStore };

@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form,FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 
 interface DialogElementProps {
     Video?: React.ReactNode;
     Title?: string;
     Description?: string;
-    HandleClickCreate?: () => void;
+    HandleClickCreate: (name: string , description: string) => void;
     [key: string]: any;
 }
 interface BoardThumbnailProps {
@@ -17,8 +22,14 @@ interface BoardThumbnailProps {
     [key: string]: any;
 }
 
+const creatBoardSchema = z.object({
+    name: z.string().min(1, "Name không được để trống"),
+    description: z.string().min(1,"Desciption hãy nhập"),
+})
+
 
 export default function BoardThumbnail({ Thumbnail, title, DialogEle, ...props }: BoardThumbnailProps) {
+
 
     return (
         <div {...props} className="flex flex-col gap-4  hover:cursor-pointer" >
@@ -38,16 +49,59 @@ export default function BoardThumbnail({ Thumbnail, title, DialogEle, ...props }
 }
 
 const BodyDialog = ({ Video, Title, Description, HandleClickCreate, ...props }: DialogElementProps) => {
+    const formCreateBoard = useForm<z.infer<typeof creatBoardSchema>>({
+        resolver: zodResolver(creatBoardSchema),
+        defaultValues: {
+            name: "",
+            description: ""
+        },
+    });
+
+    const onSubmitCreateBoard = (data: z.infer<typeof creatBoardSchema>) => {
+        HandleClickCreate(data.name,data.description)
+    }
     return (
         <DialogContent className="w-[520px] h-[574px]" {...props}>
             {Video}
             <DialogHeader>
-                {Title && <DialogTitle className="text-[2rem]">{Title}</DialogTitle>}
-                {Description && <DialogDescription className='text-[1.4rem]'>{Description}</DialogDescription>}
+                <DialogTitle>{Title}</DialogTitle>
+                <DialogDescription>{Description}</DialogDescription>
             </DialogHeader>
-            <DialogFooter>
-                <Button size={'lg'} onClick={HandleClickCreate}>Create</Button>
-            </DialogFooter>
+                <Form {...formCreateBoard}>
+                    <form onSubmit={formCreateBoard.handleSubmit(onSubmitCreateBoard)} className="space-y-6">
+                        <FormField
+                            control={formCreateBoard.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className=" text-md lg:text-2xl">Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter board name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={formCreateBoard.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className=" text-md lg:text-2xl">Description</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter board description" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="submit" size="lg">
+                                Create
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
         </DialogContent>
     )
 }

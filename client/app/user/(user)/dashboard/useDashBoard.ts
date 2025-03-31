@@ -21,7 +21,6 @@ export default function useDashBoard() {
     const [boards, setBoards] = useState<Board[] | null>(null)
     useEffect(() => {
         BoardAPI.getAllBoardOfUser().then((res) => {
-            console.log('dashboard log ,', res);
             setBoards(res)
         }).catch((res) => {
             console.log(res)

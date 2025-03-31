@@ -32,7 +32,7 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 onClick={handleClickVisibleGrid}
               >
-                {currentBoard?.options.gird ? "Tắt" : "Bật"} lưới
+                {currentBoard?.options.grid ? "Tắt" : "Bật"} lưới
               </li>
               <li
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"

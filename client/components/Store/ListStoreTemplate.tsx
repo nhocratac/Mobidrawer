@@ -85,7 +85,7 @@ function ListStoreTemplate() {
   }, [])
 
   return (
-    <ul className="grid grid-cols-4 gap-y-8 gap-x-24">
+    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {storeData.map((item) => (
         <LiItem key={item.id} {...item} />
       ))}

@@ -6,13 +6,10 @@ import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDText from '@/components/BoxResizable/RNDText';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
-import { useParams } from 'next/navigation';
+import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
-const PlayGroundPage = ({ }: {
-}) => {
-
-  const { id } = useParams();
+const PlayGroundPage = () => {
   useEffect(() => {
     // Disable scrolling
     document.body.style.overflow = 'hidden';
@@ -21,43 +18,50 @@ const PlayGroundPage = ({ }: {
     document.body.style.height = '100%';
 
   }, []);
-
-
   const {
+    id,
     scale,
     setScaleHandle,
     textItemCount,
     setTextItemCount,
-    stickyNoteItemCount,
-    stickyNoteColors,
     onClickCreateStickyNote,
     shapeList,
     onClickAddShape,
+    handleMoveStickyNote,
+    handleReSizeStickyNote,
+    handleChangeTextStickyNote
   } = useBoard();
 
+  const { stickyNotes } = useStickyNoteStore();
   return (
     <div className="w-screen h-screen bg-slate-500">
-      <BoardSubscription boardId={id.toString()} />
-      <LeftToolBar
-        onClickTextButton={() => setTextItemCount(textItemCount + 1)}
-        onClickStickyNoteButton={onClickCreateStickyNote}
-        onClickShape={onClickAddShape}
-      />
-      <ZoomableGrid onSetScale={setScaleHandle}>
-        {Array.from({ length: textItemCount }).map((_, index) => (
-          <RNDText key={index} parentScale={scale} />
-        ))}
+      {id &&
+        (<>
+          <BoardSubscription boardId={id.toString()} />
+          <LeftToolBar
+            onClickTextButton={() => setTextItemCount(textItemCount + 1)}
+            onClickStickyNoteButton={onClickCreateStickyNote}
+            onClickShape={onClickAddShape}
+          />
+          <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
+            {Array.from({ length: textItemCount }).map((_, index) => (
+              <RNDText key={index} parentScale={scale} />
+            ))}
+            {stickyNotes.map((stickyNote) => (
+              <RNDStickyNote key={stickyNote.id} parentScale={scale}
+                stickyNote={stickyNote}
+                handlemoveStickyNote={handleMoveStickyNote}
+                handleReSizeStickyNote={handleReSizeStickyNote}
+                handleChangeTextStickyNote={handleChangeTextStickyNote} />
+            ))}
 
-        {Array.from({ length: stickyNoteItemCount }).map((_, index) => (
-          <RNDStickyNote key={index} parentScale={scale} colorString={stickyNoteColors[index]} />
-        ))}
-
-        {shapeList.map((ShapeComponent, index) => (
-          <RNDBase key={index} parentScale={scale}  >
-            <ShapeComponent />
-          </RNDBase>
-        ))}
-      </ZoomableGrid>
+            {shapeList.map((ShapeComponent, index) => (
+              <RNDBase key={index} parentScale={scale}  >
+                <ShapeComponent />
+              </RNDBase>
+            ))}
+          </ZoomableGrid>
+          (</>)}
     </div>
   );
 };

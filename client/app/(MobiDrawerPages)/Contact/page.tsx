@@ -2,6 +2,8 @@ import React from 'react'
 
 export default function Contact() {
   return (
-    <div>Contact</div>
+    <>
+      {/* Content is handled by layout.tsx */}
+    </>
   )
 }

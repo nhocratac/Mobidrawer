@@ -1,36 +1,32 @@
 'use client'
+import BoardAPI from "@/api/BoardAPI";
 import BrainwritingThumb from "@/assets/Thumbnail/BrainwritingThumb";
 import FlowchartThumb from "@/assets/Thumbnail/FlowchartThumb";
 import IntelligentTemplate from "@/assets/Thumbnail/IntelligentTemplate";
 import KanbanFrameworkThumb from "@/assets/Thumbnail/KanbanFrameworkThumb";
 import MindMapThumb from "@/assets/Thumbnail/MindMapThumb";
 import QuickRetrospective from "@/assets/Thumbnail/QuickRetrospective";
-import VideoDialog from "@/components/BoardThumbnail/VideoDialog";
 import BoardThumbnail from "@/components/BoardThumbnail/BoardThumbnail";
-import BoardAPI from "@/api/BoardAPI";
+import VideoDialog from "@/components/BoardThumbnail/VideoDialog";
 import { useRouter } from "next/navigation";
-import { useBoardStore } from "@/lib/Zustand/store";
-import { boardType } from "@/lib/Zustand/type.type";
 
 
 
 export default function ListBoardThumbnail() {
-    const {addnewBoard, boards} = useBoardStore()
     const router = useRouter()
     const DialogData = {
         flowchart: {
             Title: 'Flow Chart',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    boards.length
-                    const newBoard = BoardAPI.createBoard(boardType.flowchart, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -40,14 +36,14 @@ export default function ListBoardThumbnail() {
             Title: 'Brainwriting',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    const newBoard = BoardAPI.createBoard(boardType.brainWritting, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -57,14 +53,14 @@ export default function ListBoardThumbnail() {
             Title: 'Intelligent Template',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    const newBoard = BoardAPI.createBoard(boardType.intelligentTemplate, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -74,14 +70,15 @@ export default function ListBoardThumbnail() {
             Title: 'Kanban Framework',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    const newBoard = BoardAPI.createBoard(boardType.kanbanFramework, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        console.log(res)
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -91,14 +88,14 @@ export default function ListBoardThumbnail() {
             Title: 'Mind Map',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    const newBoard = BoardAPI.createBoard(boardType.mindMap, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }
@@ -108,14 +105,14 @@ export default function ListBoardThumbnail() {
             Title: 'Quick Retrospective',
             Description: 'You have must limit of Three editable boards. Upgrade to creat more editable boards',
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
-            HandleClickCreate: () => {
+            HandleClickCreate: (name: string, description: string) => {
                 try {
-                    const newBoard = BoardAPI.createBoard(boardType.quickRetrospective, boards.length)
+                    const newBoard = BoardAPI.createBoard(name, description).then((res) => {
+                        router.push('/user/board/' + res.id)
+                    })
                     if (!newBoard) {
                         // handel error
                     }
-                    addnewBoard(newBoard)
-                    router.push(`/user/board/${newBoard.id}`)
                 } catch (error) {
 
                 }

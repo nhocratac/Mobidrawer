@@ -7,12 +7,13 @@ import UseCaseHero from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/
 import Brainstorming from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/Brainstorming'
 import DesignThinking from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/DesignThinking'
 import Diagram from '@/app/(MobiDrawerPages)/(Solutions)/UseCase/Components/Diagram'
+
 export default function Layout() {
     return (
-        <div>
+        <div className="w-full">
             <LandingNavbar />
-            <div className="max-w-[calc(100%-250px)] mx-auto">
-                <div className='relative z-20 '>
+            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:max-w-[1440px] xl:mx-auto">
+                <div className='relative z-20'>
                     <UseCaseHero />
                     <LogoSlider />
                     <Brainstorming />

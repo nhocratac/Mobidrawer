@@ -12,4 +12,5 @@ public interface UserService {
     User createUser(CreateUserDto user);
     void changePassword(User user);
     User getUserById(String userId);
+    User getBaseInFormation(String userId);
 }
