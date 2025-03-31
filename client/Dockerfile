@@ -5,8 +5,12 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies and sharp for image optimization
 RUN npm ci
+RUN npm install sharp
+
+# Set Node options to increase memory limit
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Copy the rest of the code
 COPY . .
