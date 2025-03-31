@@ -50,15 +50,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow connections from all origins
-        configuration.addAllowedOrigin("*");  // Allow all origins
-        // If you need to maintain allowCredentials but allow all origins, use this approach instead:
-        // configuration.setAllowedOriginPatterns(List.of("*"));  // Alternative that works with allowCredentials=true
+        // Allow connections from specific origins
+        configuration.addAllowedOrigin("http://51.79.250.11:3000");  // Production frontend URL
+        configuration.addAllowedOrigin("http://localhost:3000");     // Local development URL
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
-        // Note: When using allowedOrigin="*", allowCredentials must be false
-        configuration.setAllowCredentials(false);
+        configuration.setAllowCredentials(true);  // Enable credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

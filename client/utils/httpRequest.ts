@@ -2,7 +2,7 @@ import axios from "axios";
 import { refreshAccessToken } from "@/api/authAPI";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 
-const API_URL = "http:///51.79.250.11:8080/api/v1";
+const API_URL = "http://51.79.250.11:8080/api/v1";
 
 const httpRequest = axios.create({
   baseURL: API_URL,
