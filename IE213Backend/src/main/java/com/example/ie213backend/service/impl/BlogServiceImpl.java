@@ -3,6 +3,7 @@ package com.example.ie213backend.service.impl;
 import com.example.ie213backend.domain.dto.BlogDto.BlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.CreateBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.InteractionBlogDto;
+import com.example.ie213backend.domain.dto.BlogDto.UpdateBlogDto;
 import com.example.ie213backend.domain.model.Blog;
 import com.example.ie213backend.domain.model.Interaction;
 import com.example.ie213backend.mapper.BlogMapper;
@@ -11,13 +12,13 @@ import com.example.ie213backend.service.BlogService;
 import com.example.ie213backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +29,6 @@ public class BlogServiceImpl implements BlogService {
     private final BlogMapper blogMapper;
 
     @Override
-    public List<BlogDto> getAllBLog() {
-        return List.of();
-    }
-
-    @Override
     public BlogDto getBlogById(String blogId) {
         return blogMapper.toDto(blogRepository.findById(blogId)
                 .orElseThrow(() -> new IllegalArgumentException("Blog not found with id: " + blogId)));
@@ -41,8 +37,39 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public BlogDto createBlog(CreateBlogDto createBlogDto) {
         userService.getUserById(createBlogDto.getOwner());
+        Blog blog = blogMapper.toEntity(createBlogDto);
 
-        return blogMapper.toDto(blogRepository.save(blogMapper.toEntity(createBlogDto)));
+        return blogMapper.toDto(blogRepository.save(blog));
+    }
+
+    @Override
+    public BlogDto updateBlog(UpdateBlogDto updateBlogDto, String blogId) {
+        Blog targetBlog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy blog có id: " + blogId));
+
+        Optional.ofNullable(updateBlogDto.getTitle()).ifPresent(targetBlog::setTitle);
+        Optional.ofNullable(updateBlogDto.getDescription()).ifPresent(targetBlog::setDescription);
+        Optional.ofNullable(updateBlogDto.getKeywords()).ifPresent(targetBlog::setKeywords);
+        Optional.ofNullable(updateBlogDto.getThumbnail()).ifPresent(targetBlog::setThumbnail);
+        Optional.ofNullable(updateBlogDto.getContent()).ifPresent(targetBlog::setContent);
+        Optional.ofNullable(updateBlogDto.getIsPublished()).ifPresent(targetBlog::setIsPublished);
+
+        return blogMapper.toDto(blogRepository.save(targetBlog));
+    }
+
+    @Override
+    public void deleteBlog(String blogId) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy blog có id: " + blogId));
+
+        blogRepository.delete(blog);
+    }
+
+
+    @Override
+    public Page<BlogDto> listBlogByUserId(String userId, boolean isPublished, Pageable pageable) {
+        return blogRepository.findByOwnerAndIsPublished(userId, isPublished, pageable)
+                .map(blogMapper::toDto);
     }
 
     @Override
@@ -55,7 +82,7 @@ public class BlogServiceImpl implements BlogService {
         boolean exists = interactions.stream()
                 .anyMatch(i -> i.getOwner().equals(interaction.getOwner()));
 
-        if(exists) {
+        if (exists) {
             interactions.removeIf(i -> i.getOwner().equals(interaction.getOwner()));
         } else {
             interactions.add(interaction);
@@ -64,5 +91,4 @@ public class BlogServiceImpl implements BlogService {
 
         return blogMapper.toDto(blogRepository.save(blog));
     }
-
 }

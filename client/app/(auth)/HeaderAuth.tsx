@@ -13,7 +13,7 @@ function HeaderAuth() {
         <header className=' top-0 left-0 right-0 z-50 lg:h-[96px] h-[54px] bg-white text-[black] border border-b-[#444749] lg:px-[24px] lg:py-[8px] flex justify-between items-center' >
             <div className='flex items-center place-content-around lg:leading-[64px] gap-4'>
                 <HamburgerMenu />
-                <Link href={path.home}>
+                <Link href={path.user.dashboard}>
                     <h1 className='mt-0 text-[3rem]'>
                         MOBIDRAWER
                     </h1>
