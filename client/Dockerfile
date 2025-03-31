@@ -1,7 +1,7 @@
 FROM node:18-alpine AS base
 
-# Set Node options to a lower memory limit suitable for small VPS
-ENV NODE_OPTIONS="--max-old-space-size=512"
+# Set Node options with increased memory limit
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install dependencies only when needed

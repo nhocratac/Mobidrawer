@@ -12,6 +12,10 @@ const nextConfig = {
             ...config.optimization,
             minimize: true,
             sideEffects: true,
+            // Add memory optimizations
+            removeAvailableModules: false,
+            removeEmptyChunks: false,
+            splitChunks: false,
         };
         
         return config;
@@ -22,10 +26,19 @@ const nextConfig = {
     reactStrictMode: false,
     // Enable build output compression
     compress: true,
-    // Limit the number of concurrent tasks
+    // Limit the number of concurrent tasks and disable memory-intensive features
     experimental: {
-        cpus: 1
-    }
+        cpus: 1,
+        optimizeCss: false,
+        optimizePackageImports: false,
+    },
+    // Reduce image optimization memory usage
+    images: {
+        minimumCacheTTL: 60,
+        disableStaticImages: false,
+    },
+    // Disable source maps in production
+    productionBrowserSourceMaps: false,
 };
 
 export default nextConfig;
