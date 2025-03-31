@@ -1,37 +1,46 @@
-FROM node:18-alpine AS build
+FROM node:18-alpine AS base
 
+# Set Node options to a lower memory limit suitable for small VPS
+ENV NODE_OPTIONS="--max-old-space-size=512"
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Install dependencies and sharp for image optimization
-RUN npm ci
+# Install dependencies with clean slate
+RUN npm ci --omit=dev --no-audit --no-fund
+
+# Install sharp for image optimization
 RUN npm install sharp
 
-# Set Node options to increase memory limit
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-
-# Copy the rest of the code
-COPY . .
-
-# Build the Next.js application
-RUN npm run build
-
-# Production stage
-FROM node:18-alpine AS runner
-
+# Rebuild the source code only when needed
+FROM base AS builder
 WORKDIR /app
 
-# Set environment to production
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build with memory optimizations
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM node:18-alpine AS runner
+WORKDIR /app
+
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy necessary files from build stage
-COPY --from=build /app/next.config.mjs ./
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 # Create a .env.production file
 RUN echo "APP_NAME='MobiDrawer'" > .env.production && \

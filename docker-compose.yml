@@ -9,6 +9,10 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - mobidrawer-network
 
@@ -26,6 +30,10 @@ services:
     depends_on:
       - redis
       - mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: always
     networks:
       - mobidrawer-network
@@ -39,6 +47,10 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: always
     networks:
       - mobidrawer-network
@@ -50,6 +62,10 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: 384M
     restart: always
     networks:
       - mobidrawer-network
