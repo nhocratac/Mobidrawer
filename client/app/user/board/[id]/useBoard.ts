@@ -105,6 +105,11 @@ export function useBoard() {
 
   const handleChangeTextStickyNote = useCallback(
     (stickyNoteId: string, text: string) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+      
       client?.publish({
         destination: `/app/board/ChangeTextStickyNote/${id}`,
         body: JSON.stringify({
