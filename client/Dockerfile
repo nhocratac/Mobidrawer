@@ -42,10 +42,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-# Create a .env.production file
+# Create a .env.production file with correct VPS IP and Cloudinary credentials
 RUN echo "APP_NAME='MobiDrawer'" > .env.production && \
     echo "MODE_ENV='production'" >> .env.production && \
-    echo "API_WEB='http://backend:8080/api/v1'" >> .env.production
+    echo "API_WEB='http://51.79.250.11:8080/api/v1'" >> .env.production
 
 EXPOSE 3000
 
