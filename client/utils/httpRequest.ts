@@ -17,6 +17,7 @@ httpRequest.interceptors.request.use(async (config) =>  {
   if (
     config.url?.includes("/auth/login") ||
     config.url?.includes("/auth/register") ||
+    config.url?.includes("/auth/verify-register") ||
     config.url?.includes("/auth/refresh")
   ) {
     return config;

@@ -47,7 +47,7 @@ const PlayGroundPage = () => {
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />
             ))}
-            {stickyNotes.map((stickyNote, index) => (
+            {stickyNotes.map((stickyNote) => (
               <RNDStickyNote key={stickyNote.id} parentScale={scale}
                 stickyNote={stickyNote}
                 handlemoveStickyNote={handleMoveStickyNote}

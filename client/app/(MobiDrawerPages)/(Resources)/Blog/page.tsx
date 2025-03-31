@@ -1,7 +1,16 @@
-import React from 'react'
+import React from "react";
+import BriefBlog  from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/Blog'
+import BlogListing from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/BlogListing'
 
 export default function Blog() {
   return (
-    <div className="w-full p-4 md:p-6 lg:p-8">Blog</div>
-  )
+    <div>
+      <div className="max-w-[calc(100%-250px)] mx-auto ">
+        <div className="relative z-20">
+          <BriefBlog />
+          <BlogListing />
+        </div>
+      </div>
+    </div>
+  );
 }

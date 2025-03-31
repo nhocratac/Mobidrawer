@@ -53,36 +53,6 @@ const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSe
       ctx.stroke();
     }
 
-    // Draw the selected path
-    if(isSelected){
-      let minX = Infinity;
-      let minY = Infinity;
-      let maxX = -Infinity;
-      let maxY = -Infinity;
-    
-      paths.forEach(({ x, y }) => {
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
-      });
-
-      const padding = 5;
-
-      ctx.beginPath();
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      ctx.globalAlpha = 1;
-
-      ctx.strokeRect(
-        minX - padding,
-        minY - padding,
-        maxX - minX + padding * 2,
-        maxY - minY + padding * 2
-      );
-    }
-
     ctx.restore(); // Restore the previous context state
   }, [color, thickness, paths, scale, translate, isSelected, opacity]);
 

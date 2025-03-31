@@ -21,11 +21,14 @@ public class BlogDto {
     private String title;
     private String description;
     private String thumbnail;
+    private List<String> keywords;
     private String content;
+    private Boolean isPublished;
     private UserDto owner;
 
     private List<Interaction> interactions;
     private Page<CommentDto> comments;
 
     private Instant createdAt;
+    private Instant updatedAt;
 }

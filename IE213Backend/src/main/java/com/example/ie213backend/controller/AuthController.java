@@ -36,7 +36,13 @@ public class AuthController {
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
         refreshTokenCookie.setPath("/");
 
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge(15 * 60);
+        accessTokenCookie.setPath("/");
+
         response.addCookie(refreshTokenCookie);
+        response.addCookie(accessTokenCookie);
         response.addHeader("Authorization", "Bearer " + accessToken);
         return ResponseEntity.ok(authResponse);
     }
@@ -56,6 +62,13 @@ public class AuthController {
         if (newAccessToken == null) {
             return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
+
+        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge(15 * 60);
+        accessTokenCookie.setPath("/");
+
+        response.addCookie(accessTokenCookie);
         response.addHeader("Authorization", "Bearer " + newAccessToken);
         AuthResponse authResponse = AuthResponse.builder().accessToken(newAccessToken).build();
 

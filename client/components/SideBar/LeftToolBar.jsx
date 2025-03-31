@@ -242,25 +242,13 @@ const LeftToolBar = ({
         {/* toolbar container */}
         <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
           <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-          <ToolBarBtn
-            onclick={OnClickPiHandGrabbingFillButton}
-            icon={PiHandGrabbingFill}
-            isChoosing={ModeTool == "drag"}
-          />
+          <ToolBarBtn onclick={OnClickPiHandGrabbingFillButton} icon={PiHandGrabbingFill} isChoosing={ModeTool == "drag"} />
           <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
           <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
           <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
-
           <ToolBarBtn onclick={handleClickVisibleGridButton} icon={MdGrid4X4} />
-
-          <ToolBarBtn
-            onclick={onClickBackgroundButton}
-            icon={IoColorFillSharp}
-          />
-          <ToolBarBtn
-            onclick={onClickPenVisibleButton}
-            icon={FaPen}
-          />
+          <ToolBarBtn onclick={onClickBackgroundButton} icon={IoColorFillSharp} />
+          <ToolBarBtn onclick={onClickPenVisibleButton} icon={FaPen} />
         </div>
 
         {

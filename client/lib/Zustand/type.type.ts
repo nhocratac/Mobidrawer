@@ -32,6 +32,7 @@ export interface coordinate {
 }
 
 export interface canvasPath {
+  id: string; // ID từ MongoDB
   thickness: number;
   color: string;
   opacity: number;
