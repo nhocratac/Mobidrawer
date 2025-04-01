@@ -1,5 +1,6 @@
 import useDebounce from "@/hooks/useDebounce";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
+import useTokenStore from "@/lib/Zustand/tokenStore";
 import { StickyNote } from "@/lib/Zustand/type.type";
 import React, { memo, useEffect, useRef, useState } from "react";
 import { DraggableData, DraggableEvent } from "react-draggable";
@@ -11,6 +12,8 @@ interface RNDStickyNoteProps {
   handlemoveStickyNote: (id: string, position: { x: number; y: number }) => void;
   handleReSizeStickyNote: (id: string, size: { width: number | string, height: number | string }) => void;
   handleChangeTextStickyNote: (stickyNoteId: string, text: string) => void;
+  handleLockStickyNote: (stickyNoteId: string) => void;
+  handleUnLockStickyNote: (stickyNoteId: string) => void;
 }
 
 const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
@@ -19,13 +22,16 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   handlemoveStickyNote,
   handleReSizeStickyNote,
   handleChangeTextStickyNote,
+  handleLockStickyNote,
+  handleUnLockStickyNote
 }) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
-  const { moveStickyNote, resizeStickyNote, changTextStickNote } = useStickyNoteStore();
+  const { user } = useTokenStore();
+  const { moveStickyNote, resizeStickyNote } = useStickyNoteStore();
   const debouncedText = useDebounce(text, 1000);
 
   useEffect(() => {
@@ -34,14 +40,16 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
 
   useEffect(() => {
     const blockEvents = (e: Event) => {
-       e.stopPropagation();
+      e.stopPropagation();
       // e.preventDefault();
     };
     const handleFocus = () => {
+      handleLockStickyNote(stickyNote.id);
       document.addEventListener("keydown", blockEvents, true);
       document.addEventListener("mousedown", blockEvents, true);
     };
     const handleBlur = () => {
+      handleUnLockStickyNote(stickyNote.id);
       document.removeEventListener("keydown", blockEvents, true);
       document.removeEventListener("mousedown", blockEvents, true);
     };
@@ -77,7 +85,6 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setText(newValue);
-   // handleChangeTextStickyNote(stickyNote.id, newValue);
   };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
@@ -137,12 +144,25 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
         width: stickyNote.size.width,
       }}
       bounds="window"
+      resizeHandleComponent={
+        {
+          bottomLeft: <div className="absolute bottom-left-handle bg-white h-4 w-4 cursor-sw-resize rounded-full bottom-[5px] left-[5px]" />,
+          bottomRight: <div className="absolute bottom-right-handle bg-white h-4 w-4 cursor-se-resize rounded-full bottom-[5px] right-[5px] " />,
+          topRight:
+            <div className="absolute top-right-handle  bg-white h-4 w-4 cursor-ne-resize rounded-full top-[5px] right-[5px] " />,
+          topLeft: <div className="absolute top-left-handle bg-white h-4 w-4 cursor-nw-resize rounded-full top-[5px] left-[5px]" />,
+          top: <div className="top-handle" />,
+          right: <div className="right-handle" />,
+          bottom: <div className="bottom-handle" />,
+          left: <div className="left-handle" />,
+        }
+      }
       minWidth={200}
       minHeight={200}
       className="border-2 border-black relative"
       scale={parentScale}
-      enableResizing={true}
-      disableDragging={isTyping}
+      enableResizing={(user?.id === stickyNote.isSelected)}
+      disableDragging={isTyping && !(user?.id === stickyNote.isSelected)}
       onDrag={onDrag}
       onDragStop={onDragStop}
       onResizeStop={handleResizeStop}
@@ -170,19 +190,9 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
             setTimeout(() => textAreaRef.current?.focus(), 50);
           }}
         />
-        {/* Các resize handles */}
-        {[
-          { top: "-5px", left: "-5px", cursor: "nw-resize" },
-          { top: "-5px", right: "-5px", cursor: "ne-resize" },
-          { bottom: "-5px", left: "-5px", cursor: "sw-resize" },
-          { bottom: "-5px", right: "-5px", cursor: "se-resize" },
-        ].map((style, index) => (
-          <div
-            key={index}
-            className="absolute bg-white border-2 border-black rounded-full"
-            style={{ width: "10px", height: "10px", ...style }}
-          />
-        ))}
+        <div className="absolute top-0 right-0 p-1 max-w-[80px] whitespace-nowrap overflow-hidden text-ellipsis bg-lime-700 text-white rounded-bl-xl">
+          {!!stickyNote.isSelected ? "Peter" : "Free"}
+        </div>
       </div>
     </Rnd>
   );
@@ -196,5 +206,8 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     prevProps.handleChangeTextStickyNote === nextProps.handleChangeTextStickyNote
   );
 });
+
+
+
 
 export default RNDStickyNote;

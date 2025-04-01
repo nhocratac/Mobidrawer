@@ -1,24 +1,43 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
-interface TokenState {
-  token: string;
-  setToken: (newToken: string) => void;
-  clearToken: () => void;
-  getUserByToken: () => User;
+// Định nghĩa kiểu dữ liệu cho user
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
 }
 
+// Kiểu dữ liệu của Zustand Store
+interface TokenState {
+  token: string;
+  user: User | null;
+  setToken: (newToken: string) => void;
+  clearToken: () => void;
+}
+
+
+// 🆕 Store Zustand
 const useTokenStore = create<TokenState>()(
   devtools(
     persist(
       (set, get) => ({
         token: "",
-        setToken: (newToken) => set({ token: newToken }),
-        clearToken: () => set({ token: "" }),
-        getUserByToken: () =>
-          JSON.parse(
-            Buffer.from(get().token.split(".")[1], "base64").toString()
-          ).user,
+        user: null, // 🆕 Thêm user vào store
+
+        // 🆕 Khi setToken -> tự động set user
+        setToken: (newToken) => {
+          const decoded = decodeToken(newToken);
+          set({
+            token: newToken,
+            user: decoded?.user || null, // Lưu user vào store
+          });
+        },
+
+        // 🆕 Khi clearToken -> xóa cả user
+        clearToken: () => set({ token: "", user: null }),
       }),
       {
         name: "access-token",
@@ -33,6 +52,9 @@ const useTokenStore = create<TokenState>()(
   )
 );
 
+export default useTokenStore;
+
+
 // 🆕 Hàm kiểm tra token hết hạn
 export function isTokenExpired(token: string): boolean {
   if (!token) return true;
@@ -44,4 +66,14 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
-export default useTokenStore;
+
+export const decodeToken = (token : string) => {
+  try {
+    const base64Url = token.split('.')[1]; // Lấy payload
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64));
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
+};

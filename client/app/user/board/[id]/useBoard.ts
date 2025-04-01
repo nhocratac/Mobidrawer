@@ -16,6 +16,7 @@ export function useBoard() {
   const { setBoard } = useBoardStoreof();
   const { setStickyNotes } = useStickyNoteStore();
 
+
   useEffect(() => {
     if (!id) return;
     BoardAPI.getBoardById(id.toString())
@@ -63,6 +64,26 @@ export function useBoard() {
       client?.publish({
         destination: `/app/board/moveStickyNote/${id}`,
         body: JSON.stringify({ id: stickyNoteId, position: newPosition }),
+      });
+    },
+    [client, id]
+  );
+
+  const handleLockStickyNote = useCallback(
+    (stickyNoteId: string,) => {
+      client?.publish({
+        destination: `/app/board/lockStickyNote/${id}`,
+        body: JSON.stringify({ id: stickyNoteId}),
+      });
+    },
+    [client, id]
+  );
+
+  const handleUnLockStickyNote = useCallback(
+    (stickyNoteId: string,) => {
+      client?.publish({
+        destination: `/app/board/unLockStickyNote/${id}`,
+        body: JSON.stringify({ id: stickyNoteId}),
       });
     },
     [client, id]
@@ -147,5 +168,7 @@ export function useBoard() {
     handleMoveStickyNote,
     handleReSizeStickyNote,
     handleChangeTextStickyNote,
+    handleLockStickyNote,
+    handleUnLockStickyNote
   };
 }

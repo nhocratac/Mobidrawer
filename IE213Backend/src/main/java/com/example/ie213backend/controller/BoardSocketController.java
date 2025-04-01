@@ -2,20 +2,14 @@ package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
 import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateCanvasPath;
-import com.example.ie213backend.domain.dto.StickyNote.ChangeText;
-import com.example.ie213backend.domain.dto.StickyNote.CreateStickyNote;
-import com.example.ie213backend.domain.dto.StickyNote.MoveStickyNote;
-import com.example.ie213backend.domain.dto.StickyNote.ResizeStickyNote;
+import com.example.ie213backend.domain.dto.StickyNote.*;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.StickyNote;
 import com.example.ie213backend.mapper.CanvasPathMapper;
 import com.example.ie213backend.mapper.StickyNoteMapper;
 import com.example.ie213backend.mapper.UserMapper;
-import com.example.ie213backend.service.BoardService;
-import com.example.ie213backend.service.CanvasPathService;
-import com.example.ie213backend.service.StickyNoteService;
-import com.example.ie213backend.service.UserService;
+import com.example.ie213backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,6 +37,7 @@ public class BoardSocketController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final CacheUserInBoardService cacheUserInBoardService;
 
     @MessageMapping("/connect")
     @SendToUser("/queue/session")
@@ -51,32 +47,30 @@ public class BoardSocketController {
         return Map.of("sessionId", sessionId);
     }
 
-    @MessageMapping("/board/add-new-path/{id}")  // Nhận message từ client
-    @SendTo("/topic/board/{id}")  // Gửi đến tất cả client đăng ký "/topic/messages"
-    public ResponseEntity<CanvasPath> handleWebSocketMessage(
-            @Payload @Valid CanvasPath canvasPath,
-            @DestinationVariable String id
-    ) {
-        return ResponseEntity.ok(boardService.addCanvasPath(id, canvasPath));
-    }
 
     @MessageMapping("/board/join/{boardId}")
     @SendTo("/topic/board/{boardId}")
-    public UserDto handleUserJoin(
+    public Set<UserDto> handleUserJoin(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
         // Trả về thông báo cho tất cả client trong topic
-        return userMapper.toDto(userService.getBaseInFormation(userDto.getId()));
+        cacheUserInBoardService.addUserToBoard(boardId, userDto);
+        return cacheUserInBoardService.getUsersInBoard(boardId);
     }
 
-
-    @MessageMapping("/draw")  // Nhận tin nhắn từ client gửi đến "/app/draw"
-    @SendTo("/topic/draw")    // Gửi tin nhắn đến tất cả client đăng ký "/topic/draw"
-    public String handleDrawEvent(String message) {
-        return message;  // Gửi lại tin nhắn tới các client khác
+    @MessageMapping("/board/leave/{boardId}")
+    @SendTo("/topic/board/{boardId}")
+    public Set<UserDto> handleUserLeave(
+            SimpMessageHeaderAccessor headerAccessor,
+            @DestinationVariable String boardId
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        cacheUserInBoardService.removeUserFromBoard(boardId, userDto.getId());
+        return cacheUserInBoardService.getUsersInBoard(boardId);
     }
+
 
     @MessageMapping("/board/draw/{boardId}")  // Nhận tin nhắn từ client gửi đến "/app/draw"
     @SendTo("/topic/draw/board/{boardId}")
@@ -198,6 +192,34 @@ public class BoardSocketController {
         return Map.of(
                 "stickyNote" , response,
                 "senderSessionId", senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/lockStickyNote/{boardId}")
+    @SendTo("/topic/board/lockStickyNote/{boardId}")
+    public Map<String, Object> handleLockStickyNote(
+        @DestinationVariable String boardId,
+        SimpMessageHeaderAccessor headerAccessor,
+        @Payload LockStickyNote lockStickyNote
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        return Map.of(
+                "id" , lockStickyNote.getId(),
+                "userId", userDto.getId()
+        );
+    }
+
+    @MessageMapping("/board/unLockStickyNote/{boardId}")
+    @SendTo("/topic/board/unLockStickyNote/{boardId}")
+    public Map<String, Object> handleUnLockStickyNote(
+            @DestinationVariable String boardId,
+            SimpMessageHeaderAccessor headerAccessor,
+            @Payload LockStickyNote lockStickyNote
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        return Map.of(
+                "id" , lockStickyNote.getId(),
+                "userId", userDto.getId()
         );
     }
 }

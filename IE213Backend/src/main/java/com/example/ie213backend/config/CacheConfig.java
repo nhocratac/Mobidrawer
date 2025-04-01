@@ -1,6 +1,7 @@
 package com.example.ie213backend.config;
 
 import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -24,6 +25,12 @@ public class CacheConfig {
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         return new StringRedisTemplate(redisConnectionFactory);
     }
-
-    
+    @Bean
+    public RedisTemplate<String, UserDto> userDtoRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, UserDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
 }
