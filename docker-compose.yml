@@ -15,6 +15,11 @@ services:
           memory: 256M
     networks:
       - mobidrawer-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -24,12 +29,15 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/mobidrawer
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
+      # MongoDB connection settings
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://laidaynao901:S2bMWiZCDIqhES1Q@cluster0.qv15ecd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - SPRING_DATA_MONGODB_DATABASE=IE213
+      # Correct Redis connection settings
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
     depends_on:
-      - redis
-      - mongodb
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -55,24 +63,10 @@ services:
     networks:
       - mobidrawer-network
 
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    deploy:
-      resources:
-        limits:
-          memory: 384M
-    restart: always
-    networks:
-      - mobidrawer-network
-
 volumes:
   redis_data:
     driver: local
+  # Keep this if you want to maintain compatibility with existing configurations
   mongodb_data:
     driver: local
 
