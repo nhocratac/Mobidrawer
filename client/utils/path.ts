@@ -9,7 +9,10 @@ const path ={
         recent : '/user/recent',
         store : '/user/store',
         post : '/user/post',
+        draftBlog: '/user/my-blogs/draft',
+        publishedBlog: '/user/my-blogs/published',
     },
+    createBlog : '/new-blog',
     product : {
         Feature : '/Feature',
         Integration : '/Integration',

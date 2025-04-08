@@ -82,6 +82,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   // socket 
   const {client} = useStompStore()
 
+
   // Cập nhật state từ board nếu có
   useEffect(() => {
     if (board?.canvasPaths) {

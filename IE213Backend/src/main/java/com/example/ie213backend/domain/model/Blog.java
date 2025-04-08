@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -24,7 +25,9 @@ public class Blog {
     private String title;
     private String description;
     private String thumbnail;
+    private List<String> keywords;
     private String content;
+    private Boolean isPublished;
 
     @Indexed
     private String owner;
@@ -32,4 +35,7 @@ public class Blog {
 
     @CreatedDate
     private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 }

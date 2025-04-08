@@ -154,4 +154,5 @@ export interface StickyNote {
   owner : string;
   boardId : string;
   updateAt: string;
+  isSelected ?: string | null;
 }

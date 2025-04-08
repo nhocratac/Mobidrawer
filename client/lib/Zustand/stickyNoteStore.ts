@@ -11,6 +11,9 @@ interface StickyNoteState {
     newSize: { height: number | string; width: number | string }
   ) => void;
   changTextStickNote: (id: string, text: string) => void;
+  selectStickyNote: (id: string, userId: string) => void;
+  deleteStickyNote: (id: string) => void;
+  deselectStickyNote: (id: string) => void;
 }
 const useStickyNoteStore = create<StickyNoteState>((set) => ({
   stickyNotes: [],
@@ -57,6 +60,28 @@ const useStickyNoteStore = create<StickyNoteState>((set) => ({
           findItem.text = text;
         }
       }),
+    })),
+  selectStickyNote: (id, userId) =>
+    set((state) => ({
+      stickyNotes: produce(state.stickyNotes, (draft) => {
+        const findItem = draft.find((item) => item.id === id);
+        if (findItem) {
+          findItem.isSelected = userId;
+        }
+      }),
+    })),
+  deselectStickyNote: (id) =>
+    set((state) => ({
+      stickyNotes: produce(state.stickyNotes, (draft) => {
+        const findItem = draft.find((item) => item.id === id);
+        if (findItem) {
+          findItem.isSelected = null;
+        }
+      }),
+    })),
+  deleteStickyNote: (id) =>
+    set((state) => ({
+      stickyNotes: state.stickyNotes.filter((note) => note.id !== id),
     })),
 }));
 

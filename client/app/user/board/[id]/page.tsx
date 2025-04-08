@@ -29,7 +29,9 @@ const PlayGroundPage = () => {
     onClickAddShape,
     handleMoveStickyNote,
     handleReSizeStickyNote,
-    handleChangeTextStickyNote
+    handleChangeTextStickyNote,
+    handleLockStickyNote,
+    handleUnLockStickyNote
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
@@ -52,7 +54,10 @@ const PlayGroundPage = () => {
                 stickyNote={stickyNote}
                 handlemoveStickyNote={handleMoveStickyNote}
                 handleReSizeStickyNote={handleReSizeStickyNote}
-                handleChangeTextStickyNote={handleChangeTextStickyNote} />
+                handleChangeTextStickyNote={handleChangeTextStickyNote} 
+                handleLockStickyNote={handleLockStickyNote}
+                handleUnLockStickyNote={handleUnLockStickyNote}
+                />
             ))}
 
             {shapeList.map((ShapeComponent, index) => (

@@ -3,17 +3,21 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.support.HttpRequestHandlerServlet;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "${api.prefix}/users")
+@Slf4j
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
@@ -25,6 +29,5 @@ public class UserController {
                 .toList();
         return ResponseEntity.ok(users);
     }
-
 
 }
