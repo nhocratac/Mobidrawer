@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
@@ -34,7 +35,8 @@
     "immer": "^10.1.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.441.0",
-    "next": "14.2.8",
+    "next": "^14.2.27",
+    "next-sitemap": "^4.2.3",
     "node-fetch": "^3.3.2",
     "react": "^18",
     "react-dom": "^18",
@@ -46,6 +48,7 @@
     "react-resizable-panels": "^2.1.2",
     "react-rnd": "^10.4.12",
     "react-slick": "^0.30.2",
+    "sharp": "^0.34.1",
     "slick-carousel": "^1.8.1",
     "sockjs-client": "^1.6.1",
     "stability-client": "^1.9.0",
