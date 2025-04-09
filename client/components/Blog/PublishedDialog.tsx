@@ -11,6 +11,7 @@ import blogAPIs from "@/api/blogAPI";
 import { useRouter } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
+import { generateSlug } from "@/lib/utils";
 
 const PublishedDialog = ({
   children,
@@ -20,6 +21,7 @@ const PublishedDialog = ({
     description: savedDescription,
     keywords: savedKeywords,
     isPublished: savedIsPublished,
+    title,
   },
 }: {
   children: React.ReactNode;
@@ -34,12 +36,14 @@ const PublishedDialog = ({
   const [keywords, setKewords] = useState<string>(
     savedKeywords?.join(", ") || ""
   );
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const { toast } = useToast();
   const router = useRouter();
 
   const handlePublish = async () => {
-    if (!description || !keywords || !thumbnailURL) {
+    if(!user) return 
+
+    if (!description || !keywords || !thumbnailURL || !title) {
       toast({
         title: "Lỗi",
         description: "Vui lòng điền đầy đủ thông tin",
@@ -55,11 +59,12 @@ const PublishedDialog = ({
       if (thumbnailFile) {
         const formData = new FormData();
         formData.append("file", thumbnailFile);
-        const { url } = await uploadFile(formData, getUserByToken().id);
+        const { url } = await uploadFile(formData, user.id);
         setThumbnailURL(url);
         setThumbnailFile(null);
       }
       if (!id) return;
+      const slug = generateSlug(title);
 
       const blog = await blogAPIs.updateBlog(id, {
         description,
@@ -68,14 +73,14 @@ const PublishedDialog = ({
           .map((keyword) => keyword.toLowerCase().trim()),
         thumbnail: thumbnailURL,
         isPublished,
+        slug
       });
 
-      console.log(blog);
       toast({
         title: "Xuất bản thành công",
         description: "Bài viết của bạn đã được xuất bản",
       });
-      router.push(`/Blog/${id}`);
+      router.push(`/Blog/${slug}?id=${id}`);
     } catch (error) {
       console.log(error);
     }

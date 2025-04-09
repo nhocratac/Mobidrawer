@@ -9,17 +9,18 @@ import React, { useEffect, useState } from "react";
 
 const DraftBlog = () => {
   const [draftBlogs, setDraftBlogs] = useState<Pageable<Blog>>();
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const [refresh, setRefresh] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
     const fetchDraftBlogs = async () => {
+      if(!user) return 
       try {
         setIsLoading(true);
         const blogs: Pageable<Blog> = await blogAPIs.getBlogsByUserIdAndIsPublished(
-          getUserByToken().id,
+          user.id,
           false,
           page
         );

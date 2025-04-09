@@ -20,3 +20,27 @@ export function formatDate(isoString: string): string {
 export function parseTokenInfo(token: string) {
   return JSON.parse(Buffer.from(token.split(".")[1], "base64").toString()).user;
 }
+
+export function generateSlug(input: string | null | undefined): string {
+  // Kiểm tra đầu vào
+  if (!input || input.trim() === "") {
+      return "";
+  }
+
+  // Chuyển thành chữ thường, loại bỏ dấu và tạo slug
+  const slug = input
+      .toLowerCase()
+      // Thay thế ký tự có dấu thành không dấu
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      // Thay khoảng trắng bằng dấu gạch ngang
+      .replace(/\s+/g, "-")
+      // Loại bỏ ký tự không phải chữ cái, số hoặc dấu gạch ngang
+      .replace(/[^a-z0-9-]/g, "")
+      // Loại bỏ nhiều dấu gạch ngang liên tiếp
+      .replace(/-+/g, "-")
+      // Xóa dấu gạch ngang ở đầu và cuối
+      .replace(/^-|-$/g, "");
+
+  return slug;
+}

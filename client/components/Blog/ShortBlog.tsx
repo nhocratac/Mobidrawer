@@ -89,7 +89,10 @@ const ShortBlog = ({
         </AnimatePresence>
       </div>
 
-      <div className="space-y-4 cursor-pointer" onClick={() => router.push(`/Blog/${blog.id}`)}>
+      <div
+        className="space-y-4 cursor-pointer"
+        onClick={() => router.push(`/Blog/${blog.slug}?id=${blog.id}`)}
+      >
         <p className="text-3xl font-bold">{blog.title}</p>
         <p className="text-xl">{blog.description}</p>
 

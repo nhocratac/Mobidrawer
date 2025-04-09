@@ -53,6 +53,7 @@ public class BlogServiceImpl implements BlogService {
         Optional.ofNullable(updateBlogDto.getThumbnail()).ifPresent(targetBlog::setThumbnail);
         Optional.ofNullable(updateBlogDto.getContent()).ifPresent(targetBlog::setContent);
         Optional.ofNullable(updateBlogDto.getIsPublished()).ifPresent(targetBlog::setIsPublished);
+        Optional.ofNullable(updateBlogDto.getSlug()).ifPresent(targetBlog::setSlug);
 
         return blogMapper.toDto(blogRepository.save(targetBlog));
     }
@@ -90,5 +91,10 @@ public class BlogServiceImpl implements BlogService {
         blog.setInteractions(interactions);
 
         return blogMapper.toDto(blogRepository.save(blog));
+    }
+
+    @Override
+    public Page<BlogDto> getAllBlogs(Pageable pageable) {
+        return blogRepository.findByIsPublished(true, pageable).map(blogMapper::toDto);
     }
 }

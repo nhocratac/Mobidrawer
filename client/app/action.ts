@@ -5,7 +5,11 @@ import { UploadApiResponse } from "cloudinary";
 
 export const uploadFile = async (formData: FormData, userId: string) => {
   try {
-    const file = formData.get("file") as File;
+    const file = formData.get("file");
+    if(!file || !(file instanceof File)) {
+      throw new Error("Invalid file");
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
     

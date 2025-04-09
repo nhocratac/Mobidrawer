@@ -18,4 +18,5 @@ public class UpdateBlogDto {
     private String description;
     private String content;
     private Boolean isPublished;
+    private String slug;
 }

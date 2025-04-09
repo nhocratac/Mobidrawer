@@ -7,6 +7,12 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
+import type { Metadata, ResolvingMetadata } from "next";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 const fetchBlogById = async (
   blogId: string
@@ -22,11 +28,29 @@ const fetchBlogById = async (
   return await res.json();
 };
 
-const page = async ({ params }: { params: Promise<{ blogId: string }> }) => {
-  const { blogId } = await params;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const id = (await searchParams).id;
+
+  const blog = await fetchBlogById(id as string);
+
+  if (!blog) {
+    redirect("/404");
+  }
+
+  return {
+    title: blog.title,
+    description: blog.description,
+  };
+}
+
+const page = async (props: Props) => {
+  const id = (await props.searchParams).id;
   const accessToken = cookies().get("accessToken")?.value;
   let isOwner = false;
-  const blog = await fetchBlogById(blogId);
+  const blog = await fetchBlogById(id as string);
 
   if (!blog) {
     redirect("/404");
@@ -46,7 +70,10 @@ const page = async ({ params }: { params: Promise<{ blogId: string }> }) => {
 
   return (
     <div className="flex flex-col items-center p-10">
-      <div className="space-y-[50px] max-w-[1000px] px-5" style={{ wordBreak: "break-word"}}>
+      <div
+        className="space-y-[50px] max-w-[1000px] px-5"
+        style={{ wordBreak: "break-word" }}
+      >
         <h1 className="text-5xl font-bold">{blog.title}</h1>
 
         <div className="profile-bar flex gap-5 items-center">
@@ -65,7 +92,7 @@ const page = async ({ params }: { params: Promise<{ blogId: string }> }) => {
               </p>
             )}
           </div>
-          
+
           <DropdownButton isOwner={isOwner} />
         </div>
 

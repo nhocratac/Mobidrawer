@@ -30,7 +30,6 @@ const NewBlog = () => {
   const [isSaved, setIsSaved] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
-  const { getUserByToken } = useTokenStore();
   const pathName = usePathname();
 
   useEffect(() => {
@@ -48,7 +47,7 @@ const NewBlog = () => {
 
         if (
           typeof blog.owner !== "string" &&
-          blog.owner.id !== getUserByToken().id
+          blog.owner.id !== useTokenStore.getState().user?.id
         ) {
           router.push("/404");
           return;
@@ -95,7 +94,7 @@ const NewBlog = () => {
 
     setIsSaving(true);
 
-    const updatedBlog: Blog = {
+    const updatedBlog: Partial<Blog> = {
       title,
       content: JSON.stringify(content),
       isPublished: blog.isPublished || false,

@@ -28,6 +28,7 @@ public class Blog {
     private List<String> keywords;
     private String content;
     private Boolean isPublished;
+    private String slug;
 
     @Indexed
     private String owner;

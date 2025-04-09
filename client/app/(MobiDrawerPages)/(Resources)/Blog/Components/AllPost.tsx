@@ -70,7 +70,6 @@ export default function AllPost() {
             description: "Hiệu suất là yếu tố quan trọng trong trải nghiệm người dùng. Bài viết này sẽ hướng dẫn bạn...",
             image: AllPostImages[8].image,
         },
-
     ]
 
     const container = {

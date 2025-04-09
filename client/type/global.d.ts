@@ -29,6 +29,7 @@ type Blog = {
   isPublished: boolean;
   owner: string | User;
   interactions?: string;
+  slug?: string;
   comments?: string;
   createdAt?: string;
   updatedAt?: string;

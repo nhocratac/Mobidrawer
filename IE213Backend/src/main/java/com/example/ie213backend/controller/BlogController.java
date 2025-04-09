@@ -24,16 +24,24 @@ import java.util.List;
 public class BlogController {
     private final BlogService blogService;
 
-    @GetMapping("/{blogId}")
-    public ResponseEntity<BlogDto> getBlogById(@PathVariable String blogId) {
-        BlogDto blog = blogService.getBlogById(blogId);
+    @GetMapping
+    public ResponseEntity<Page<BlogDto>> getAllBlogs(@RequestParam(name = "page") int page) {
+        Pageable pageable = PageRequest.of(page, 6);
+        Page<BlogDto> blogDtos = blogService.getAllBlogs(pageable);
 
-        return ResponseEntity.ok(blog);
+        return ResponseEntity.ok(blogDtos);
     }
 
     @PostMapping
     public ResponseEntity<BlogDto> createBlog(@RequestBody @Valid CreateBlogDto createBlogDto) {
         BlogDto blog = blogService.createBlog(createBlogDto);
+
+        return ResponseEntity.ok(blog);
+    }
+
+    @GetMapping("/{blogId}")
+    public ResponseEntity<BlogDto> getBlogById(@PathVariable String blogId) {
+        BlogDto blog = blogService.getBlogById(blogId);
 
         return ResponseEntity.ok(blog);
     }
