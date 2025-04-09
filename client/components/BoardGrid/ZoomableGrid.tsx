@@ -314,7 +314,8 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     } else if (isSelecting && mode === "idle") {
       const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
       setSelectionRect((prev) => (prev ? { ...prev, x2: x, y2: y } : null));
-    } else if (isMoving && mode === "idle") {
+    } 
+    else if (isMoving && mode === "idle") {
       moveSelectedPaths(e);
     }
   };
