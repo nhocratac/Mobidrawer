@@ -1,35 +1,17 @@
 package com.example.ie213backend.mapper;
 
-import com.example.ie213backend.model.User;
-import org.springframework.stereotype.Component;
-import com.example.ie213backend.dto.UserDto.*;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
+import com.example.ie213backend.domain.model.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
 
-@Component
-public class UserMapper {
-    public userResponse toDto(User user) {
-        userResponse dto = new userResponse();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setPhone(user.getPhone());
-        return dto;
-    }
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-    public User toEntity (userResponse dto) {
-        User user = new User();
-        user.setId(dto.getId());
-        user.setEmail(dto.getEmail());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setPhone(dto.getPhone());
-        return user;
-    }
+    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    public void updateEntity(User user, userUpdateDto dto) {
-        user.setPhone(dto.getPhone());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-    }
+    UserDto toDto(User user);
+
+    User toEntity(UserDto userDto);
 }

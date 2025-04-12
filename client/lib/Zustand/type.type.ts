@@ -1,3 +1,4 @@
+
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -7,11 +8,16 @@ export enum ModeType {
   eraser = "eraser",
 }
 
+export enum ModeRole {
+  editor = "editor",
+  viewer = "viewer"
+}
+
 export interface ToolDevState {
   mode: ModeType;
   setMode: (mode: ModeType) => void;
   pencil: {
-    color?: string;
+    color: string;
     thickness?: number;
     opacity?: number;
     setColor?: (color: string) => void;
@@ -26,10 +32,17 @@ export interface coordinate {
 }
 
 export interface canvasPath {
+  id: string; // ID từ MongoDB
   thickness: number;
   color: string;
   opacity: number;
-  path: coordinate[];
+  paths: coordinate[];
+  isSelected?: boolean; // Đánh dấu đường vẽ được chọn
+}
+
+export interface member {
+  memberId: string,
+  role: ModeRole,
 }
 
 export enum boardType {
@@ -43,18 +56,18 @@ export enum boardType {
 
 export interface BoardState {
   id: number;
-  backgroundColor?: "string";
   name ?: string ;
-  description ?: string ,
-  lastOpened ?: string ,
   owner ?: string ,
   type : boardType;
-  thumbnail : string;
-  canvasPaths: canvasPath[];
+  description ?: string ,
   options: {
-    gird ?: boolean;
+    grid ?: boolean;
     backgroundColor ?: string;
   };
+  thumbnail : string;
+  updateAt ?: string,
+  members: member[],
+  canvasPaths: canvasPath[];
 }
 
 export interface ListBoardState {
@@ -63,6 +76,8 @@ export interface ListBoardState {
   updateBoard: (newBoard: BoardState) => void;
   setBoardColor: (id: number, color: string) => void;
   setGridVisible: (id: number) => void;
+  selectPath: (boardId: number, pathIndex: number) => void; //Chọn đối tượng
+  deselectPath: (boardId: number) => void; // Bỏ chọn tất cả
 }
 
 export interface ItemProps {
@@ -79,9 +94,66 @@ export interface ItemProps {
       rating: number;
   }
 }  
+
 export interface TemplateStoreState {
   templates : ItemProps[];
   addTemplate : (template: ItemProps) => void;
   updateTemplate : (template: ItemProps) => void;
   deleteTemplate : (id: string) => void;
+}
+
+export interface Member {
+  memberId : string,
+  role : ROLE
+}
+
+ export type ROLE = "VIEWER" | "EDITOR"
+
+export interface Board {
+  id: string,
+  name : string,
+  owner :string ,
+  type: string,
+  description : string,
+  option : {
+    grid : boolean;
+    backgroundColor : string;
+  },
+  thumbnail: string,
+  updateAt: string,
+  members: Member[],
+  canvasPaths : canvasPath[],
+  stickyNotes : StickyNote[]
+}
+
+export interface BoardStore {
+  board: Board | null;
+  setBoard: (board: Board) => void;
+  setBoardColor: ( color: string) => void;
+  setGridVisible: () => void;
+  setMembers : (members: Member[]) => void;
+  updateBoard: (updates: Partial<Board>) => void;
+  clearBoard: () => void;
+}
+
+export interface CreateCanvasPath extends canvasPath {
+  
+}
+
+export interface StickyNote {
+  id: string;
+  color: string;
+  text : string;
+  size :{
+    width: number;
+    height: number;
+  }
+  position : {
+    x: number;
+    y: number;
+  },
+  owner : string;
+  boardId : string;
+  updateAt: string;
+  isSelected ?: string | null;
 }

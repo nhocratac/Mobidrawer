@@ -7,14 +7,13 @@ interface PencilCanvasProps {
   scale: number;
   opacity : number;
   translate: { x: number, y: number };
-  path: { x: number, y: number }[];
-  setPath: (newPath: { x: number, y: number }[]) => void; // Thêm hàm cập nhật path
+  paths: { x: number, y: number }[];
+  isSelected?: boolean; // Đánh dấu đường vẽ được chọn
 }
 
-const PencilCanvas = ({ color, thickness, path, scale, translate, opacity }: PencilCanvasProps) => {
+const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSelected }: PencilCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const modeTool = useToolDevStore(state => state.mode)
-
 
 
   useEffect(() => {
@@ -45,16 +44,17 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity }: Pen
     ctx.globalAlpha = opacity
 
     // Draw the path
-    if (path.length > 0) {
+    if (paths.length > 0) {
       ctx.beginPath();
-      ctx.moveTo(path[0].x, path[0].y);
-      path.forEach(point => {
+      ctx.moveTo(paths[0].x, paths[0].y);
+      paths.forEach(point => {
         ctx.lineTo(point.x, point.y);
       });
       ctx.stroke();
     }
+
     ctx.restore(); // Restore the previous context state
-  }, [color, thickness, path, scale, translate]);
+  }, [color, thickness, paths, scale, translate, isSelected, opacity]);
 
   useEffect(() => {
     const canvasPen = canvasRef.current;
@@ -66,7 +66,7 @@ const PencilCanvas = ({ color, thickness, path, scale, translate, opacity }: Pen
     return () => {
       canvasPen.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [modeTool, scale, translate, path,opacity]);
+  }, [modeTool, scale, translate, paths,opacity]);
 
   return (
     <canvas

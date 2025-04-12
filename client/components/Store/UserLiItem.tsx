@@ -8,14 +8,13 @@ import { Star } from "lucide-react";
 const StarRating = ({ rating }: { rating: number }) => {
     const stars = [];
     for (let i = 0; i < Math.floor(rating); i++) {
-        stars.push(<Star key={i} strokeWidth={0} size={18} fill="yellow" aria-label="Star" />);
+        stars.push(<Star key={i} strokeWidth={0} size={14} fill="yellow" aria-label="Star" />);
     }
     for (let i = Math.floor(rating); i < 5; i++) {
-        stars.push(<Star key={i} strokeWidth={0} size={18} fill="gray" aria-label="Empty Star" />);
+        stars.push(<Star key={i} strokeWidth={0} size={14} fill="gray" aria-label="Empty Star" />);
     }
-    return <div className="flex gap-2">{stars}</div>;
+    return <div className="flex gap-1">{stars}</div>;
 };
-
 
 const UserLiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
     const { toast } = useToast()
@@ -29,27 +28,27 @@ const UserLiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
         deleteTemplate(id)
     }
     return (
-        <li className="flex flex-col gap-2   border-b ">
-            <div className="max-w-[265px] max-h-[200px] group relative">
-                {ImageThumnail && <img src={ImageThumnail} alt={`template-${name}`} className="rounded-[12px] " />}
-                <div className="absolute text-white   opacity-0  group-hover:opacity-100 top-0 left-0 w-full h-full   p-4 ">
-                    <p className="relative font-bold text-4xl z-10">{name}</p>
-                    <p className="relative z-10 flex gap-4 items-center">
-                        <img src={owner.logo} alt={`${owner.name} logo`} height={24} width={24} />
-                        <span className="font-normal text-2xl">{owner.name}</span>
+        <li className="flex flex-col gap-1 border-b pb-2 mx-auto w-full max-w-[280px]">
+            <div className="w-full h-auto aspect-[4/3] group relative">
+                {ImageThumnail && <img src={ImageThumnail} alt={`template-${name}`} className="w-full h-full object-cover rounded-[8px]" />}
+                <div className="absolute text-white opacity-0 group-hover:opacity-100 top-0 left-0 w-full h-full p-1 sm:p-2">
+                    <p className="relative font-bold text-base sm:text-lg md:text-xl lg:text-2xl z-10">{name}</p>
+                    <p className="relative z-10 flex gap-1 sm:gap-2 items-center">
+                        <img src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
+                        <span className="font-normal text-sm sm:text-base md:text-lg">{owner.name}</span>
                     </p>
-                    <p className="relative text-xl z-10 ">Mô tả: {info.description}</p>
-                    <div className="relative text-xl z-10 "><span>Đánh giá:</span> <StarRating rating={info.rating} /></div>
-                    <div className="absolute w-full h-full top-0 left-0 p-4 bg-black rounded-[12px] shadow-lg  opacity-30  transition-opacity duration-300"></div>
+                    <p className="relative text-xs sm:text-sm md:text-base z-10 line-clamp-2">Mô tả: {info.description}</p>
+                    <div className="relative text-xs sm:text-sm md:text-base z-10"><span>Đánh giá:</span> <StarRating rating={info.rating} /></div>
+                    <div className="absolute w-full h-full top-0 left-0 p-1 sm:p-2 bg-black rounded-[8px] shadow-lg opacity-30 transition-opacity duration-300"></div>
                 </div>
             </div>
-            <div className='flex items-center gap-x-7 px-6'>
-                <img src={owner.logo} alt={`${owner.name} logo`} height={24} width={24} />
-                <p className="font-normal  text-xl">{owner.name}</p>
+            <div className='flex items-center gap-x-2 sm:gap-x-4 px-1 sm:px-3'>
+                <img src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
+                <p className="font-normal text-sm sm:text-base">{owner.name}</p>
             </div>
-            <div className="px-6 flex justify-between ">
-                <span className="font-bold text-2xl">{name}</span>
-                <Button type="button" className="text-xl font-bold rounded-[12px] px-4 py-2" variant={'destructive'} onClick={handleDelete}>Xóa</Button>
+            <div className="px-1 sm:px-3 flex justify-between items-center">
+                <span className="font-bold text-sm sm:text-base md:text-lg">{name}</span>
+                <Button type="button" className="text-xs sm:text-sm md:text-base font-bold rounded-[8px] px-1 py-0.5 sm:px-2 sm:py-1" variant={'destructive'} onClick={handleDelete}>Xóa</Button>
             </div>
         </li>
     )

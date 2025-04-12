@@ -1,211 +1,297 @@
 "use client";
-import Google from '@/assets/logo/google';
-import Microsoft from '@/assets/logo/microsoft';
-import Slack from '@/assets/logo/slack';
+
+import { register, verifyRegister } from "@/api/authAPI";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const FormSchemaEmail = z.object({
-  email: z.string().email({
-    message: "Địa chỉ email không hợp lệ.",
-  }),
-});
+// Schema for Step 1 (Registration)
+const FormSchema = z
+  .object({
+    email: z.string().email({
+      message: "Địa chỉ email không hợp lệ.",
+    }),
+    firstName: z.string().min(2, {
+      message: "Tên phải có ít nhất 2 ký tự.",
+    }),
+    lastName: z.string().min(2, {
+      message: "Họ phải có ít nhất 2 ký tự.",
+    }),
+    phone: z.string().min(10, {
+      message: "Số điện thoại phải có ít nhất 10 ký tự.",
+    }),
+    password: z.string().min(6, {
+      message: "Mật khẩu phải có ít nhất 6 ký tự.",
+    }),
+    rePassword: z.string().min(6, {
+      message: "Mật khẩu phải có ít nhất 6 ký tự.",
+    }),
+  })
+  .refine((data) => data.password === data.rePassword, {
+    message: "Mật khẩu không khớp.",
+    path: ["rePassword"], // Attach the error to the rePassword field
+  });
 
-const FormSchemaName = z.object({
-  name: z.string().min(2, {
-    message: "Tên phải có ít nhất 2 ký tự.",
-  }),
-});
-
-const FormSchemaPassword = z.object({
-  password: z.string().min(6, {
-    message: "Mật khẩu phải có ít nhất 6 ký tự.",
-  }),
+// Schema for Step 2 (Confirmation Code)
+const FormCode = z.object({
+  code: z
+    .string()
+    .regex(/^\d{6}$/, "Code bao gồm 6 ký tự số.")
+    .min(6, {
+      message: "Mã xác nhận phải có ít nhất 6 ký tự.",
+    }),
 });
 
 export default function RegisterForm() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [step, setStep] = useState(1); 
-  const router = useRouter();
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const formEmail = useForm<z.infer<typeof FormSchemaEmail>>({
-    resolver: zodResolver(FormSchemaEmail),
-    defaultValues: { email: "" },
+  const { toast } = useToast()
+  const [step, setStep] = useState(1);
+  const [formValues, setFormValues] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    password: "",
+    rePassword: "",
   });
 
-  const formName = useForm<z.infer<typeof FormSchemaName>>({
-    resolver: zodResolver(FormSchemaName),
-    defaultValues: { name: "" },
+  // Form for Step 1 (Registration)
+  const formRegister = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+      firstName: "",
+      lastName: "",
+      phone: "",
+      password: "",
+      rePassword: "",
+    },
   });
 
-  const formPassword = useForm<z.infer<typeof FormSchemaPassword>>({
-    resolver: zodResolver(FormSchemaPassword),
-    defaultValues: { password: "" },
+  // Form for Step 2 (Confirmation Code)
+  const formCode = useForm<z.infer<typeof FormCode>>({
+    resolver: zodResolver(FormCode),
+    defaultValues: {
+      code: "",
+    },
   });
 
-  function onSubmitEmail(data: z.infer<typeof FormSchemaEmail>) {
-    console.log("Email submitted:", data);
-    setStep(2); 
-  }
+  // Handle submission for Step 1
+  const onSubmitForm = (data: z.infer<typeof FormSchema>) => {
+    setFormValues(data); // Save form values for later use
+    register({
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+    }).then(
+      () => {
+        setStep(2);
+      }
+    ).catch(err => {
+      console.log("error register: ", err);
+    }
+    )
+  };
 
-  function onSubmitName(data: z.infer<typeof FormSchemaName>) {
-    console.log("Name submitted:", data);
-    setStep(3); 
-  }
-
-  function onSubmitPassword(data: z.infer<typeof FormSchemaPassword>) {
-    console.log("Password submitted:", data);
-    router.push("/auth/success"); 
-  }
-
-  if (!isMounted) {
-    return null;
-  }
+  // Handle submission for Step 2
+  const onSubmitCode = (data: z.infer<typeof FormCode>) => {
+    verifyRegister({ code: data.code, email: formValues.email })
+      .then(() => {
+        toast({
+          title: "Thành công",
+          description: "Bạn đã thêm mẫu thành công",
+        })
+       // router.push('/login')
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  };
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-6xl font-bold text-left my-4">
-          {step === 1 ? "Đăng ký" : step === 2 ? "Điền tên của bạn" : "Điền mật khẩu"}
-        </h1>
-        <h2 className="text-2xl">
-          {step === 1 ? "Chúng tôi khuyến nghị sử dụng email công việc để tách biệt công việc và cuộc sống cá nhân." : step === 2 ? "Tên của bạn là gì ?" : "Hãy điền mật khẩu với ít nhất 8 ký tự:"}
-        </h2>
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-left my-2 sm:my-4">Đăng ký</h2>
+        <p className="text-lg sm:text-xl lg:text-2xl">
+          {step === 1
+            ? "Nhập thông tin cá nhân của bạn để đăng ký tài khoản"
+            : "Nhập mã xác nhận đã được gửi đến email của bạn"}
+        </p>
       </div>
 
       {step === 1 && (
-        <>
-          <Form {...formEmail}>
-            <form onSubmit={formEmail.handleSubmit(onSubmitEmail)} className="space-y-6">
+        // Step 1: Registration Form
+        <Form {...formRegister}>
+          <form onSubmit={formRegister.handleSubmit(onSubmitForm)} className="space-y-4 sm:space-y-6">
+            <FormField
+              control={formRegister.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Điền địa chỉ mail của bạn"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={formRegister.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Tên</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Tên"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={formRegister.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Họ</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Họ"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={formRegister.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Số điện thoại</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Số điện thoại"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={formRegister.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Mật khẩu"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={formRegister.control}
+              name="rePassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg lg:text-2xl">Nhập lại mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Nhập lại mật khẩu"
+                      className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+            >
+              Đăng ký
+            </Button>
+          </form>
+        </Form>
+      )} {(
+        step === 2 && (
+          // Step 2: Confirmation Code Form
+          <Form {...formCode}>
+            <form onSubmit={formCode.handleSubmit(onSubmitCode)} className="space-y-4 sm:space-y-6">
               <FormField
-                control={formEmail.control}
-                name="email"
+                control={formCode.control}
+                name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-2xl">Email</FormLabel>
+                    <FormLabel className="text-base sm:text-lg lg:text-2xl">Mã xác nhận</FormLabel>
                     <FormControl>
                       <Input
-                        type="email"
-                        placeholder="Điền địa chỉ mail của bạn"
-                        className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
+                        type="text"
+                        placeholder="Mã xác nhận"
+                        className="block w-full h-[36px] sm:h-[40px] px-4 sm:px-10 py-2 sm:py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-lg lg:text-2xl"
                         {...field}
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-                Tiếp tục với email
+              <Button
+                type="submit"
+                className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+              >
+                Xác nhận
+              </Button>
+              <Button
+                type="button"
+                className="text-base sm:text-lg lg:text-2xl w-full h-[40px] sm:h-[48px] py-2 sm:py-3 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                onClick={() => setStep(1)}
+              >
+                Quay lại
               </Button>
             </form>
           </Form>
-          <hr className="border-gray-300 my-4 mb-14 mt-14" />
-          <div className="flex flex-col gap-y-4 justify-center">
-            <Button
-              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              style={{ border: '1px solid #444749' }}
-            >
-              <Google></Google>
-              <p className="ml-[5px]">Đăng nhập với Google</p>
-            </Button>
-            <Button
-              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              style={{ border: '1px solid #444749' }}
-            >
-              <Microsoft></Microsoft>
-              <p className="ml-[5px]">Đăng nhập với Microsoft</p>
-            </Button>
-            <Button
-              className="text-2xl w-full h-[48px] py-3 bg-white text-black rounded-xl hover:bg-black hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              style={{ border: '1px solid #444749' }}
-            >
-              <Slack></Slack>
-              <p className="ml-2">Đăng nhập với Slack</p>
-            </Button>
-          </div>
-          <footer className="mt-14">
-            <p className="text-lg">
-              Khi đăng ký, bạn đồng ý với {' '}
-              <Link className="text-blue-500" href="#">
-                Điều khoản & Điều kiện
-              </Link>{' '}
-              cùng {' '}
-              <Link className="text-blue-500" href="#">
-                Chính sách Bảo mật
-              </Link>
-              {' '}của MobiDrawer.
-            </p>
-          </footer>
-        </>
-      )}
-
-      {step === 2 && (
-        <Form {...formName}>
-          <form onSubmit={formName.handleSubmit(onSubmitName)} className="space-y-6">
-            <FormField
-              control={formName.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-2xl">Tên</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Tên của bạn"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
-                      {...field}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-              Tiếp tục
-            </Button>
-          </form>
-        </Form>
-      )}
-
-      {step === 3 && (
-        <Form {...formPassword}>
-          <form onSubmit={formPassword.handleSubmit(onSubmitPassword)} className="space-y-6">
-            <FormField
-              control={formPassword.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-2xl">Mật khẩu</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Mật khẩu"
-                      className="block w-full h-[40px] px-10 py-3 border border-black rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-2xl"
-                      {...field}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="text-2xl w-full h-[48px] py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-              Tiếp tục
-            </Button>
-          </form>
-        </Form>
-      )}
-
-
+        ))}
+      <hr className="border-gray-300 my-4 sm:my-8 lg:my-14" />
+      <footer className="mt-4 sm:mt-8 lg:mt-14">
+        <p className="text-sm sm:text-base lg:text-lg">
+          Khi đăng ký, bạn đồng ý với{" "}
+          <Link className="text-blue-500" href="#">
+            Điều khoản & Điều kiện
+          </Link>{" "}
+          cùng{" "}
+          <Link className="text-blue-500" href="#">
+            Chính sách Bảo mật
+          </Link>{" "}
+          của MobiDrawer.
+        </p>
+      </footer>
     </div>
-
   );
 }

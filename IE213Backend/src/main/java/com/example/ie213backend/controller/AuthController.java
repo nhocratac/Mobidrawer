@@ -1,78 +1,135 @@
 package com.example.ie213backend.controller;
 
-import com.example.ie213backend.dto.AuthDto.*;
-import com.example.ie213backend.model.User;
+import com.example.ie213backend.domain.TokenType;
+import com.example.ie213backend.domain.dto.AuthDto.*;
 import com.example.ie213backend.service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 
-@Controller
-@RequestMapping("/auth")
+@RestController
+@RequestMapping(path = "${api.prefix}/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(
-            @RequestBody LoginRequest loginRequest
-    ) {
-        String email = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
-        User user = authService.login(email, password);
-        if(user != null) {
-            return  ResponseEntity.ok(user);
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response) {
+        UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+
+        String accessToken = authService.generateToken(userDetails, TokenType.ACCESS);
+        String refreshToken = authService.generateToken(userDetails, TokenType.REFRESH);
+
+        AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        refreshTokenCookie.setPath("/");
+
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge(15 * 60);
+        accessTokenCookie.setPath("/");
+
+        response.addCookie(refreshTokenCookie);
+        response.addCookie(accessTokenCookie);
+        response.addHeader("Authorization", "Bearer " + accessToken);
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(
+            @CookieValue(name = "refreshToken", required = true) String refreshToken,
+            HttpServletResponse response
+            ) {
+        if(refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
-        return  ResponseEntity.notFound().build();
+
+        UserDetails userDetails = authService.validateToken(refreshToken, TokenType.REFRESH);
+
+        String newAccessToken = authService.generateToken(userDetails, TokenType.ACCESS);
+        if (newAccessToken == null) {
+            return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
+        }
+
+        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge(15 * 60);
+        accessTokenCookie.setPath("/");
+
+        response.addCookie(accessTokenCookie);
+        response.addHeader("Authorization", "Bearer " + newAccessToken);
+        AuthResponse authResponse = AuthResponse.builder().accessToken(newAccessToken).build();
+
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(
+    public ResponseEntity<Map<String,String>> register(
             @RequestBody @Valid RegisterDto registerDto) {
         String email = registerDto.getEmail();
         String password = registerDto.getPassword();
         String firstName = registerDto.getFirstName();
         String lastName = registerDto.getLastName();
         String phone = registerDto.getPhone();
-        return ResponseEntity.ok(authService.createRegistrationRequest(email, password, firstName, lastName, phone));
+        String result = authService.createRegistrationRequest(email, password, firstName, lastName, phone);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-register")
-    public ResponseEntity<String> verifyRegister(
+    public ResponseEntity<Map<String,String>> verifyRegister(
             @RequestBody @Valid VerifyRegistrationRequest verifyRegistrationRequest
     ) {
         String code = verifyRegistrationRequest.getCode();
         String email = verifyRegistrationRequest.getEmail();
+        Map<String, String> response = new HashMap<>();
         if (authService.verifyCode(email, code)) {
-            return ResponseEntity.ok("success");
+            response.put("message", "xác thực thành công ");
+            return ResponseEntity.ok(response);
         }
-        return ResponseEntity.badRequest().body("không thể xác thực");
+        response.put("message", "không thể xác thực");
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/request-forget-password")
-    public ResponseEntity<String> forgetPassword(
+    public ResponseEntity<Map<String, String>> forgetPassword(
             @RequestBody @Valid RequestForgetPassword requestForgetPassword
-            ) {
-        return ResponseEntity.ok(authService.forgetPassword(requestForgetPassword.getEmail()));
+    ) {
+        String result = authService.forgetPassword(requestForgetPassword.getEmail());
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+
+        return ResponseEntity.ok(response);
     }
 
+
     @PostMapping("/verify-forget-password")
-    public ResponseEntity<String> verifyPassword(
+    public ResponseEntity<Map<String, String>> verifyPassword(
             @RequestBody @Valid VerifyForgetPassword verifyForgetPassword
-            ) {
+    ) {
         String email = verifyForgetPassword.getEmail();
         String password = verifyForgetPassword.getPassword();
         String code = verifyForgetPassword.getCode();
-        return ResponseEntity.ok(authService.resetPassword(email, code, password));
-    }
 
+        String result = authService.resetPassword(email, code, password);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+
+        return ResponseEntity.ok(response);
+    }
 }

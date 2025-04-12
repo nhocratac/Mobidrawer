@@ -1,5 +1,4 @@
-'use client';
-import React from 'react';
+'use client'
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header';
 import HeroSection from '@/app/(MobiDrawerPages)/LandingPage/Components/HeroSection';
 import Banner from '@/app/(MobiDrawerPages)/LandingPage/Components/Banner';
@@ -17,7 +16,7 @@ export default function Layout() {
         <div>
             <Banner />
             <LandingNavbar />
-            <div className="max-w-[calc(100%-250px)] mx-auto">
+            <div className="w-full px-4 md:px-6 lg:px-8 xl:max-w-[1440px] mx-auto">
                 <div className='relative z-20'>
                     <HeroSection />
                     <LogoSlider />

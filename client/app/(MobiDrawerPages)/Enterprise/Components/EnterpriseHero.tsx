@@ -6,7 +6,7 @@ import about from '@/assets/TeamImages/about.png'
 
 export default function HeroSection() {
     return (
-        <div className="relative min-h-[800px]">
+        <div className="relative min-h-[100px]">
             <div className="container mx-auto">
                 <motion.div
                     className="flex flex-col items-center relative z-10"
