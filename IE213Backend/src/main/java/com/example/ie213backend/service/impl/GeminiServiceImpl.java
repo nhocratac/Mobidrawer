@@ -19,7 +19,7 @@ public class GeminiServiceImpl implements GeminiService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String generateText(String prompt, String userId) {
+    public String generateText(String prompt) {
         try {
             String url = geminiConfig.getApiKey();
 

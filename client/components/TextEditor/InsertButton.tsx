@@ -24,7 +24,7 @@ const InsertButton = ({ insertType }: { insertType: "image" }) => {
     try {
       const files = e.target.files;
 
-      if (!files) return;
+      if (!files || !user) return;
 
       toast({
         title: "Image uploading...",

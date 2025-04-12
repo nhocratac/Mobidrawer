@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface BlogRepository extends MongoRepository<Blog, String> {
     Page<Blog> findByOwnerAndIsPublished(String owner, boolean isPublished, Pageable pageable);
+    Page<Blog> findByIsPublished(boolean isPublished, Pageable pageable);
 }

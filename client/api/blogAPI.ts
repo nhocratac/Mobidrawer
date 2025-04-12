@@ -29,6 +29,15 @@ const blogAPIs = {
   async removeBlog(blogId: string) {
     await httpRequest.delete(`/blogs/${blogId}`);
   },
+  async getAllBlogs(page: number) {
+    const res = await httpRequest.get("/blogs", {
+      params: {
+        page,
+      },
+    });
+
+    return res.data;
+  }
 };
 
 export default blogAPIs;

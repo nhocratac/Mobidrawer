@@ -25,6 +25,7 @@ public class BlogDto {
     private String content;
     private Boolean isPublished;
     private UserDto owner;
+    private String slug;
 
     private List<Interaction> interactions;
     private Page<CommentDto> comments;

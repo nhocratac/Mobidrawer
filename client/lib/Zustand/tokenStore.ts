@@ -19,7 +19,6 @@ interface TokenState {
   getUserByToken: () => User | null; // Hàm lấy user từ token
 }
 
-
 // 🆕 Store Zustand
 const useTokenStore = create<TokenState>()(
   devtools(
@@ -66,7 +65,6 @@ const useTokenStore = create<TokenState>()(
 
 export default useTokenStore;
 
-
 // 🆕 Hàm kiểm tra token hết hạn
 export function isTokenExpired(token: string): boolean {
   if (!token) return true;
@@ -78,11 +76,10 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
-
-export const decodeToken = (token : string) => {
+export const decodeToken = (token: string) => {
   try {
-    const base64Url = token.split('.')[1]; // Lấy payload
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1]; // Lấy payload
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     return JSON.parse(atob(base64));
   } catch (error) {
     console.error("Invalid token:", error);

@@ -20,8 +20,7 @@ public class GeminiController {
             @RequestBody GeminiPrompt prompt
     ) {
         String response = geminiService.generateText(
-                prompt.getPrompt(),
-                userDto.getId()
+                prompt.getPrompt()
         );
         return ResponseEntity.ok(response);
     }

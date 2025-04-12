@@ -82,7 +82,7 @@ const NewBlog = () => {
 
     setIsSaving(true);
 
-    const updatedBlog: Blog = {
+    const updatedBlog: Partial<Blog> = {
       title,
       content: JSON.stringify(content),
       isPublished: blog.isPublished || false,
