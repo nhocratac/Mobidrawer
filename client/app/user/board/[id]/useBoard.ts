@@ -13,9 +13,8 @@ export function useBoard() {
   const [scale, setScale] = useState(1);
   const [textItemCount, setTextItemCount] = useState(0);
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
-  const { setBoard } = useBoardStoreof();
-  const { setStickyNotes } = useStickyNoteStore();
-
+  const setBoard = useBoardStoreof((state) => state.setBoard);
+  const setStickyNotes = useStickyNoteStore((state) => state.setStickyNotes);
 
   useEffect(() => {
     if (!id) return;

@@ -17,9 +17,12 @@ public class CacheUserInBoardServiceImpl implements CacheUserInBoardService {
     private static final String BOARD_PREFIX = "board:";
 
     @Override
-    public void addUserToBoard(String boardId, UserDto user) {
+    public Set<UserDto> addUserToBoard(String boardId, UserDto user) {
         String key = BOARD_PREFIX + boardId;
         redisTemplate.opsForSet().add(key, user);
+        return Objects.requireNonNull(redisTemplate.opsForSet().members(key))
+                .stream().map(obj -> (UserDto) obj)
+                .collect(Collectors.toSet());
     }
 
     @Override

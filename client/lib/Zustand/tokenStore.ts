@@ -16,6 +16,7 @@ interface TokenState {
   user: User | null;
   setToken: (newToken: string) => void;
   clearToken: () => void;
+  getUserByToken: () => User | null; // Hàm lấy user từ token
 }
 
 
@@ -38,6 +39,17 @@ const useTokenStore = create<TokenState>()(
 
         // 🆕 Khi clearToken -> xóa cả user
         clearToken: () => set({ token: "", user: null }),
+        getUserByToken: () => {
+          const token = get().token;
+          if (!token) return null;
+          try {
+            const decoded = JSON.parse(atob(token.split(".")[1]));
+            return decoded.user || null; // Trả về user từ token
+          } catch (error) {
+            console.error("Invalid token:", error);
+            return null;
+          }
+        }
       }),
       {
         name: "access-token",

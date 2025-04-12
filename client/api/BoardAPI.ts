@@ -40,10 +40,26 @@ const getBoardById = async (id: string)  : Promise<Board>=> {
   }
 };
 
+const addPersonToBoard = async (boardId: string, data : {
+  email : string,
+  role: "EDITOR" | "VIEWER"
+}) => {
+  try {
+    const response = await httpRequest.post(
+      `/board/addMember/${boardId}`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const BoardAPI = {
   createBoard,
   getAllBoardOfUser,
   getBoardById,
+  addPersonToBoard
 };
 export default BoardAPI;
 

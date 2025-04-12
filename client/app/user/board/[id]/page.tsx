@@ -6,6 +6,7 @@ import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDText from '@/components/BoxResizable/RNDText';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
+import TopRightBar from '@/components/SideBar/TopRightBar';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
@@ -37,9 +38,10 @@ const PlayGroundPage = () => {
   const { stickyNotes } = useStickyNoteStore();
   return (
     <div className="w-screen h-screen bg-slate-500">
-      {id &&
+      {typeof id === 'string' &&
         (<>
           <BoardSubscription boardId={id.toString()} />
+          <TopRightBar/>
           <LeftToolBar
             onClickTextButton={() => setTextItemCount(textItemCount + 1)}
             onClickStickyNoteButton={onClickCreateStickyNote}

@@ -1,5 +1,4 @@
-'use client';
-import React from 'react';
+'use client'
 import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header';
 import HeroSection from '@/app/(MobiDrawerPages)/LandingPage/Components/HeroSection';
 import Banner from '@/app/(MobiDrawerPages)/LandingPage/Components/Banner';

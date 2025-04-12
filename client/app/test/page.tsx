@@ -19,7 +19,6 @@ function App() {
       })
       .then(data => {
         setMessage(data.json);
-        console.log(data);
         setLoading(false);
       })
       .catch(error => {

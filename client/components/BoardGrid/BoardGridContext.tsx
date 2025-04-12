@@ -1,6 +1,5 @@
 "use client"
-import { useBoardStore } from '@/lib/Zustand/store';
-import { useParams } from 'next/navigation';
+import { useBoardStoreof } from '@/lib/Zustand/store';
 import { useEffect, useRef } from 'react';
 
 const BoardGridContext = ({ menuPosition, isVisible}: {
@@ -8,11 +7,8 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
   isVisible: boolean
 }) => {
     const ref = useRef<HTMLDivElement>(null)
-    const { id } = useParams();
-    // chuyển id thành số
-    const setGridVisible = useBoardStore((state) => state.setGridVisible);
-    const boards = useBoardStore((state) => state.boards);
-    const currentBoard = boards.find((board) => board.id == +id);
+    const setGridVisible = useBoardStoreof((state) => state.setGridVisible);
+    const board = useBoardStoreof((state) => state.board);
     useEffect(() => {
         if (isVisible && ref.current) {
             ref.current.style.top = `${menuPosition.y}px`
@@ -20,7 +16,7 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
         }
     },[menuPosition.y, menuPosition.x, isVisible])
     const handleClickVisibleGrid = () => {
-      setGridVisible(+id);
+      setGridVisible();
     };
     return (
           <div
@@ -32,7 +28,7 @@ const BoardGridContext = ({ menuPosition, isVisible}: {
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 onClick={handleClickVisibleGrid}
               >
-                {currentBoard?.options.grid ? "Tắt" : "Bật"} lưới
+                {board?.option.grid ? "Tắt" : "Bật"} lưới
               </li>
               <li
                 className="px-4 py-2 hover:bg-gray-200 cursor-pointer"

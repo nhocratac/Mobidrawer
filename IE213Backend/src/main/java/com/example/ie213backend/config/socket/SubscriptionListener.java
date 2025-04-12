@@ -21,11 +21,6 @@ public class SubscriptionListener implements ApplicationListener<SessionSubscrib
         SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
         String destination = headerAccessor.getDestination();
-
-        if (destination != null && destination.startsWith("/topic/board/moveStickyNote/")) {
-            topicSubscribers.computeIfAbsent(destination, k -> new HashSet<>()).add(sessionId);
-            System.out.println("Session " + sessionId + " subscribed to " + destination);
-        }
     }
 
     public Set<String> getSubscribers(String destination) {

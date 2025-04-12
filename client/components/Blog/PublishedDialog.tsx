@@ -34,7 +34,7 @@ const PublishedDialog = ({
   const [keywords, setKewords] = useState<string>(
     savedKeywords?.join(", ") || ""
   );
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -46,8 +46,8 @@ const PublishedDialog = ({
       });
       return;
     }
-
     try {
+      if(!user) return null
       toast({
         title: "Đang xuất bản",
         description: "Vui lòng chờ trong giây lát",
@@ -55,7 +55,7 @@ const PublishedDialog = ({
       if (thumbnailFile) {
         const formData = new FormData();
         formData.append("file", thumbnailFile);
-        const { url } = await uploadFile(formData, getUserByToken().id);
+        const { url } = await uploadFile(formData, user.id);
         setThumbnailURL(url);
         setThumbnailFile(null);
       }

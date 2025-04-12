@@ -1,110 +1,15 @@
 "use client";
 import {
-  BoardState,
   BoardStore,
   ItemProps,
-  ListBoardState,
   ModeType,
   TemplateStoreState,
-  ToolDevState,
+  ToolDevState
 } from "@/lib/Zustand/type.type";
-import type {} from "@redux-devtools/extension";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
-// Định nghĩa trạng thái cho công cụ phát triển
-const useBoardStore = create<ListBoardState>()(
-  devtools(
-    persist(
-      (set) => ({
-        boards: [],
-        addnewBoard: (newBoard: BoardState) => {
-          set((state) => ({
-            boards: [...state.boards, newBoard], // Sử dụng state.boards để lấy mảng hiện tại
-          }));
-        },
-        updateBoard: (newBoard: BoardState) => {
-          set((state) => ({
-            boards: state.boards.map((board) =>
-              board.id === newBoard.id ? newBoard : board
-            ),
-          }));
-        },
-        setBoardColor: (id: number, color: string) => {
-          set((state) => ({
-            boards: state.boards.map((board) =>
-              board.id == id
-                ? {
-                    ...board,
-                    options: {
-                      ...board.options,
-                      backgroundColor: color,
-                    },
-                  }
-                : board
-            ),
-          }));
-        },
-        setGridVisible: (id: number) => {
-          set((state) => ({
-            boards: state.boards.map((board) => {
-              if (board.id == id) {
-                return {
-                  ...board,
-                  options: {
-                    ...board.options,
-                    grid: !board.options.grid,
-                  },
-                };
-              } else {
-                return board;
-              }
-            }),
-          }));
-        },
-        selectPath: (boardId: number, pathIndex: number) => {
-          set((state) => ({
-            boards: state.boards.map((board) =>
-              board.id == boardId
-                ? {
-                    ...board,
-                    canvasPaths: board.canvasPaths.map((paths, index) =>
-                      index === pathIndex
-                        ? { ...paths, isSelected: true }
-                        : { ...paths, isSelected: false }
-                    ),
-                  }
-                : board
-            ),
-          }));
-        },
-        deselectPath: (boardId: number) => {
-          set((state) => ({
-            boards: state.boards.map((board) =>
-              board.id === boardId
-                ? {
-                    ...board,
-                    canvasPaths: board.canvasPaths.map((paths) => ({
-                      ...paths,
-                      isSelected: false,
-                    })),
-                  }
-                : board
-            ),
-          }));
-        },
-      }),
-      {
-        name: "Boards-storage",
-        merge: (persistedState: any, currentState) => ({
-          ...currentState,
-          ...persistedState,
-          addnewBoard: currentState.addnewBoard,
-        }),
-      }
-    )
-  )
-);
+
 // Tạo store với Zustand
 const useToolDevStore = create<ToolDevState>()(
   devtools(
@@ -267,6 +172,11 @@ export const useBoardStoreof = create<BoardStore>((set) => ({
       : null,
     }))
   },
+  setMembers: (members) => {
+    set((state) => ({
+      board: state.board ? { ...state.board, members } : null,
+    }));
+  },
 }));
 
-export { useBoardStore, useTemplateStore, useToolDevStore };
+export { useTemplateStore, useToolDevStore };

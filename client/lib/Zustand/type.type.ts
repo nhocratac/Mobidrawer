@@ -131,6 +131,7 @@ export interface BoardStore {
   setBoard: (board: Board) => void;
   setBoardColor: ( color: string) => void;
   setGridVisible: () => void;
+  setMembers : (members: Member[]) => void;
   updateBoard: (updates: Partial<Board>) => void;
   clearBoard: () => void;
 }

@@ -1,8 +1,9 @@
 import axios from "axios";
 import { refreshAccessToken } from "@/api/authAPI";
 import useTokenStore from "@/lib/Zustand/tokenStore";
+import env from "@/utils/environment";
 
-const API_URL = "http://localhost:8080/api/v1";
+const API_URL = env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1";
 
 const httpRequest = axios.create({
   baseURL: API_URL,

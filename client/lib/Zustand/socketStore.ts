@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import env from "@/utils/environment";
 
 interface StompState {
   client: Client | null;
@@ -9,6 +10,8 @@ interface StompState {
   connect: (token: string) => void;
   disconnect: () => void;
 }
+
+const SOCKET_URL = env.NEXT_PUBLIC_BACKEND_SOCKET || "http://localhost:8080/ws";
 
 export const useStompStore = create<StompState>((set, get) => ({
   client: null,
@@ -22,7 +25,7 @@ export const useStompStore = create<StompState>((set, get) => ({
 
     console.log("🔗 Đang kết nối WebSocket...");
 
-    const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+    const socket = new SockJS(`${SOCKET_URL}?token=${token}`);
     const stompClient = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {

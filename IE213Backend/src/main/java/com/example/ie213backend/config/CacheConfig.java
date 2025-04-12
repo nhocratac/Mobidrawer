@@ -29,8 +29,19 @@ public class CacheConfig {
     public RedisTemplate<String, UserDto> userDtoRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, UserDto> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
+
+        // Dùng Jackson serializer cho giá trị
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(serializer);
+
+        // Set thêm các serializer để đảm bảo consistency
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+        template.setDefaultSerializer(serializer);
+
+        template.afterPropertiesSet(); // ⚠️ Đừng quên dòng này
         return template;
     }
 }

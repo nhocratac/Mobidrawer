@@ -16,10 +16,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 
 const initialValue: Descendant[] = [
-  {
-    type: "paragraph",
-    children: [{ text: "" }],
-  },
+  { type: "paragraph", children: [{ text: "" }] },
 ];
 
 const NewBlog = () => {
@@ -30,26 +27,21 @@ const NewBlog = () => {
   const [isSaved, setIsSaved] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const pathName = usePathname();
+
+  const blogDebounce = useDebounce(content, 4000);
 
   useEffect(() => {
     const blogId = pathName.split("/")[2];
 
-    if (!blogId) {
-      return;
-    }
+    if (!user || !blogId) return;
 
-    getBlog();
-
-    async function getBlog() {
+    const getBlog = async () => {
       try {
         const blog: Blog = await blogAPIs.getBlogById(blogId);
 
-        if (
-          typeof blog.owner !== "string" &&
-          blog.owner.id !== getUserByToken().id
-        ) {
+        if (typeof blog.owner !== "string" && blog.owner.id !== user.id) {
           router.push("/404");
           return;
         }
@@ -60,34 +52,29 @@ const NewBlog = () => {
       } catch (error) {
         console.log(error);
       }
-    }
-  }, []);
+    };
 
-  // Save blog handler
+    getBlog();
+  }, [pathName, router, user]);
+
   useEffect(() => {
     if (isSaved) {
+      window.onbeforeunload = null;
       return;
     }
 
-    window.onbeforeunload = () => {
-      return "Bạn có chắc chắn muốn rời khỏi trang này?";
-    };
+    window.onbeforeunload = () => "Bạn có chắc chắn muốn rời khỏi trang này?";
 
     return () => {
       window.onbeforeunload = null;
     };
   }, [isSaved]);
 
-  const blogDebounce = useDebounce(content, 4000);
-
   useEffect(() => {
-    if (isSaved) {
-      return;
+    if (!isSaved) {
+      handleSaveBlog();
+      console.log("Saving blog...");
     }
-
-    handleSaveBlog();
-
-    console.log("Saving blog...");
   }, [blogDebounce]);
 
   const handleSaveBlog = async () => {
@@ -99,11 +86,12 @@ const NewBlog = () => {
       title,
       content: JSON.stringify(content),
       isPublished: blog.isPublished || false,
+      owner: blog.owner,
+      id: blog.id,
     };
 
     try {
       const savedBlog = await blogAPIs.updateBlog(blog.id, updatedBlog);
-
       console.log(savedBlog);
     } catch (error) {
       console.log(error);
@@ -112,6 +100,8 @@ const NewBlog = () => {
     setIsSaving(false);
     setIsSaved(true);
   };
+
+  if (!user) return null;
 
   return (
     <>
@@ -132,9 +122,7 @@ const NewBlog = () => {
               />
               <div className="flex items-center">
                 <motion.div
-                  animate={{
-                    x: isHovered ? -5 : 0,
-                  }}
+                  animate={{ x: isHovered ? -5 : 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
                   <ChevronLeft />
@@ -147,9 +135,7 @@ const NewBlog = () => {
               <PublishedDialog blog={blog}>
                 <DialogTrigger asChild>
                   <Button
-                    onClick={() => {
-                      console.log(content);
-                    }}
+                    onClick={() => console.log(content)}
                     className="text-2xl"
                     disabled={!isSaved}
                   >
@@ -183,14 +169,5 @@ const NewBlog = () => {
     </>
   );
 };
-
-// const isValueEmpty = (value: Descendant[]) => {
-//   return (
-//     value.length === 1 &&
-//     "children" in value[0] &&
-//     "text" in value[0].children[0] &&
-//     !value[0].children[0].text
-//   );
-// };
 
 export default NewBlog;

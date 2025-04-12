@@ -9,17 +9,21 @@ import React, { useEffect, useState } from "react";
 
 const DraftBlog = () => {
   const [draftBlogs, setDraftBlogs] = useState<Pageable<Blog>>();
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const [refresh, setRefresh] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
 
+
   useEffect(() => {
     const fetchDraftBlogs = async () => {
+      if (!user) {
+        return null
+      }
       try {
         setIsLoading(true);
         const blogs: Pageable<Blog> = await blogAPIs.getBlogsByUserIdAndIsPublished(
-          getUserByToken().id,
+          user?.id,
           false,
           page
         );
@@ -33,7 +37,7 @@ const DraftBlog = () => {
     };
 
     fetchDraftBlogs();
-  }, [refresh, page]);
+  }, [refresh, page,user?.id]);
 
   return (
     <div className="space-y-6">

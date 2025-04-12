@@ -10,7 +10,7 @@ import React from "react";
 const NavButton = () => {
   const path = usePathname();
   const rotuer = useRouter();
-  const {getUserByToken} = useTokenStore()
+  const {user} = useTokenStore()
 
   return (
     <div className="flex items-center justify-between border-b-2 py-5">
@@ -47,7 +47,7 @@ const NavButton = () => {
                     content: "",
                     isPublished: false,
                     thumbnail: "",
-                    owner: getUserByToken().id,
+                    owner: user?.id,
                 })
 
                 rotuer.push(`/new-blog/${newBlog.id}`);

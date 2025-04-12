@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 const InsertButton = ({ insertType }: { insertType: "image" }) => {
   const editor = useSlate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { getUserByToken } = useTokenStore();
+  const { user } = useTokenStore();
   const { toast } = useToast();
 
   const Icon = ({ size }: { size: number }) => {
@@ -33,7 +33,8 @@ const InsertButton = ({ insertType }: { insertType: "image" }) => {
 
       const formData = new FormData();
       formData.append("file", files[0]);
-      const result = await uploadFile(formData, getUserByToken().id);
+      if (!user) return null;
+      const result = await uploadFile(formData, user.id);
 
       // Insert new element to editor
       if (result) {

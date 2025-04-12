@@ -8,8 +8,9 @@ import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.StickyNote;
 import com.example.ie213backend.mapper.CanvasPathMapper;
 import com.example.ie213backend.mapper.StickyNoteMapper;
-import com.example.ie213backend.mapper.UserMapper;
-import com.example.ie213backend.service.*;
+import com.example.ie213backend.service.CacheUserInBoardService;
+import com.example.ie213backend.service.CanvasPathService;
+import com.example.ie213backend.service.StickyNoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +30,11 @@ import java.util.Set;
 @Controller
 @RequiredArgsConstructor
 public class BoardSocketController {
-    private final BoardService boardService;
 
     private final CanvasPathService canvasPathService;
 
     private final StickyNoteService stickyNoteService;
 
-    private final UserService userService;
-    private final UserMapper userMapper;
     private final CacheUserInBoardService cacheUserInBoardService;
 
     @MessageMapping("/connect")
@@ -53,11 +51,9 @@ public class BoardSocketController {
     public Set<UserDto> handleUserJoin(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
-    ) {
+    )  {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        // Trả về thông báo cho tất cả client trong topic
-        cacheUserInBoardService.addUserToBoard(boardId, userDto);
-        return cacheUserInBoardService.getUsersInBoard(boardId);
+        return cacheUserInBoardService.addUserToBoard(boardId, userDto);
     }
 
     @MessageMapping("/board/leave/{boardId}")

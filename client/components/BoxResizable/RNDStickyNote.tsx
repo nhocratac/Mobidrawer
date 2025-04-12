@@ -27,6 +27,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
 }) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
@@ -39,10 +40,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   }, [debouncedText]);
 
   useEffect(() => {
-    const blockEvents = (e: Event) => {
-      e.stopPropagation();
-      // e.preventDefault();
-    };
+    const blockEvents = (e: Event) => e.stopPropagation();
     const handleFocus = () => {
       handleLockStickyNote(stickyNote.id);
       document.addEventListener("keydown", blockEvents, true);
@@ -82,9 +80,14 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     RndRef.current?.updateSize(stickyNote.size);
   }, [stickyNote.size]);
 
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenu(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setText(newValue);
+    setText(e.target.value);
   };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
@@ -99,7 +102,6 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     RndRef.current?.updatePosition({ x: d.x, y: d.y });
     handlemoveStickyNote(stickyNote.id, { x: d.x, y: d.y });
     moveStickyNote(stickyNote.id, { x: d.x, y: d.y });
-    // Nếu người dùng không đang nhập, mới blur
     if (!isTyping) onBlurTextArea();
   };
 
@@ -127,7 +129,6 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   };
 
   const onBlurTextArea = () => {
-    // Kiểm tra xem textarea có đang focus không
     if (textAreaRef.current && textAreaRef.current === document.activeElement) {
       textAreaRef.current.blur();
     }
@@ -144,22 +145,19 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
         width: stickyNote.size.width,
       }}
       bounds="window"
-      resizeHandleComponent={
-        {
-          bottomLeft: <div className="absolute bottom-left-handle bg-white h-4 w-4 cursor-sw-resize rounded-full bottom-[5px] left-[5px]" />,
-          bottomRight: <div className="absolute bottom-right-handle bg-white h-4 w-4 cursor-se-resize rounded-full bottom-[5px] right-[5px] " />,
-          topRight:
-            <div className="absolute top-right-handle  bg-white h-4 w-4 cursor-ne-resize rounded-full top-[5px] right-[5px] " />,
-          topLeft: <div className="absolute top-left-handle bg-white h-4 w-4 cursor-nw-resize rounded-full top-[5px] left-[5px]" />,
-          top: <div className="top-handle" />,
-          right: <div className="right-handle" />,
-          bottom: <div className="bottom-handle" />,
-          left: <div className="left-handle" />,
-        }
-      }
+      resizeHandleComponent={{
+        bottomLeft: <div className="absolute bottom-left-handle bg-white h-4 w-4 cursor-sw-resize rounded-full bottom-[5px] left-[5px]" />,
+        bottomRight: <div className="absolute bottom-right-handle bg-white h-4 w-4 cursor-se-resize rounded-full bottom-[5px] right-[5px]" />,
+        topRight: <div className="absolute top-right-handle bg-white h-4 w-4 cursor-ne-resize rounded-full top-[5px] right-[5px]" />,
+        topLeft: <div className="absolute top-left-handle bg-white h-4 w-4 cursor-nw-resize rounded-full top-[5px] left-[5px]" />,
+        top: <div className="top-handle" />,
+        right: <div className="right-handle" />,
+        bottom: <div className="bottom-handle" />,
+        left: <div className="left-handle" />,
+      }}
       minWidth={200}
       minHeight={200}
-      className="border-2 border-black relative"
+      className="border-2 border-black relative z-10"
       scale={parentScale}
       enableResizing={(user?.id === stickyNote.isSelected)}
       disableDragging={isTyping && !(user?.id === stickyNote.isSelected)}
@@ -167,12 +165,18 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
       onDragStop={onDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={(e) => {
-        // Nếu click ra ngoài, blur textarea (nếu cần)
         e.stopPropagation();
         if (!isTyping) onBlurTextArea();
       }}
     >
-      <div className="w-full h-full relative flex items-center justify-center">
+      <div className="w-full h-full relative flex items-center justify-center"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = e.currentTarget.getBoundingClientRect();
+          setContextMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        }}
+      >
         <textarea
           ref={textAreaRef}
           className={`w-full h-full text-[16px] p-2 ${stickyNote.color}`}
@@ -180,9 +184,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
           value={text}
           onBlur={onBlurTextArea}
           onFocus={() => setIsTyping(true)}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-          }}
+          onKeyDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => {
             e.stopPropagation();
@@ -193,11 +195,73 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
         <div className="absolute top-0 right-0 p-1 max-w-[80px] whitespace-nowrap overflow-hidden text-ellipsis bg-lime-700 text-white rounded-bl-xl">
           {!!stickyNote.isSelected ? "Peter" : "Free"}
         </div>
+
+        {contextMenu && (
+          <div
+            className="absolute bg-white shadow-md border rounded-md p-2 text-sm lg:text-base z-50 w-[200px]"
+            style={{
+              top: contextMenu.y,
+              left: contextMenu.x,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <div className="font-bold mb-2">Sticky Note</div>
+
+            <div className="mb-1 text-gray-600">
+              <div>👤 Owner: {stickyNote.owner || "Unknown"}</div>
+              <div>🕒 Updated: {stickyNote.updateAt ? new Date(stickyNote.updateAt).toLocaleString() : "N/A"}</div>
+            </div>
+
+            <hr className="my-2" />
+
+            {!!stickyNote.isSelected ? (
+              <button
+                className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
+                onClick={() => {
+                  setContextMenu(null);
+                  handleUnLockStickyNote(stickyNote.id);
+                }}
+              >
+                🔓 Unlock
+              </button>
+            ) : (
+              <button
+                className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
+                onClick={() => {
+                  setContextMenu(null);
+                  handleLockStickyNote(stickyNote.id);
+                }}
+              >
+                🔒 Lock
+              </button>
+            )}
+
+            <button
+              className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
+              onClick={() => {
+                setContextMenu(null);
+                textAreaRef.current?.focus();
+              }}
+            >
+              ✏️ Edit Note
+            </button>
+
+            <button
+              className="w-full text-left px-2 py-1 text-red-600 hover:bg-red-100 rounded"
+              onClick={() => {
+                setContextMenu(null);
+                // TODO: deleteStickyNote(stickyNote.id)
+              }}
+            >
+              🗑 Delete Note
+            </button>
+          </div>
+        )}
       </div>
     </Rnd>
   );
 }, (prevProps, nextProps) => {
-  // Kiểm tra các props cơ bản để tránh render lại không cần thiết
   return (
     prevProps.stickyNote === nextProps.stickyNote &&
     prevProps.parentScale === nextProps.parentScale &&
@@ -207,7 +271,6 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   );
 });
 
-
-
+RNDStickyNote.displayName = "RNDStickyNote";
 
 export default RNDStickyNote;

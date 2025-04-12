@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-// import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -52,7 +50,6 @@ const FormCode = z.object({
 
 export default function RegisterForm() {
   const { toast } = useToast()
-  const router = useRouter;
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -105,10 +102,8 @@ export default function RegisterForm() {
 
   // Handle submission for Step 2
   const onSubmitCode = (data: z.infer<typeof FormCode>) => {
-    console.log(data);
     verifyRegister({ code: data.code, email: formValues.email })
-      .then(res => {
-        console.log(res);
+      .then(() => {
         toast({
           title: "Thành công",
           description: "Bạn đã thêm mẫu thành công",

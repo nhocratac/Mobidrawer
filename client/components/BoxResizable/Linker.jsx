@@ -13,7 +13,8 @@ const Linker = () => {
     const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
     const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
 
-   // console.log("Linker",startPosition,currentPosition);
+   // console.log("Linker",startPosition,currentPosition);\
+   console.log("Linker",startPosition,currentPosition);
     const onStartLink = (event) => {
         event.preventDefault();
         stopPropagation(event);
