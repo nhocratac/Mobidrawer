@@ -1,7 +1,9 @@
 import { Toaster } from "@/components/ui/toaster";
 import roboto from "@/fonts/fontRoBoto";
 import { home } from "@/utils/metadata";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react"
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,6 +37,8 @@ export default function RootLayout({
       <body className={`${roboto.className} antialiased`} suppressHydrationWarning={true}>
         <main>{children}</main>
         <Toaster/>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

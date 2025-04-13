@@ -10,9 +10,9 @@ const home = {
     siteName: 'Mobidrawer',
     images: [
         {
-            url: 'https://mobidrawer.id.vn/favicon/android-chrome-192x192.png',
-            width: 192,
-            height: 192,
+            url: 'https://mobidrawer.id.vn/favicon/android-chrome-512x512.png',
+            width: 512,
+            height: 512,
             alt: 'Mobidrawer - Công cụ vẽ realtime UIT'
         }
     ],
