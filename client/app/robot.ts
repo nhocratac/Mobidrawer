@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       // Disallow any private paths if needed
       // disallow: '/private/',
     },
-    sitemap: 'https://uit-mobidrawer.vercel.app/sitemap.xml',
+    sitemap: 'https://mobidrawer.id.vn/sitemap.xml',
     // Optional: specify your host
     // host: 'https://uit-mobidrawer.vercel.app'
   }
