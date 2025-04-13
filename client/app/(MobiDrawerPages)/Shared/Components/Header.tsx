@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -8,50 +8,34 @@ import path from "@/utils/path";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 
 const navLinks = [
-  { href: "#products", label: "Sản phẩm" },
-  { href: "#solutions", label: "Giải pháp" },
-  { href: "/Enterprise", label: "Doanh nghiệp" },
-  { href: "#Resources", label: "Tài nguyên" },
-  { href: "/Pricing", label: "Giá cả" },
-  { href: "/Contact", label: "Liên hệ" },
+  { label: "Sản phẩm", hasDropdown: true },
+  { label: "Giải pháp", hasDropdown: true },
+  { href: path.enterprise, label: "Doanh nghiệp" },
+  { label: "Tài nguyên", hasDropdown: true },
+  { href: path.pricing, label: "Giá cả" },
+  { href: path.contact, label: "Liên hệ" },
 ];
 
 const productDropdownItems = [
-  { href: "/Feature", label: "Các tính năng" },
-  { href: "/Integration", label: "Tích hợp" },
-  { href: "/Security", label: "Bảo mật" },
+  { href: path.feature, label: "Các tính năng" },
+  { href: path.integration, label: "Tích hợp" },
+  { href: path.security, label: "Bảo mật" },
 ];
 
 const solutionDropdownItems = [
-  {
-    href: "/UseCase",
-    label: "Trường hợp sử dụng",
-  },
-  {
-    href: "/Team",
-    label: "Đội ngũ",
-  },
+  { href: path.useCase, label: "Trường hợp sử dụng" },
+  { href: path.team, label: "Đội ngũ" },
 ];
 
 const resourcesDropdownItems = [
-  {
-    href: "/Blog",
-    label: "Blog",
-  },
-  {
-    href: "/HelpCenter",
-    label: "Trung tâm trợ giúp",
-  },
-
-  {
-    href: "/Events",
-    label: "Sự kiện",
-  },
+  { href: path.blog, label: "Blog" },
+  { href: path.heplcenter, label: "Trung tâm trợ giúp" },
+  { href: path.envent, label: "Sự kiện" },
 ];
 
 const Navbar = () => {
+  const { user } = useTokenStore()
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -73,64 +57,64 @@ const Navbar = () => {
           </motion.div>
           <ul className="hidden lg:flex ml-14 space-x-12">
             {navLinks.map((link) => (
-              <div key={link.href} className="relative group">
-                <a
-                  href={link.href}
-                  className="text-neutral-900 hover:text-orange-600 transition-colors duration-200 flex items-center gap-1"
-                >
-                  {link.label}
-                  {link.label === "Sản phẩm" && (
+              <div key={link.label} className="relative group">
+                {link.hasDropdown || !link.href ? (
+                  <span className="text-neutral-900 hover:text-orange-600 transition-colors duration-200 flex items-center gap-1 cursor-pointer">
+                    {link.label}
                     <ChevronDown className="h-4 w-4" />
-                  )}
-                  {link.label === "Giải pháp" && (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                  {link.label === "Tài nguyên" && (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </a>
+                  </span>
+                ) : (
+                  <Link
+                    href={link.href}
+                    className="text-neutral-900 hover:text-orange-600 transition-colors duration-200 flex items-center gap-1"
+                  >
+                    {link.label}
+                  </Link>
+                )}
 
                 {link.label === "Sản phẩm" && (
                   <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 top-full left-0 mt-1">
                     <div className="bg-white rounded-lg shadow-lg min-w-[220px]">
                       {productDropdownItems.map((item) => (
-                        <a
+                        <Link
                           key={item.href}
                           href={item.href}
                           className="block px-4 py-2 text-neutral-900 hover:bg-orange-50 hover:text-orange-600"
                         >
                           {item.label}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
                 )}
+
                 {link.label === "Giải pháp" && (
                   <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 top-full left-0 mt-1">
                     <div className="bg-white rounded-lg shadow-lg min-w-[220px]">
                       {solutionDropdownItems.map((item) => (
-                        <a
+                        <Link
                           key={item.href}
                           href={item.href}
                           className="block px-4 py-2 text-neutral-900 hover:bg-orange-50 hover:text-orange-600"
                         >
                           {item.label}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
                 )}
+
                 {link.label === "Tài nguyên" && (
                   <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 top-full left-0 mt-1">
                     <div className="bg-white rounded-lg shadow-lg min-w-[220px]">
                       {resourcesDropdownItems.map((item) => (
-                        <a
+                        <Link
                           key={item.href}
                           href={item.href}
                           className="block px-4 py-2 text-neutral-900 hover:bg-orange-50 hover:text-orange-600"
                         >
                           {item.label}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -139,7 +123,8 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {useTokenStore.getState().user ? (
+
+          {user ? (
             <Button
               className="hidden lg:block text-xl"
               onClick={() => (window.location.href = "/user/dashboard")}
@@ -205,7 +190,7 @@ const Navbar = () => {
           {useTokenStore.getState().user ? (
             <Button
               className="my-5 text-xl"
-              onClick={() => (window.location.href = "/user/dashboard")}
+              onClick={() => (window.location.href = path.user.dashboard)}
             >
               Đi đến Dashboard
             </Button>

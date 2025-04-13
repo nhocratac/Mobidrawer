@@ -31,6 +31,17 @@ const path ={
         mindMap:'/board/mindMap/:id',
         quickRetrospective:'/board/quickRetrospective/:id',
     },
+    pricing : '/Pricing',
+    contact : '/Contact',
+    blog:'/Blog',
+    heplcenter: '/HelpCenter',
+    envent:'/Events',
+    enterprise:'Enterprise',
+    useCase:'UseCase',
+    team:'/Team',
+    feature:'/Feature',
+    integration :'/Integration',
+    security:'/Security'
 }
 
 export default path

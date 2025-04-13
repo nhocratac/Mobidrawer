@@ -75,6 +75,7 @@ const PublishedDialog = ({
         isPublished,
         slug
       });
+      console.log("blog", blog);
 
       toast({
         title: "Xuất bản thành công",

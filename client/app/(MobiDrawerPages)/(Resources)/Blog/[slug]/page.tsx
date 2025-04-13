@@ -2,12 +2,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { formatDate, parseTokenInfo } from "@/lib/utils";
 import { serializeSlateToHtml } from "@/utils/slateToHtml";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import React from "react";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
-import type { Metadata, ResolvingMetadata } from "next";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -29,7 +28,6 @@ const fetchBlogById = async (
 };
 
 export async function generateMetadata({
-  params,
   searchParams,
 }: Props): Promise<Metadata> {
   const id = (await searchParams).id;

@@ -1,3 +1,5 @@
+import path from '@/utils/path';
+import Link from 'next/link';
 import React from 'react';
 
 const Footer = () => {
@@ -8,34 +10,34 @@ const Footer = () => {
           <div className="pl-2 md:pl-0">
             <h3 className="text-xl font-semibold mb-4">MobiDrawer</h3>
             <p className="text-gray-400 md:text-base text-sm">
-              The ultimate prototyping tool for mobile applications.
+              Công cụ vẽ online realtime tối ưu cho trình duyệt web.
             </p>
           </div>
           
           <div className="pl-2 md:pl-0">
-            <h4 className="text-lg font-medium mb-4">Product</h4>
+            <h4 className="text-lg font-medium mb-4">Sản phẩm</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Features</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Pricing</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Use Cases</a></li>
+              <li><Link href={path.feature} className="text-gray-400 hover:text-white md:text-base text-sm">Tính năng</Link></li>
+              <li><Link href={path.pricing} className="text-gray-400 hover:text-white md:text-base text-sm">Giá cả</Link></li>
+              <li><Link href={path.useCase} className="text-gray-400 hover:text-white md:text-base text-sm">Sử dụng</Link></li>
             </ul>
           </div>
           
           <div className="pl-2 md:pl-0">
-            <h4 className="text-lg font-medium mb-4">Resources</h4>
+            <h4 className="text-lg font-medium mb-4">Tài nguyên</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Documentation</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Support</a></li>
+              <li><Link href={path.heplcenter} className="text-gray-400 hover:text-white md:text-base text-sm">Tài liệu</Link></li>
+              <li><Link href={path.blog} className="text-gray-400 hover:text-white md:text-base text-sm">Blog</Link></li>
+              <li><Link href={path.envent} className="text-gray-400 hover:text-white md:text-base text-sm">Ủng hộ</Link></li>
             </ul>
           </div>
           
           <div className="pl-2 md:pl-0">
-            <h4 className="text-lg font-medium mb-4">Company</h4>
+            <h4 className="text-lg font-medium mb-4">Công ty</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">About</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Contact</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Privacy Policy</a></li>
+              <li><Link href={path.team} className="text-gray-400 hover:text-white md:text-base text-sm">Về chúng tôi</Link></li>
+              <li><Link href={path.contact} className="text-gray-400 hover:text-white md:text-base text-sm">Liên hệ</Link></li>
+              <li><Link href={path.security} className="text-gray-400 hover:text-white md:text-base text-sm">Chính sách bảo mật</Link></li>
             </ul>
           </div>
         </div>
@@ -43,9 +45,9 @@ const Footer = () => {
         <div className="border-t border-gray-800 mt-8 pt-8 text-center md:flex md:justify-between">
           <p className="text-gray-400 md:text-base text-sm pl-2 md:pl-0">© 2024 MobiDrawer. All rights reserved.</p>
           <div className="mt-4 md:mt-0 space-x-4">
-            <a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Terms</a>
-            <a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Privacy</a>
-            <a href="#" className="text-gray-400 hover:text-white md:text-base text-sm">Cookies</a>
+            <Link href={path.enterprise} className="text-gray-400 hover:text-white md:text-base text-sm">Điều khoản</Link>
+            <Link href={path.security} className="text-gray-400 hover:text-white md:text-base text-sm">Sự riêng tư</Link>
+            <Link href={path.integration} className="text-gray-400 hover:text-white md:text-base text-sm">Cookies</Link>
           </div>
         </div>
       </div>
@@ -54,4 +56,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
