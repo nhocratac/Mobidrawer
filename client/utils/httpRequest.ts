@@ -4,7 +4,7 @@ import useTokenStore from "@/lib/Zustand/tokenStore";
 import env from "@/utils/environment";
 
 const MODE_ENV = env.MODE_ENV
-const API_URL = (MODE_ENV === "DEV" )?env.NEXT_PUBLIC_BACKEND_URL : "http://localhost:8080/api/v1";
+const API_URL = (MODE_ENV === "PRODUCTION" )?env.NEXT_PUBLIC_BACKEND_URL : "http://localhost:8080/api/v1";
 
 const httpRequest = axios.create({
   baseURL: API_URL,

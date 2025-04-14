@@ -11,7 +11,7 @@ interface StompState {
   disconnect: () => void;
 }
 const MODE_ENV = env.MODE_ENV
-const SOCKET_URL = (MODE_ENV === "DEV") ? (env.NEXT_PUBLIC_BACKEND_SOCKET) : "http://localhost:8080/ws";
+const SOCKET_URL = (MODE_ENV === "PRODUCTION") ? (env.NEXT_PUBLIC_BACKEND_SOCKET) : "http://localhost:8080/ws";
 
 export const useStompStore = create<StompState>((set, get) => ({
   client: null,
