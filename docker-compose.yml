@@ -9,7 +9,67 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - mobidrawer-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./IE213Backend
+      dockerfile: Dockerfile
+    container_name: mobidrawer-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # MongoDB connection settings
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://laidaynao901:S2bMWiZCDIqhES1Q@cluster0.qv15ecd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - SPRING_DATA_MONGODB_DATABASE=IE213
+      # Correct Redis connection settings
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+    networks:
+      - mobidrawer-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: mobidrawer-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    restart: always
+    networks:
+      - mobidrawer-network
 
 volumes:
   redis_data:
     driver: local
+  # Keep this if you want to maintain compatibility with existing configurations
+  mongodb_data:
+    driver: local
+
+networks:
+  mobidrawer-network:
+    driver: bridge

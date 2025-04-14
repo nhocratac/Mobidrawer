@@ -16,7 +16,8 @@ interface RNDStickyNoteProps {
   handleUnLockStickyNote: (stickyNoteId: string) => void;
 }
 
-const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
+// Add display name to the component
+const RNDStickyNote = memo(({
   parentScale,
   stickyNote,
   handlemoveStickyNote,
@@ -25,19 +26,20 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   handleLockStickyNote,
   handleUnLockStickyNote
 }) => {
+}: RNDStickyNoteProps) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
-  const { user } = useTokenStore();
+  // Remove unused changTextStickNote from the destructuring
   const { moveStickyNote, resizeStickyNote } = useStickyNoteStore();
   const debouncedText = useDebounce(text, 1000);
 
   useEffect(() => {
     handleChangeTextStickyNote(stickyNote.id, debouncedText);
-  }, [debouncedText]);
+  }, [debouncedText, handleChangeTextStickyNote, stickyNote.id]);
 
   useEffect(() => {
     const blockEvents = (e: Event) => e.stopPropagation();
@@ -70,7 +72,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
     if (!isTyping && text !== stickyNote.text) {
       setText(stickyNote.text);
     }
-  }, [stickyNote.text, isTyping]);
+  }, [stickyNote.text, isTyping, text]);
 
   useEffect(() => {
     RndRef.current?.updatePosition(stickyNote.position);
