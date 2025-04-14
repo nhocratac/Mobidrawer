@@ -1,11 +1,11 @@
-FROM maven:3.8.4-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
 
 # Copy the pom.xml file
 COPY pom.xml .
 
-# Download all required dependencies
+# Create a layer for Maven dependencies to improve caching
 RUN mvn dependency:go-offline -B
 
 # Copy source code
@@ -14,8 +14,8 @@ COPY src ./src
 # Package the application
 RUN mvn package -DskipTests
 
-# Runtime stage
-FROM openjdk:17-slim
+# Runtime stage - using smaller alpine image
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
