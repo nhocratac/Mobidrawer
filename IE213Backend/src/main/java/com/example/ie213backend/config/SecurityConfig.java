@@ -52,13 +52,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow connections from specific origins
-        configuration.addAllowedOrigin("http://51.79.250.11:3000");  // Production frontend URL
-        configuration.addAllowedOrigin("http://localhost:3000");     // Local development URL
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 🔹 Cho phép React frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // 🔹 Nếu dùng cookies/token
         configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true);  // Enable credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 
 const handleStyles = {
     top: 'w-[10px] h-[10px] absolute bg-blue-500 rounded-full top-[-30px] left-[calc(50%-5px)]',
@@ -45,26 +45,7 @@ const Linker = () => {
         event.preventDefault();
     };
 
-    const onStartLink = (event) => {
-        event.preventDefault();
-        stopPropagation(event);
-        setIsDragging(true);
-        console.log("start link");
-    };
-
-    const onLinking = useCallback((event) => {
-        if (isDragging) {
-            const { clientX, clientY } = event;
-            console.log("linking", clientX, clientY);
-        }
-    }, [isDragging]);
-
-    const onStopLink = useCallback((event) => {
-        stopPropagation(event);
-        setIsDragging(false);
-        console.log("stop link");
-    }, []);
-
+    // Add and remove mousemove and mouseup listeners dynamically
     useEffect(() => {
         const handleMouseMove = (event) => {
             if (isDragging) {
@@ -78,51 +59,57 @@ const Linker = () => {
             }
         };
 
+        // Add listeners when dragging starts
         if (isDragging) {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", handleMouseUp);
         }
 
+        // Cleanup listeners when dragging stops
         return () => {
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [isDragging, onLinking, onStopLink]);
+    }, [isDragging]);
+
+   
 
     return (
         <div className="absolute inset-0">
             <button
-                onMouseDown={onStartLink}
-                onDragStart={onStartLink}
-                onDrag={stopPropagation}
-                onDragEnd={onStopLink}
-                onClick={stopPropagation}
+                onMouseDown={onStartLink}   // Start the drag
+                onDragStart={onStartLink}   // Optional for drag event
+                onDrag={stopPropagation}    // Prevent normal drag event
+                onDragEnd={onStopLink}      // End the drag
+                onClick={stopPropagation}   // Prevent click propagation
                 className={handleStyles.top}
             />
             <button
-                onMouseDown={onStartLink}
-                onDragStart={onStartLink}
-                onDrag={stopPropagation}
-                onDragEnd={onStopLink}
-                onClick={stopPropagation}
+               onMouseDown={onStartLink}   // Start the drag
+               onDragStart={onStartLink}   // Optional for drag event
+               onDrag={stopPropagation}    // Prevent normal drag event
+               onDragEnd={onStopLink}      // End the drag
+               onClick={stopPropagation} 
                 className={handleStyles.bottom}
             />
             <button
-                onMouseDown={onStartLink}
-                onDragStart={onStartLink}
-                onDrag={stopPropagation}
-                onDragEnd={onStopLink}
-                onClick={stopPropagation}
+              onMouseDown={onStartLink}   // Start the drag
+              onDragStart={onStartLink}   // Optional for drag event
+              onDrag={stopPropagation}    // Prevent normal drag event
+              onDragEnd={onStopLink}      // End the drag
+              onClick={stopPropagation} 
                 className={handleStyles.left}
             />
             <button
-                onMouseDown={onStartLink}
-                onDragStart={onStartLink}
-                onDrag={stopPropagation}
-                onDragEnd={onStopLink}
-                onClick={stopPropagation}
+            onMouseDown={onStartLink}   // Start the drag
+            onDragStart={onStartLink}   // Optional for drag event
+            onDrag={stopPropagation}    // Prevent normal drag event
+            onDragEnd={onStopLink}      // End the drag
+            onClick={stopPropagation} 
                 className={handleStyles.right}
             />
+
+            
         </div>
     );
 };

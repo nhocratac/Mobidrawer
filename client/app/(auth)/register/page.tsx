@@ -49,8 +49,7 @@ const FormCode = z.object({
 });
 
 export default function RegisterForm() {
-  const { toast } = useToast();
-  // Removed unused router variable
+  const { toast } = useToast()
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -109,7 +108,7 @@ export default function RegisterForm() {
           title: "Thành công",
           description: "Bạn đã thêm mẫu thành công",
         })
-       // router.push('/login') - Comment for future implementation
+       // router.push('/login')
       })
       .catch(err => {
         console.log(err);
