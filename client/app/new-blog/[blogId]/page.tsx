@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import useDebounce from "@/hooks/userDebounce";
+import useDebounce from "@/hooks/useDebounce";
 import blogAPIs from "@/api/blogAPI";
 import TextEditor from "@/components/TextEditor/TextEditor";
 import { ChevronLeft } from "lucide-react";
