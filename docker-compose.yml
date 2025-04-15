@@ -26,8 +26,8 @@ services:
       context: ./IE213Backend
       dockerfile: Dockerfile
     container_name: mobidrawer-backend
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"  # Backend direct access for testing
     environment:
       # MongoDB connection settings
       - SPRING_DATA_MONGODB_URI=mongodb+srv://laidaynao901:S2bMWiZCDIqhES1Q@cluster0.qv15ecd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
@@ -63,15 +63,7 @@ services:
     restart: always
     networks:
       - mobidrawer-network
-
-  certbot:
-    image: certbot/certbot
-    container_name: mobidrawer-certbot
-    volumes:
-      - ./nginx/certbot:/var/www/certbot
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /var/lib/letsencrypt:/var/lib/letsencrypt
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email yourname@example.com -d api.mobidrawer.id.vn --agree-tos
+    command: [nginx-debug, '-g', 'daemon off;']
 
 volumes:
   redis_data:
