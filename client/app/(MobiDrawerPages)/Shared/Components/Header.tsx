@@ -60,7 +60,7 @@ const Navbar = () => {
     >
       <div className="container px-5 mx-auto relative h-full text-[16px]">
         <div className="flex justify-between items-center h-full pl-[40px] pr-[40px]">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 w-full">
             {/* Mobile Menu Button */}
             <div className="lg:hidden md:flex flex-col">
               <motion.button
@@ -84,7 +84,7 @@ const Navbar = () => {
               </Link>
             </motion.div>
 
-            <ul className="hidden lg:flex ml-14 space-x-12">
+            <ul className="hidden lg:flex ml-14 space-x-12 flex-1">
               {navLinks.map((link) => (
                 <div key={link.href} className="relative group">
                   <Link

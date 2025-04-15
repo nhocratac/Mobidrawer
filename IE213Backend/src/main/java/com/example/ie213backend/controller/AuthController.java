@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +22,12 @@ import java.util.Map;
 public class AuthController {
     private final AuthService authService;
 
+    @Value("${app.environment}")
+    private String environment;
+
+    @Value("${subdomain}")
+    private String subdomain;
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest loginRequest,
@@ -32,37 +39,28 @@ public class AuthController {
 
         AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
 
-//        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-//        refreshTokenCookie.setHttpOnly(true);
-//        refreshTokenCookie.setAttribute("samesi");
-//        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-//        refreshTokenCookie.setPath("/");
-
-//        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-//        accessTokenCookie.setHttpOnly(true);
-//        accessTokenCookie.setMaxAge(15 * 60);
-//        accessTokenCookie.setPath("/");
-
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie.ResponseCookieBuilder refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .sameSite("None") // SameSite được hỗ trợ ở đây!
-                .build();
+                .maxAge(7 * 24 * 60 * 60);
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+        ResponseCookie.ResponseCookieBuilder accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
-                .maxAge(15 * 60)
-                .sameSite("None") // SameSite được hỗ trợ ở đây!
-                .build();
+                .maxAge(15 * 60);
 
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-//        response.addCookie(refreshTokenCookie);
-//        response.addCookie(accessTokenCookie);
+        if (environment.equals("prod")) {
+            refreshTokenCookie.secure(true)
+                    .sameSite("None") // SameSite được hỗ trợ ở đây!
+                    .domain(subdomain);
+
+            accessTokenCookie.secure(true)
+                    .sameSite("None") // SameSite được hỗ trợ ở đây!
+                    .domain(subdomain);
+        }
+
+        response.addHeader("Set-Cookie", refreshTokenCookie.build().toString());
+        response.addHeader("Set-Cookie", accessTokenCookie.build().toString());
         response.addHeader("Authorization", "Bearer " + accessToken);
         return ResponseEntity.ok(authResponse);
     }
@@ -71,8 +69,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refreshToken(
             @CookieValue(name = "refreshToken", required = true) String refreshToken,
             HttpServletResponse response
-            ) {
-        if(refreshToken == null || refreshToken.isEmpty()) {
+    ) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
             return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
 
@@ -83,12 +81,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body(AuthResponse.builder().accessToken(null).build());
         }
 
-        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setMaxAge(15 * 60);
-        accessTokenCookie.setPath("/");
+        ResponseCookie.ResponseCookieBuilder accessTokenCookie = ResponseCookie.from("accessToken", newAccessToken)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(15 * 60);
 
-        response.addCookie(accessTokenCookie);
+        if (environment.equals("prod")) {
+            accessTokenCookie.secure(true)
+                    .sameSite("None") // SameSite được hỗ trợ ở đây!
+                    .domain("mobidrawer.id.vn");
+        }
+
+        response.addHeader("Set-Cookie", accessTokenCookie.build().toString());
         response.addHeader("Authorization", "Bearer " + newAccessToken);
         AuthResponse authResponse = AuthResponse.builder().accessToken(newAccessToken).build();
 
@@ -96,7 +100,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String,String>> register(
+    public ResponseEntity<Map<String, String>> register(
             @RequestBody @Valid RegisterDto registerDto) {
         String email = registerDto.getEmail();
         String password = registerDto.getPassword();
@@ -110,7 +114,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify-register")
-    public ResponseEntity<Map<String,String>> verifyRegister(
+    public ResponseEntity<Map<String, String>> verifyRegister(
             @RequestBody @Valid VerifyRegistrationRequest verifyRegistrationRequest
     ) {
         String code = verifyRegistrationRequest.getCode();
