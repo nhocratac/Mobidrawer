@@ -33,8 +33,6 @@ const Blogs = () => {
     fetchBlogs();
   }, [page]);
 
-  console.log(blogs);
-
   const container = {
     hidden: {
       opacity: 0,

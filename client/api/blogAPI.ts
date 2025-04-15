@@ -1,4 +1,6 @@
+import env from "@/utils/environment";
 import httpRequest from "@/utils/httpRequest";
+import axios from "axios";
 
 const blogAPIs = {
   async createBlog(blog: Partial<Blog>) {
@@ -30,7 +32,7 @@ const blogAPIs = {
     await httpRequest.delete(`/blogs/${blogId}`);
   },
   async getAllBlogs(page: number) {
-    const res = await httpRequest.get("/blogs", {
+    const res = await axios.get(`${env.NEXT_PUBLIC_BACKEND_URL}/blogs`, {
       params: {
         page,
       },
