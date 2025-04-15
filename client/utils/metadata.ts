@@ -97,6 +97,32 @@ const events = {
   keywords: "sự kiện, events, mobidrawer, hội thảo, workshop",
 };
 
+const contact = {
+  title : "Liên hệ Mobidrawer - Liên hệ ngay với chúng tôi",
+  description : "Thông tin liên hệ với Mobidrawer, liên lạc để báo cáo các vấn đề hoặc hợp tác với chúng tôi",
+  keyword :"Contact liên hệ, mobidrawer, liên lạc, thông tin"
+}
+
+const enterprise = {
+  title: "Mobidrawer Enterprise - Giải pháp vẽ realtime cho doanh nghiệp",
+  description:
+    "Mobidrawer Enterprise mang đến giải pháp vẽ realtime chuyên nghiệp, bảo mật và linh hoạt dành cho doanh nghiệp.",
+  keywords: "enterprise, doanh nghiệp, mobidrawer, vẽ realtime, giải pháp"
+};
+
+const share = {
+  title: "Chia sẻ bảng vẽ Mobidrawer dễ dàng",
+  description:
+    "Chia sẻ bảng vẽ realtime Mobidrawer với bạn bè, đồng nghiệp và sinh viên chỉ bằng một liên kết.",
+  keywords: "chia sẻ, share, mobidrawer, bảng vẽ, realtime, liên kết"
+};
+
+const pricing = {
+  title: "Mobidrawer Pricing - Chọn gói phù hợp cho nhu cầu của bạn",
+  description:
+    "Khám phá các gói dịch vụ Mobidrawer phù hợp với cá nhân, nhóm và doanh nghiệp. Linh hoạt, minh bạch và giá cả hợp lý.",
+  keywords: "mobidrawer, pricing, bảng giá, gói dịch vụ, realtime, vẽ online"
+};
 export {
   dashboard,
   home,
@@ -110,4 +136,8 @@ export {
   blog,
   helpCenter,
   events,
+  contact,
+  enterprise,
+  share,
+  pricing
 };

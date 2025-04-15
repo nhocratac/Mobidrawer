@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/context-menu";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -59,7 +60,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                                             <ContextMenuWrapper>
                                                 <div className="flex p-1 sm:p-2">
                                                     <Link href={`/user/board/${data.id}`} className="flex">
-                                                        <img src={data.thumbnail} alt="thumbnail" className="w-[40px] h-[40px] sm:w-[56px] sm:h-[56px] object-cover" />
+                                                        <Image src={data.thumbnail} alt="thumbnail" width={40} height={40} className="w-[40px] h-[40px] sm:w-[56px] sm:h-[56px] object-cover" />
                                                         <div className="h-[40px] sm:h-[56px] ml-2"> 
                                                             <p className="text-base sm:text-xl md:text-2xl font-bold truncate max-w-[200px] sm:max-w-none">{data.name}</p>
                                                             <p className="text-xs sm:text-sm md:text-lg font-light truncate max-w-[200px] sm:max-w-none">{data.description}</p>
@@ -98,7 +99,7 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                         <ContextMenuWrapper key={index}>
                             <Link href={`/user/board/${data.id}`}>
                                 <div key={index} className="p-3 sm:p-6 md:p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col">
-                                    <img src={data.thumbnail} alt="thumbnail" className="w-full aspect-square object-cover flex-1 rounded-sm" />
+                                    <Image src={data.thumbnail} alt="thumbnail" width={80} height={80} className="w-full aspect-square object-cover flex-1 rounded-sm" />
                                     <div className="mt-2">
                                         <p className="text-base sm:text-xl md:text-2xl font-bold truncate">{data.name}</p>
                                         <p className="text-xs sm:text-sm md:text-lg font-light truncate">{data.description}</p>

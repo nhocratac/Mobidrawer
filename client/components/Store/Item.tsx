@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTemplateStore } from "@/lib/Zustand/store";
 import { ItemProps } from "@/lib/Zustand/type.type";
 import { Star } from "lucide-react";
+import Image from "next/image";
 
 const StarRating = ({ rating }: { rating: number }) => {
     const stars = [];
@@ -46,7 +47,7 @@ const LiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
                 <div className="absolute text-white opacity-0 group-hover:opacity-100 top-0 left-0 w-full h-full p-1 sm:p-2">
                     <p className="relative font-bold text-base sm:text-lg md:text-xl lg:text-2xl z-10">{name}</p>
                     <p className="relative z-10 flex gap-1 sm:gap-2 items-center">
-                        <img src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
+                        <Image src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
                         <span className="font-normal text-sm sm:text-base md:text-lg">{owner.name}</span>
                     </p>
                     <p className="relative text-xs sm:text-sm md:text-base z-10 line-clamp-2">Mô tả: {info.description}</p>
@@ -55,7 +56,7 @@ const LiItem = ({ ImageThumnail, owner, name, info, id }: ItemProps) => {
                 </div>
             </div>
             <div className='flex items-center gap-x-2 sm:gap-x-4 px-1 sm:px-3'>
-                <img src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
+                <Image src={owner.logo} alt={`${owner.name} logo`} height={16} width={16} />
                 <p className="font-normal text-sm sm:text-base">{owner.name}</p>
             </div>
             <div className="px-1 sm:px-3 flex justify-between items-center">

@@ -192,9 +192,9 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
             setTimeout(() => textAreaRef.current?.focus(), 50);
           }}
         />
-        <div className="absolute top-0 right-0 p-1 max-w-[80px] whitespace-nowrap overflow-hidden text-ellipsis bg-lime-700 text-white rounded-bl-xl">
-          {!!stickyNote.isSelected ? "Peter" : "Free"}
-        </div>
+        {!!stickyNote.isSelected && <div className="absolute top-0 right-0 p-1 max-w-[80px] whitespace-nowrap overflow-hidden text-ellipsis bg-lime-700 text-white rounded-bl-xl">
+          Peter
+        </div>}
 
         {contextMenu && (
           <div

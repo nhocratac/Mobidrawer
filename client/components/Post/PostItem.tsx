@@ -3,6 +3,7 @@ import ModalComment from "@/components/Comment/ModalComment";
 import Reaction from "@/components/Reaction/Reaction";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Share2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 export interface PostItemProps {
@@ -36,7 +37,7 @@ function PostItem({ owner, image, text }: PostItemProps) {
         <div className='min-h-48 w-full p-8 border border-gray-200 rounded-xl shadow-lg'>
             <div className='p-4 flex justify-between items-center'>
                 <div className='flex gap-4'>
-                    <img
+                    <Image
                         className='w-16 h-16 rounded-full'
                         width={64}
                         height={64}
@@ -62,9 +63,11 @@ function PostItem({ owner, image, text }: PostItemProps) {
             </div>
             <div className='p-4 flex justify-center'>
                 <div className='max-w-full overflow-hidden'>
-                    <img
+                    <Image
                         className='w-full max-h-[500px] object-contain'
                         src={image}
+                        width={350}
+                        height={350}
                         alt='post image'
                     />
                 </div>

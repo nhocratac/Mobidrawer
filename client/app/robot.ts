@@ -5,6 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow:'/user/'
       // Disallow any private paths if needed
       // disallow: '/private/',
     },
