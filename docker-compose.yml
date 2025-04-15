@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     container_name: mobidrawer-backend
     ports:
-      - "8080:8080"  # Backend direct access for testing
+      - "8080:8080"  # Changed from expose to ports for consistency with current setup
     environment:
       # MongoDB connection settings
       - SPRING_DATA_MONGODB_URI=mongodb+srv://laidaynao901:S2bMWiZCDIqhES1Q@cluster0.qv15ecd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
@@ -63,7 +63,6 @@ services:
     restart: always
     networks:
       - mobidrawer-network
-    command: [nginx-debug, '-g', 'daemon off;']
 
 volumes:
   redis_data:
