@@ -10,6 +10,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
+
 
 // Schema for Step 1 (Registration)
 const FormSchema = z
@@ -48,6 +50,7 @@ const FormCode = z.object({
     }),
 });
 
+
 export default function RegisterForm() {
   const { toast } = useToast()
   const [step, setStep] = useState(1);
@@ -71,7 +74,10 @@ export default function RegisterForm() {
       password: "",
       rePassword: "",
     },
+
   });
+
+  const router = useRouter()
 
   // Form for Step 2 (Confirmation Code)
   const formCode = useForm<z.infer<typeof FormCode>>({
@@ -108,7 +114,7 @@ export default function RegisterForm() {
           title: "Thành công",
           description: "Bạn đã thêm mẫu thành công",
         })
-       // router.push('/login')
+        router.push('/login')
       })
       .catch(err => {
         console.log(err);
