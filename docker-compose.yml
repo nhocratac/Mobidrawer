@@ -26,8 +26,8 @@ services:
       context: ./IE213Backend
       dockerfile: Dockerfile
     container_name: mobidrawer-backend
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     environment:
       # MongoDB connection settings
       - SPRING_DATA_MONGODB_URI=mongodb+srv://laidaynao901:S2bMWiZCDIqhES1Q@cluster0.qv15ecd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
@@ -35,6 +35,8 @@ services:
       # Correct Redis connection settings
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      # Add these for proxy awareness
+      - SERVER_FORWARD_HEADERS_STRATEGY=NATIVE
     depends_on:
       redis:
         condition: service_healthy
@@ -46,27 +48,34 @@ services:
     networks:
       - mobidrawer-network
 
-  frontend:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: mobidrawer-frontend
+  nginx:
+    image: nginx:latest
+    container_name: mobidrawer-nginx
     ports:
-      - "3000:3000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/certbot:/var/www/certbot
     depends_on:
       - backend
-    deploy:
-      resources:
-        limits:
-          memory: 2G
     restart: always
     networks:
       - mobidrawer-network
 
+  certbot:
+    image: certbot/certbot
+    container_name: mobidrawer-certbot
+    volumes:
+      - ./nginx/certbot:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email yourname@example.com -d api.mobidrawer.id.vn --agree-tos
+
 volumes:
   redis_data:
     driver: local
-  # Keep this if you want to maintain compatibility with existing configurations
   mongodb_data:
     driver: local
 
