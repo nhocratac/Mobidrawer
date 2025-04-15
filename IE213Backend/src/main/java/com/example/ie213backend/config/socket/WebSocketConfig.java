@@ -30,9 +30,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns("http://localhost:3000", "https://localhost:3000", "https://mobidrawer.id.vn")
                 .addInterceptors(new WebSocketAuthInterceptor(authService))
                 .withSockJS()
                 .setSuppressCors(true);

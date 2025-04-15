@@ -53,10 +53,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000","https://mobidrawer.id.vn/")); // 🔹 Cho phép React frontend
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:3000", 
+            "https://localhost:3000", 
+            "https://mobidrawer.id.vn"
+        )); // Allow both HTTP and HTTPS origins
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 🔹 Nếu dùng cookies/token
+        configuration.setAllowCredentials(true); // For cookies/token
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
