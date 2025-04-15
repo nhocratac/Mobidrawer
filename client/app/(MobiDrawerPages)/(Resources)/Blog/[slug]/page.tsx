@@ -7,17 +7,13 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
+import env from "@/utils/environment";
 
-type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-const fetchBlogById = async (
+export const fetchBlogById = async (
   blogId: string
 ): Promise<(Blog & { owner: User }) | undefined> => {
-  const res = await fetch(`http://localhost:8080/api/v1/blogs/${blogId}`, {
+  const res = await fetch(`${env.NEXT_PUBLIC_BACKEND_URL}/blogs/${blogId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +27,7 @@ const fetchBlogById = async (
 export async function generateMetadata({
   params,
   searchParams,
-}: Props): Promise<Metadata> {
+}: Props<{ slug: string }>): Promise<Metadata> {
   const id = (await searchParams).id;
 
   const blog = await fetchBlogById(id as string);
@@ -46,7 +42,7 @@ export async function generateMetadata({
   };
 }
 
-const page = async (props: Props) => {
+const page = async (props: Props<{ slug: string }>) => {
   const id = (await props.searchParams).id;
   const accessToken = cookies().get("accessToken")?.value;
   let isOwner = false;
@@ -69,7 +65,7 @@ const page = async (props: Props) => {
     .join("");
 
   return (
-    <div className="flex flex-col items-center p-10">
+    <div className="flex flex-col items-center p-10 flex-1">
       <div
         className="space-y-[50px] max-w-[1000px] px-5"
         style={{ wordBreak: "break-word" }}
