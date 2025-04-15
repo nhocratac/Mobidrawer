@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -31,18 +32,37 @@ public class AuthController {
 
         AuthResponse authResponse = AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        refreshTokenCookie.setPath("/");
+//        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setAttribute("samesi");
+//        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+//        refreshTokenCookie.setPath("/");
 
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setMaxAge(15 * 60);
-        accessTokenCookie.setPath("/");
+//        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+//        accessTokenCookie.setHttpOnly(true);
+//        accessTokenCookie.setMaxAge(15 * 60);
+//        accessTokenCookie.setPath("/");
 
-        response.addCookie(refreshTokenCookie);
-        response.addCookie(accessTokenCookie);
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("None") // SameSite được hỗ trợ ở đây!
+                .build();
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(15 * 60)
+                .sameSite("None") // SameSite được hỗ trợ ở đây!
+                .build();
+
+        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+        response.addHeader("Set-Cookie", accessTokenCookie.toString());
+//        response.addCookie(refreshTokenCookie);
+//        response.addCookie(accessTokenCookie);
         response.addHeader("Authorization", "Bearer " + accessToken);
         return ResponseEntity.ok(authResponse);
     }
