@@ -7,22 +7,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
-import type { Metadata } from "next";
-import env from "@/utils/environment";
+import { fetchBlogById } from "@/app/(MobiDrawerPages)/(Resources)/Blog/[slug]/api";
 
-export const fetchBlogById = async (
-  blogId: string
-): Promise<(Blog & { owner: User }) | undefined> => {
-  const res = await fetch(`${env.NEXT_PUBLIC_BACKEND_URL}/blogs/${blogId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!res.ok) return undefined;
-  return await res.json();
-};
 
 export async function generateMetadata({
   searchParams,
