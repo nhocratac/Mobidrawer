@@ -7,6 +7,7 @@ import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDText from '@/components/BoxResizable/RNDText';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
+import AIChatButton from '@/components/ui/AIChatButton';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useEffect } from 'react';
 
@@ -47,6 +48,7 @@ const PlayGroundPage = () => {
             onClickStickyNoteButton={onClickCreateStickyNote}
             onClickShape={onClickAddShape}
           />
+          <AIChatButton boardId={id.toString()} />
           <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />

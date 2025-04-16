@@ -1,3 +1,4 @@
+import env from '@/utils/environment'
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -9,8 +10,8 @@ export default function robots(): MetadataRoute.Robots {
       // Disallow any private paths if needed
       // disallow: '/private/',
     },
-    sitemap: 'https://mobidrawer.id.vn/sitemap.xml',
+    sitemap: `${env.NEXT_PUBLIC_FRONTEND_DOMAIN}/sitemap.xml`,
     // Optional: specify your host
-    // host: 'https://uit-mobidrawer.vercel.app'
+     host: 'https://mobidrawer.id.vn'
   }
 }

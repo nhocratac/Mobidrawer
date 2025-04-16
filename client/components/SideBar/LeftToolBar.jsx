@@ -22,30 +22,63 @@ import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 import { FaDotCircle } from "react-icons/fa";
 
 import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
+
+// Color mapping between simple names and tailwind classes
+const colorMapping = {
+  "blue": "bg-blue-500",
+  "red": "bg-red-500",
+  "green": "bg-green-500",
+  "yellow": "bg-yellow-500",
+  "purple": "bg-purple-500",
+  "pink": "bg-pink-500",
+  "teal": "bg-teal-500",
+  "indigo": "bg-indigo-500",
+  "gray": "bg-gray-500",
+  "orange": "bg-orange-500",
+  "lime": "bg-lime-500",
+  "rose": "bg-rose-500",
+  "cyan": "bg-cyan-500",
+  "emerald": "bg-emerald-500",
+  "sky": "bg-sky-500",
+  "violet": "bg-violet-500",
+  "fuchsia": "bg-fuchsia-500",
+  "zinc": "bg-zinc-500",
+  "neutral": "bg-neutral-500",
+  "slate": "bg-slate-500",
+  "stone": "bg-stone-500",
+  "amber": "bg-amber-500",
+  "black": "bg-black",
+  "white": "bg-white",
+};
+
+// Update sticky note colors to use simple names
 const stickyNoteColor = [
-  "bg-blue-500",
-  "bg-red-500",
-  "bg-green-500",
-  "bg-yellow-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-teal-500",
-  "bg-indigo-500",
-  "bg-gray-500",
-  "bg-orange-500",
-  "bg-lime-500",
-  "bg-rose-500",
-  "bg-cyan-500",
-  "bg-emerald-500",
-  "bg-sky-500",
-  "bg-violet-500",
-  "bg-fuchsia-500",
-  "bg-zinc-500",
-  "bg-neutral-500",
-  "bg-slate-500",
-  "bg-stone-500",
-  "bg-amber-500",
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "purple",
+  "pink",
+  "teal",
+  "indigo",
+  "gray",
+  "orange",
+  "lime",
+  "rose",
+  "cyan",
+  "emerald",
+  "sky",
+  "violet",
+  "fuchsia",
+  "zinc",
+  "neutral",
+  "slate",
+  "stone",
+  "amber",
+  "black",
+  "white",
 ];
+
 const penColors = [
   "#ff0000",
   "#00ff00",
@@ -202,7 +235,7 @@ const LeftToolBar = ({
 
   const onSelectNoteColor = (i) => {
     resetSelectPopup();
-    onClickStickyNoteButton(stickyNoteColor[i]);
+    onClickStickyNoteButton(colorMapping[stickyNoteColor[i]]);
     setIsSelectNotePopupVisible(false);
   };
 
@@ -286,7 +319,7 @@ const LeftToolBar = ({
                 <button
                   key={i}
                   onClick={() => onSelectNoteColor(i)}
-                  className={`inline-flex items-center px-3 py-2 rounded text-white ${color}`}
+                  className={`inline-flex items-center px-3 py-2 rounded text-white ${colorMapping[color]}`}
                 >
                   Color {i + 1}
                 </button>

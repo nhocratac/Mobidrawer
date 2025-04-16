@@ -53,8 +53,8 @@ services:
     image: nginx:latest
     container_name: mobidrawer-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:80"  # Changed from 80:80 to avoid conflict
+      - "8443:443" # Changed from 443:443 to avoid conflict
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -64,6 +64,7 @@ services:
     restart: always
     networks:
       - mobidrawer-network
+    command: ["nginx", "-g", "daemon off;"]
 
 volumes:
   redis_data:
