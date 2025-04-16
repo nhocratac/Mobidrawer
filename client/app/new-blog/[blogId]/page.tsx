@@ -87,7 +87,6 @@ const NewBlog = () => {
       content: JSON.stringify(content),
       isPublished: blog.isPublished || false,
     };
-
     try {
       const savedBlog = await blogAPIs.updateBlog(blog.id, updatedBlog);
       setBlog(savedBlog);
@@ -95,7 +94,6 @@ const NewBlog = () => {
     } catch (error) {
       console.log(error);
     }
-
     setIsSaving(false);
     setIsSaved(true);
   };

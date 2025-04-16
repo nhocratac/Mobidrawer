@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageSquare, X, Send, Bot } from 'lucide-react';
+import {  X, Send, Bot } from 'lucide-react';
 import { geminiChatWithStickyNotes } from '@/api/AiApi';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { StickyNote as ZustandStickyNote } from '@/lib/Zustand/type.type';

@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
     },
     sitemap: `${env.NEXT_PUBLIC_FRONTEND_DOMAIN}/sitemap.xml`,
     // Optional: specify your host
-     host: 'https://mobidrawer.id.vn'
+     host: `${env.NEXT_PUBLIC_FRONTEND_DOMAIN}`
   }
 }

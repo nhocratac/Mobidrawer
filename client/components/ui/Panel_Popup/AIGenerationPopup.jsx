@@ -1,8 +1,8 @@
 import { XMarkIcon, SparklesIcon } from "@heroicons/react/16/solid";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect, useRef } from "react";
-import { geminiGenerateImage } from "../../../api/AiApi";
-import { createImageStickyNoteOnBoard } from "@/app/user/board/[id]/page";
+import { geminiGenerateImage } from "@/api/AiApi";
+// import { createImageStickyNoteOnBoard } from "@/app/user/board/[id]/page";
 
 const AIGenerationPopup = ({ togglePopup }) => {
   const [prompt, setPrompt] = useState("");
@@ -60,13 +60,13 @@ const AIGenerationPopup = ({ togglePopup }) => {
     }
   }, []);
 
-  const handleImageClick = (imageUrl) => {
-    try {
-      createImageStickyNoteOnBoard(imageUrl, "bg-white");
-    } catch (err) {
-      console.error("Failed to create image sticky note:", err);
-    }
-  };
+  // const handleImageClick = (imageUrl) => {
+  //   try {
+  //     createImageStickyNoteOnBoard(imageUrl, "bg-white");
+  //   } catch (err) {
+  //     console.error("Failed to create image sticky note:", err);
+  //   }
+  // };
 
   // Handle image download
   const handleDownloadImage = (imageUrl, index) => {
