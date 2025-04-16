@@ -1,4 +1,4 @@
-import { env } from "process";
+import env from "@/utils/environment";
 
 export const fetchBlogById = async (
     blogId: string

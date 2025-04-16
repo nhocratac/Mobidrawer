@@ -12,9 +12,9 @@ export default function HeroSection() {
 
     return (
         <section ref={ref} className="container px-4 py-12 mx-auto md:py-16 lg:py-20">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center border rounded-3xl bg-black pl-20 shadow-lg ">
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center border rounded-3xl bg-black shadow-lg ">
                 <motion.div
-                    className="space-y-8 mb-20 ml-10"
+                    className="space-y-8 p-10 mx-auto"
                     initial={{ opacity: 0, x: -50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
                     transition={{ duration: 0.6 }}
@@ -55,7 +55,7 @@ export default function HeroSection() {
                         alt="team"
                         width={742}
                         height={389}
-                        className="w-full h-full object-cover rounded-tr-3xl rounded-br-3xl"
+                        className="w-full h-full object-cover max-lg:rounded-bl-3xl lg:rounded-tr-3xl rounded-br-3xl"
                         priority
                     />
                 </motion.div>

@@ -41,6 +41,7 @@ const PublishedDialog = ({
   const router = useRouter();
 
   const handlePublish = async () => {
+    let savedUrl = thumbnailURL;
     if(!user) return 
 
     if (!description || !keywords || !thumbnailURL || !title) {
@@ -60,18 +61,20 @@ const PublishedDialog = ({
         const formData = new FormData();
         formData.append("file", thumbnailFile);
         const { url } = await uploadFile(formData, user.id);
+        savedUrl = url;
         setThumbnailURL(url);
         setThumbnailFile(null);
       }
       if (!id) return;
       const slug = generateSlug(title);
+      console.log("slug", slug);
 
       const blog = await blogAPIs.updateBlog(id, {
         description,
         keywords: keywords
           .split(",")
           .map((keyword) => keyword.toLowerCase().trim()),
-        thumbnail: thumbnailURL,
+        thumbnail: savedUrl,
         isPublished,
         slug
       });
@@ -84,6 +87,11 @@ const PublishedDialog = ({
       router.push(`/Blog/${slug}?id=${id}`);
     } catch (error) {
       console.log(error);
+      toast({
+        title: "Xuất bản không thành công",
+        description: "Bài viết của bạn không thể xuất bản",
+        variant: "destructive"
+      });
     }
   };
 

@@ -35,7 +35,7 @@ export default function RootLayout({
         <meta name="google-site-verification" content="STneKsRDm2QioYuvfDcauR_bdyT8tFlOwkyC3gYM3NI" />
       </head>
       <body className={`${roboto.className} antialiased`} suppressHydrationWarning={true}>
-        <main>{children}</main>
+        <main className="overflow-auto">{children}</main>
         <Toaster/>
         <SpeedInsights />
         <Analytics />

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Pageable from "@/components/Pageable";
 import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -18,15 +19,19 @@ const Blogs = () => {
     margin: "-100px",
   });
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchBlogs = async () => {
+      setIsLoading(true);
       try {
         const res: Pageable<Blog> = await blogAPIs.getAllBlogs(page);
         setBlogs(res.content);
         setTotalPage(res.totalPages);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -69,7 +74,12 @@ const Blogs = () => {
 
   return (
     <section ref={ref} className="w-full pb-12 md:pb-24 lg:pb-32">
-      <div className="container px-4 md:px-6">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center">
+          <Loader size={24} className="animate-spin" />
+          <p className="text-2xl">Loading...</p>
+        </div>
+      ) :<div className="container px-4 md:px-6">
         <motion.div
           className="grid gap-6 md:gap-8 lg:gap-10 md:grid-cols-2 lg:grid-cols-3"
           variants={container}
@@ -122,7 +132,7 @@ const Blogs = () => {
         {totalPage > 1 && (
           <Pageable page={page} setPage={setPage} totalPages={totalPage} />
         )}
-      </div>
+      </div>}
     </section>
   );
 };

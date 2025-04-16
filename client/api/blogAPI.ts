@@ -8,11 +8,15 @@ const blogAPIs = {
 
     return res.data;
   },
-  async getBlogsByUserIdAndIsPublished(userId: string, isPublished: boolean, page: number) {
+  async getBlogsByUserIdAndIsPublished(
+    userId: string,
+    isPublished: boolean,
+    page: number
+  ) {
     const res = await httpRequest.get(`/blogs/users/${userId}`, {
       params: {
         page,
-        isPublished
+        isPublished,
       },
     });
 
@@ -23,7 +27,7 @@ const blogAPIs = {
 
     return res.data;
   },
-  async updateBlog(blogId: string, blog: Partial<Blog>) {
+  async updateBlog(blogId: string, blog: Partial<UpdatedBlogInfo>) {
     const res = await httpRequest.put(`/blogs/${blogId}`, blog);
 
     return res.data;
@@ -39,7 +43,7 @@ const blogAPIs = {
     });
 
     return res.data;
-  }
+  },
 };
 
 export default blogAPIs;

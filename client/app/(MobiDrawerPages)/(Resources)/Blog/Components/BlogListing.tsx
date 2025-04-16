@@ -14,10 +14,10 @@ export default function BlogListing() {
     return (
         <div className="container mx-auto pt-20 text-center">
             <Tabs defaultValue="all" className="w-full mb-8" onValueChange={setSelectedTab}>
-                <TabsList className="inline-flex h-10 items-center justify-center rounded-md py-8 text-2xl font-semibold gap-4 shadow-md bg-black">
+                <TabsList className="h-fit inline-flex rounded-md text-2xl py-3 font-semibold gap-4 shadow-md bg-black flex-wrap overflow-hidden">
                     <TabsTrigger
                         value="all"
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-2xl font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-lg"
+                        className=" whitespace-nowrap rounded-md px-4 py-2 text-2xl font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-lg"
                     >
                         Tất cả
                     </TabsTrigger>

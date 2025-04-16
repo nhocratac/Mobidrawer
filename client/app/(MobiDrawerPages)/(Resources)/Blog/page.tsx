@@ -1,14 +1,14 @@
 import React from "react";
 import BriefBlog  from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/Blog'
-import BlogListing from '@/app/(MobiDrawerPages)/(Resources)/Blog/Components/BlogListing'
+import Blogs from "./Components/Blogs";
 
 export default function Blog() {
   return (
     <div>
-      <div className="max-w-[calc(100%-250px)] mx-auto ">
+      <div className="lg:max-w-[calc(100%-250px)] px-10 mx-auto ">
         <div className="relative z-20">
           <BriefBlog />
-          <BlogListing />
+          <Blogs />
         </div>
       </div>
     </div>

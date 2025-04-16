@@ -44,7 +44,7 @@ export const serializeSlateToHtml = (node: Descendant) => {
       return `<ol>${children}</ol>`;
     case "image":
       return `<div class="flex justify-center items-center py-5">
-        <img style="width: 300px; height: 250px; " src="${node.url}" alt="${node.alt}">${children}</img>
+        <Image style="width: 600px; height: 350px; " src="${node.url}" alt="${node.alt}">${children}</Image>
       </div>`;
     case "heading-three":
       return `<h3 style="${style}">${children}</h3>`;

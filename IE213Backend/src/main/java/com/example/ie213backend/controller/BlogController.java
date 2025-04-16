@@ -26,7 +26,7 @@ public class BlogController {
 
     @GetMapping
     public ResponseEntity<Page<BlogDto>> getAllBlogs(@RequestParam(name = "page") int page) {
-        Pageable pageable = PageRequest.of(page, 6);
+        Pageable pageable = PageRequest.of(page, 6, Sort.by("createdAt").descending());
         Page<BlogDto> blogDtos = blogService.getAllBlogs(pageable);
 
         return ResponseEntity.ok(blogDtos);
@@ -63,7 +63,7 @@ public class BlogController {
                                                         @RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "10") int size,
                                                         @RequestParam(defaultValue = "false") boolean isPublished) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<BlogDto> blogDtos = blogService.listBlogByUserId(userId, isPublished, pageable);
 
         return ResponseEntity.ok(blogDtos);

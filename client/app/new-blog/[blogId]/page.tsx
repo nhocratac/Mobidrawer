@@ -82,16 +82,15 @@ const NewBlog = () => {
 
     setIsSaving(true);
 
-    const updatedBlog: Partial<Blog> = {
+    const updatedBlog: Partial<UpdatedBlogInfo> = {
       title,
       content: JSON.stringify(content),
       isPublished: blog.isPublished || false,
-      owner: blog.owner,
-      id: blog.id,
     };
 
     try {
       const savedBlog = await blogAPIs.updateBlog(blog.id, updatedBlog);
+      setBlog(savedBlog);
       console.log(savedBlog);
     } catch (error) {
       console.log(error);
@@ -132,7 +131,12 @@ const NewBlog = () => {
             </div>
 
             <div className="flex gap-4 items-center">
-              <PublishedDialog blog={blog}>
+              <PublishedDialog
+                blog={{
+                  ...blog,
+                  title,
+                }}
+              >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => console.log(content)}

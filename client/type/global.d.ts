@@ -1,13 +1,13 @@
 interface Pageable<T> {
-  content: T[],
-  last: boolean,
-  totalPages: number,
-  totalElements: number,
-  numberOfElements: number,
-  first: boolean,
-  size: number,
-  number: number,
-  empty: boolean
+  content: T[];
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  numberOfElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  empty: boolean;
 }
 
 type User = {
@@ -34,6 +34,17 @@ type Blog = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+type UpdatedBlogInfo = Pick<
+  Blog,
+  | "title"
+  | "thumbnail"
+  | "keywords"
+  | "description"
+  | "isPublished"
+  | "content"
+  | "slug"
+>;
 
 type Props<T> = {
   params: Promise<T>;

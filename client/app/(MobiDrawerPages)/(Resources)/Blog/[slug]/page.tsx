@@ -1,29 +1,53 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { formatDate, parseTokenInfo } from "@/lib/utils";
 import { serializeSlateToHtml } from "@/utils/slateToHtml";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
 import { fetchBlogById } from "@/app/(MobiDrawerPages)/(Resources)/Blog/[slug]/api";
 
-
 export async function generateMetadata({
+  params,
   searchParams,
 }: Props<{ slug: string }>): Promise<Metadata> {
   const id = (await searchParams).id;
-
-  const blog = await fetchBlogById(id as string);
+  const slug = (await params).slug;
+  const blog: Blog = await fetchBlogById(id as string);
 
   if (!blog) {
     redirect("/404");
   }
 
+  // Lấy thông tin từ headers
+  const headersList = headers();
+  const domain = headersList.get("host") || "";
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const url = `${protocol}://${domain}/${slug}?id=${id}`;
+
   return {
     title: blog.title,
     description: blog.description,
+    keywords: blog.keywords,
+    openGraph: {
+      title: blog.title,
+      description: blog.description,
+      url,
+      siteName: "Mobidrawer",
+      images: [
+        {
+          url:
+            blog.thumbnail ||
+            "https://mobidrawer.id.vn/favicon/android-chrome-512x512.png",
+          width: 512,
+          height: 512,
+          alt: blog.title,
+        },
+      ],
+      locale: "vi_VN",
+      type: "website",
+    },
   };
 }
 
