@@ -10,8 +10,6 @@ import BoardThumbnail from "@/components/BoardThumbnail/BoardThumbnail";
 import VideoDialog from "@/components/BoardThumbnail/VideoDialog";
 import { useRouter } from "next/navigation";
 
-
-
 export default function ListBoardThumbnail() {
     const router = useRouter()
     const DialogData = {
@@ -21,6 +19,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '0');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         router.push('/user/board/' + res.id)
                     })
@@ -38,6 +37,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '1');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         router.push('/user/board/' + res.id)
                     })
@@ -55,6 +55,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '2');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         router.push('/user/board/' + res.id)
                     })
@@ -72,6 +73,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '3');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         console.log(res)
                         router.push('/user/board/' + res.id)
@@ -90,6 +92,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '4');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         router.push('/user/board/' + res.id)
                     })
@@ -107,6 +110,7 @@ export default function ListBoardThumbnail() {
             Video: <VideoDialog linkMp4="https://mirostatic.com/app/static/529b435dbf19250f.mp4" linkWebm="https://mirostatic.com/app/static/bb1eba3b53c8eab7.webm" />,
             HandleClickCreate: (name: string, description: string) => {
                 try {
+                    localStorage.setItem('boardTemplateIndex', '5');
                     const newBoard = BoardAPI.createBoard(name, description).then((res) => {
                         router.push('/user/board/' + res.id)
                     })

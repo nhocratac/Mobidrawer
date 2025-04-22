@@ -1,4 +1,5 @@
 import BoardAPI from "@/api/BoardAPI";
+import boardTemplateConfig from "@/config/boardTemplates";
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
@@ -22,11 +23,39 @@ export function useBoard() {
       .then((res) => {
         setBoard(res);
         setStickyNotes(res.stickyNotes ? res.stickyNotes : []);
+        
+        // Check if this is a newly created board with a template index
+        const templateIndex = localStorage.getItem('boardTemplateIndex');
+        if (templateIndex !== null) {
+          // Create sticky notes based on the template index
+          const index = parseInt(templateIndex, 10);
+          if (index >= 0 && index < boardTemplateConfig.length) {
+            createTemplateNotes(index);
+          }
+          // Clear the template index from local storage after use
+          localStorage.removeItem('boardTemplateIndex');
+        }
       })
       .catch(() => {
         console.log("get board by id error:");
       });
   }, [id]);
+
+  // Function to create template-specific sticky notes
+  const createTemplateNotes = useCallback((templateIndex: number) => {
+    if (!client || !id) return;
+
+    // Get the template notes configuration for this index
+    const templateNotes = boardTemplateConfig[templateIndex];
+    
+    // Create each template note
+    templateNotes.forEach(templateNote => {
+      client.publish({
+        destination: `/app/board/addStickyNote/${id}`,
+        body: JSON.stringify(templateNote),
+      });
+    });
+  }, [client, id]);
 
   // xóa shape
   useEffect(() => {
