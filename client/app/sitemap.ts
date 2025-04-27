@@ -38,12 +38,12 @@ const staticUrls: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogs: Blog[] = await blogAPIs.getAllBlogsForSitemap();
-
+  console.log("blogs", blogs.length);
   const blogUrls: MetadataRoute.Sitemap = blogs.map((blog) => ({
     url: `https://mobidrawer.id.vn/Blog/${blog.slug}?id=${blog.id}`,
-    lastModified: new Date(blog.updatedAt || blog.createdAt).toISOString(),
-    changeFrequency: "weekly",
-    priority: 0.7,
+    lastModified:now,
+    changeFrequency: "daily",
+    priority: 0.9,
   }));
 
   return [...staticUrls, ...blogUrls];
