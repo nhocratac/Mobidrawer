@@ -44,6 +44,11 @@ const blogAPIs = {
 
     return res.data;
   },
+  async getAllBlogsForSitemap() {
+    console.log(env.NEXT_PUBLIC_BACKEND_URL)
+    const res = await axios.get(`${env.NEXT_PUBLIC_BACKEND_URL}/blogs/sitemap`)
+    return res.data
+  }
 };
 
 export default blogAPIs;

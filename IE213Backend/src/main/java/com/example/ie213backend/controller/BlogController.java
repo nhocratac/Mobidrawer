@@ -24,6 +24,11 @@ import java.util.List;
 public class BlogController {
     private final BlogService blogService;
 
+    @GetMapping("/sitemap")
+    public List<BlogDto> getAllBlogsID() {
+        return blogService.getAllBlogsID();
+    }
+
     @GetMapping
     public ResponseEntity<Page<BlogDto>> getAllBlogs(@RequestParam(name = "page") int page) {
         Pageable pageable = PageRequest.of(page, 6, Sort.by("createdAt").descending());

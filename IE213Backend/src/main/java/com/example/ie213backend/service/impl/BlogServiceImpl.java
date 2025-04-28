@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,5 +97,12 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public Page<BlogDto> getAllBlogs(Pageable pageable) {
         return blogRepository.findByIsPublished(true, pageable).map(blogMapper::toDto);
+    }
+
+    @Override
+    public List<BlogDto> getAllBlogsID() {    return blogRepository.findAll()
+            .stream() // Chuyển List<Blog> thành Stream<Blog>
+            .map(blogMapper::toDto) // Ánh xạ Blog sang BlogDto
+            .collect(Collectors.toList()); // Thu lại thành List<BlogDto>
     }
 }

@@ -17,4 +17,5 @@ public interface BlogService {
     Page<BlogDto> listBlogByUserId(String userId, boolean isPublished, Pageable pageable);
     BlogDto createOrRemoveInteraction(InteractionBlogDto interactionBlogDto);
     Page<BlogDto> getAllBlogs(Pageable pageable);
+    List<BlogDto> getAllBlogsID();
 }
