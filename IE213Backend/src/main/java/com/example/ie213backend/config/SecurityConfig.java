@@ -41,7 +41,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/blogs/users/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/blogs").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/check-env").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments/{commentId}/replies").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -60,7 +63,7 @@ public class SecurityConfig {
             "https://mobidrawer.id.vn",
             "https://api.mobidrawer.id.vn"
         )); // Allow both HTTP and HTTPS origins
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // For cookies/token
         configuration.setExposedHeaders(List.of("Authorization"));

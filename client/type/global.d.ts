@@ -50,3 +50,29 @@ type Props<T> = {
   params: Promise<T>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
+
+type CommentObj = {
+  id: string;
+  content: string;
+  parentComment: boolean;
+  edited: boolean;
+  createdAt: string;
+  updatedAt: string;
+
+  owner: User;
+  replies: Pageable<CommentObj>;
+  likeCount: number;
+  dislikeCount: number;
+  currentUserReaction: ReactionType | null;
+};
+
+type CreatedCommentInfo = {
+  content: string;
+  parentComment?: boolean;
+  edited?: boolean;
+  userId: string;
+  blogId: string;
+  repliedId?: string;
+};
+
+type ReactionType = "LIKE" | "DISLIKE";

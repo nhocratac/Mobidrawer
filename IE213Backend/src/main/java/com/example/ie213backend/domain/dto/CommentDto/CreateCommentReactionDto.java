@@ -1,5 +1,6 @@
 package com.example.ie213backend.domain.dto.CommentDto;
 
+import com.example.ie213backend.domain.ReactionType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,16 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateCommentDto {
-    @NotBlank(message = "Content not blank")
-    private String content;
-    private boolean parentComment;
+public class CreateCommentReactionDto {
+    @NotBlank(message = "commentId not blank")
+    private String commentId;
 
     @NotBlank(message = "userId not blank")
     private String userId;
 
-    @NotBlank(message = "blogId not blank")
-    private String blogId;
-
-    private String repliedId = null;
+    private ReactionType type;
 }

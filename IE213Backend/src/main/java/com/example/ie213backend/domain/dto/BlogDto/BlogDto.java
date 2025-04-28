@@ -28,7 +28,6 @@ public class BlogDto {
     private String slug;
 
     private List<Interaction> interactions;
-    private Page<CommentDto> comments;
 
     private Instant createdAt;
     private Instant updatedAt;

@@ -5,16 +5,49 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const MM = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
-  const yyyy = date.getFullYear();
-  const HH = String(date.getHours()).padStart(2, "0");
-  const mm = String(date.getMinutes()).padStart(2, "0");
-  const ss = String(date.getSeconds()).padStart(2, "0");
-
-  return `${dd}/${MM}/${yyyy} - ${HH}:${mm}:${ss}`;
+export function formatDate(timestamp: string | number | Date): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  // Dưới một phút
+  if (diffSeconds < 60) {
+    return "vừa xong";
+  }
+  
+  // Vài phút trước (dưới 1 giờ)
+  if (diffSeconds < 3600) {
+    const minutes = Math.floor(diffSeconds / 60);
+    return `${minutes} phút trước`;
+  }
+  
+  // Vài giờ trước (dưới 1 ngày)
+  if (diffSeconds < 86400) {
+    const hours = Math.floor(diffSeconds / 3600);
+    return `${hours} giờ trước`;
+  }
+  
+  // Vài ngày trước (dưới 1 tuần)
+  if (diffSeconds < 604800) {
+    const days = Math.floor(diffSeconds / 86400);
+    return `${days} ngày trước`;
+  }
+  
+  // Vài tuần trước (dưới 1 tháng)
+  if (diffSeconds < 2592000) {
+    const weeks = Math.floor(diffSeconds / 604800);
+    return `${weeks} tuần trước`;
+  }
+  
+  // Vài tháng trước (dưới 1 năm)
+  if (diffSeconds < 31536000) {
+    const months = Math.floor(diffSeconds / 2592000);
+    return `${months} tháng trước`;
+  }
+  
+  // Vài năm trước
+  const years = Math.floor(diffSeconds / 31536000);
+  return `${years} năm trước`;
 }
 
 export function parseTokenInfo(token: string) {

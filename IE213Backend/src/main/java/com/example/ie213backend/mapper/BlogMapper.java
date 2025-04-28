@@ -17,16 +17,11 @@ import org.springframework.data.domain.Page;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class BlogMapper {
     @Autowired
-    private CommentService commentService;
-    @Autowired
     private UserService userService;
 
     @Autowired
-    private CommentMapper commentMapper;
-    @Autowired
     private UserMapper userMapper;
 
-    @Mapping(target = "comments", source = "id", qualifiedByName = "fillComments")
     @Mapping(target = "owner", source = "owner", qualifiedByName = "mapOwnerIdToOwner")
     public abstract BlogDto toDto(Blog blog);
 
@@ -34,11 +29,6 @@ public abstract class BlogMapper {
     public abstract Blog toEntity(BlogDto blogDto);
 
     public abstract Blog toEntity(CreateBlogDto createBlogDto);
-
-    @Named("fillComments")
-    public Page<CommentDto> fillComments(String id) {
-        return commentService.getCommentsByBlogId(id, 0, 10);
-    }
 
     @Named("mapOwnerIdToOwner")
     public UserDto mapOwnerIdToOwner(String ownerId) {

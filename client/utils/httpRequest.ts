@@ -3,8 +3,11 @@ import { refreshAccessToken } from "@/api/authAPI";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import env from "@/utils/environment";
 
-const NEXT_PUBLIC_MODE_ENV = env.NEXT_PUBLIC_MODE_ENV
-const API_URL = (NEXT_PUBLIC_MODE_ENV === "PRODUCTION" )?env.NEXT_PUBLIC_BACKEND_URL : "http://localhost:8080/api/v1";
+const NEXT_PUBLIC_MODE_ENV = env.NEXT_PUBLIC_MODE_ENV;
+const API_URL =
+  NEXT_PUBLIC_MODE_ENV === "PRODUCTION"
+    ? env.NEXT_PUBLIC_BACKEND_URL
+    : "http://localhost:8080/api/v1";
 
 const httpRequest = axios.create({
   baseURL: API_URL,
@@ -15,12 +18,18 @@ const httpRequest = axios.create({
 });
 
 // ✅ Thêm accessToken vào headers trước mỗi request
-httpRequest.interceptors.request.use(async (config) =>  {
+httpRequest.interceptors.request.use(async (config) => {
   if (
     config.url?.includes("/auth/login") ||
     config.url?.includes("/auth/register") ||
     config.url?.includes("/auth/verify-register") ||
-    config.url?.includes("/auth/refresh")
+    config.url?.includes("/auth/refresh") ||
+    (config.url?.includes("/comments") && config.method === "get") ||
+    (config.url &&
+      /^\/comments\/[^\/]+\/replies$/.test(
+        new URL(config.url, window.location.origin).pathname
+      ) &&
+      config.method === "get")
   ) {
     return config;
   }

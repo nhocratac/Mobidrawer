@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { Descendant } from "slate";
 import DropdownButton from "./DropdownButton";
 import { fetchBlogById } from "@/app/(MobiDrawerPages)/(Resources)/Blog/[slug]/api";
+import Comments from "../Components/CommentsBlock";
 
 export async function generateMetadata({
   params,
@@ -110,6 +111,8 @@ const page = async (props: Props<{ slug: string }>) => {
             />
           </div>
         )}
+
+        <Comments blogId={id as string} />
       </div>
     </div>
   );

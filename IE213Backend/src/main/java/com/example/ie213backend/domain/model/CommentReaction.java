@@ -1,9 +1,11 @@
 package com.example.ie213backend.domain.model;
 
+import com.example.ie213backend.domain.ReactionType;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -16,25 +18,21 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "comments")
-public class Comment {
+@Document(collection = "commentReactions")
+@CompoundIndex(name = "user_comment_idx", def = "{'userId': 1, 'commentId': 1}", unique = true)
+public class CommentReaction {
     @Id
     private String id;
-    private String content;
-    private boolean parentComment;
-    private boolean edited;
+
+    @Indexed
+    @Field(targetType = FieldType.OBJECT_ID)
+    private String commentId;
 
     @Indexed
     @Field(targetType = FieldType.OBJECT_ID)
     private String userId;
 
-    @Indexed
-    @Field(targetType = FieldType.OBJECT_ID)
-    private String blogId;
-
-    @Indexed
-    @Field(targetType = FieldType.OBJECT_ID)
-    private String repliedId;
+    private ReactionType type;
 
     @CreatedDate
     private Instant createdAt;

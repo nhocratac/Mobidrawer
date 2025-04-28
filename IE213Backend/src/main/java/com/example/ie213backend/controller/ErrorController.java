@@ -1,6 +1,8 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.ApiErrorResponse;
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoWriteException;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -81,5 +83,13 @@ public class ErrorController {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MongoWriteException.class)
+    public ResponseEntity<ApiErrorResponse> handleMongoWriteException(MongoWriteException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .build();
 
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }
