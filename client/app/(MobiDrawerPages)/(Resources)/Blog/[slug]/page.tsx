@@ -99,7 +99,7 @@ const page = async (props: Props<{ slug: string }>) => {
             )}
           </div>
 
-          <DropdownButton isOwner={isOwner} />
+          <DropdownButton isOwner={isOwner} blogId={id as string} />
         </div>
 
         {blog.content && (

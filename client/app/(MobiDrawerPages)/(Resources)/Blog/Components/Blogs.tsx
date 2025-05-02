@@ -1,13 +1,13 @@
 "use client";
 
 import blogAPIs from "@/api/blogAPI";
-import React, { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import Pageable from "@/components/Pageable";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { motion, useInView } from "framer-motion";
 import { Loader } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -18,7 +18,6 @@ const Blogs = () => {
     once: false,
     margin: "-100px",
   });
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -79,60 +78,66 @@ const Blogs = () => {
           <Loader size={24} className="animate-spin" />
           <p className="text-2xl">Loading...</p>
         </div>
-      ) :<div className="container px-4 md:px-6">
-        <motion.div
-          className="grid gap-6 md:gap-8 lg:gap-10 md:grid-cols-2 lg:grid-cols-3"
-          variants={container}
-          initial="hidden"
-          animate={isInView ? "show" : "hidden"}
-        >
-          {blogs.map((blog, index) => (
-            <motion.div
-              key={index}
-              className="rounded-lg border bg-background p-6 hover:shadow-xl transition-all duration-300 relative"
-              style={{ height: 460 }}
-              variants={item}
-              whileHover={{
-                y: -5,
-                transition: { duration: 0.2 },
-              }}
-            >
-              <div className="pb-4">
-                <div className="relative w-full aspect-[3/2] mb-4 overflow-hidden rounded-lg">
-                  <motion.div
-                    whileHover={{
-                      transition: { duration: 0.3 },
-                    }}
+      ) : (
+        <div className="container px-4 md:px-6 mx-auto">
+          <motion.div
+            className="grid gap-6 md:gap-8 lg:gap-10 md:grid-cols-2 lg:grid-cols-3"
+            variants={container}
+            initial="hidden"
+            animate={isInView ? "show" : "hidden"}
+          >
+            {blogs.map((blog, index) => (
+              <motion.div
+                key={index}
+                className="rounded-lg border bg-background p-6 hover:shadow-xl transition-all duration-300 relative"
+                variants={item}
+                whileHover={{
+                  y: -5,
+                  transition: { duration: 0.2 },
+                }}
+              >
+                <div className="pb-4">
+                  <div className="relative w-full aspect-[3/2] mb-4 overflow-hidden rounded-lg">
+                    <motion.div
+                      whileHover={{
+                        transition: { duration: 0.3 },
+                      }}
+                    >
+                      <Image
+                        src={blog.thumbnail ?? ""}
+                        alt={blog.title}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </motion.div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-3xl sm:text-3xl text-left text leading-tight">
+                      {blog.title}
+                    </h3>
+                  </div>
+                  <div className="text-xl text-left text-gray-500 py-4">
+                    {blog.description}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <Link
+                    href={`/Blog/${blog.slug}?id=${blog.id}`}
+                    className="text-white"
                   >
-                    <Image
-                      src={blog.thumbnail ?? ""}
-                      alt={blog.title}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </motion.div>
+                    <Button className="bg-black border text-white hover:bg-blue-700 text-2xl px-8 py-8">
+                      Đọc ngay
+                    </Button>
+                  </Link>
                 </div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-3xl sm:text-3xl text-left text leading-tight">
-                    {blog.title}
-                  </h3>
-                </div>
-                <div className="text-xl text-left text-gray-500 py-4">
-                  {blog.description}
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 p-4">
-                <Button className="bg-black border text-white hover:bg-blue-700 text-2xl px-8 py-8" onClick={() => router.push(`/Blog/${blog.slug}?id=${blog.id}`)}>
-                  Đọc ngay
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-        {totalPage > 1 && (
-          <Pageable page={page} setPage={setPage} totalPages={totalPage} />
-        )}
-      </div>}
+              </motion.div>
+            ))}
+          </motion.div>
+          {totalPage > 1 && (
+            <Pageable page={page} setPage={setPage} totalPages={totalPage} />
+          )}
+        </div>
+      )}
     </section>
   );
 };
