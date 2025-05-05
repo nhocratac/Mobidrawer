@@ -33,7 +33,8 @@ const PlayGroundPage = () => {
     handleReSizeStickyNote,
     handleChangeTextStickyNote,
     handleLockStickyNote,
-    handleUnLockStickyNote
+    handleUnLockStickyNote,
+    handleChangeRole
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
@@ -42,7 +43,7 @@ const PlayGroundPage = () => {
       {typeof id === 'string' &&
         (<>
           <BoardSubscription boardId={id.toString()} />
-          <TopRightBar/>
+          <TopRightBar handleChangeRole={handleChangeRole} />
           <LeftToolBar
             onClickTextButton={() => setTextItemCount(textItemCount + 1)}
             onClickStickyNoteButton={onClickCreateStickyNote}

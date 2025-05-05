@@ -2,6 +2,7 @@ package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.BoardFullDetailResponse;
+import com.example.ie213backend.domain.dto.BoardDto.MemberDetailDTO;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 @Service
@@ -125,5 +125,17 @@ public class BoardServiceImpl implements BoardService {
     public List<BoardDTO> findAllBoardofUser(String userId) {
         List<Board> a = boardRepository.findByOwnerOrMembersMemberId(userId);
         return a.stream().map(BoardMapper.INSTANCE::toDTO).toList();
+    }
+
+    @Override
+    public List<MemberDetailDTO> getMembersDetail(String boardId) {
+        MemberDetailDTO owner = boardCustomRepository.getOwnerWithMinimalInfo(boardId);
+        List<MemberDetailDTO> members = boardCustomRepository.getBoardMembersWithMinimalInfo(boardId);
+
+        List<MemberDetailDTO> allMembers = new ArrayList<>();
+        allMembers.add(owner);
+        allMembers.addAll(members);
+
+        return allMembers;
     }
 }

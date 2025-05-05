@@ -55,11 +55,33 @@ const addPersonToBoard = async (boardId: string, data : {
   }
 }
 
+const getDetailMemberInBoard = async (boardId: string) => {
+  try {
+    const response = await httpRequest.get(`/board/getMembersDetail/${boardId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+const changeRoleMember  = async (boardId: string , memberId : string , role : 'EDITOR' | 'VIEWER' ) => {
+  try {
+    const response = await httpRequest.post(`/board/change-role/${boardId}`, {
+      memberId,
+      role,
+    });
+    return response.data;
+  } catch (error) {
+    throw error
+  }
+}
 const BoardAPI = {
   createBoard,
   getAllBoardOfUser,
   getBoardById,
-  addPersonToBoard
+  addPersonToBoard,
+  getDetailMemberInBoard,
+  changeRoleMember
 };
 export default BoardAPI;
 

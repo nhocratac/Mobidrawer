@@ -6,11 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useBoardStoreof } from "@/lib/Zustand/store";
+import useTokenStore from "@/lib/Zustand/tokenStore";
 import useUserInBoardStore from "@/lib/Zustand/userInBoardStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { ChevronUp, UserRoundPlus, Users } from "lucide-react";
-import { useCallback, useState } from "react";
+import { ChangeEvent, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -19,13 +20,18 @@ const AddUserSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   role: z.enum(["EDITOR", "VIEWER"]),
 })
-function TopRightBar() {
-  const { board ,setMembers} = useBoardStoreof()
+function TopRightBar({
+  handleChangeRole
+}: {
+  handleChangeRole: (memberId: string, role: 'EDITOR' | 'VIEWER') => void
+}) {
+  const { board, setMembers } = useBoardStoreof()
   const [isVisible, setIsVisible] = useState(false);
   const [isVisibleUsers, setIsVisibleUsers] = useState(false);
   const [isVisibleAddUser, setIsVisibleAddUser] = useState(false);
   const { users } = useUserInBoardStore()
-  const {toast} = useToast()
+  const { user } = useTokenStore()
+  const { toast } = useToast()
 
   const formAddUser = useForm<z.infer<typeof AddUserSchema>>({
     resolver: zodResolver(AddUserSchema),
@@ -36,7 +42,7 @@ function TopRightBar() {
   });
 
   const handleAddUser = useCallback((data: z.infer<typeof AddUserSchema>) => {
-    if(!board?.id) return 
+    if (!board?.id) return
     BoardAPI.addPersonToBoard(board?.id, data)
       .then((res) => {
         toast({
@@ -55,17 +61,25 @@ function TopRightBar() {
       })
     // TODO: Gọi API hoặc logic thêm user vào board
   }, [board?.id]);
+
   const handleToggleAddUser = () => {
     setIsVisibleAddUser(!isVisibleAddUser);
     setIsVisibleUsers(false);
   };
+
+  const handleRoleChange = async (event: ChangeEvent<HTMLSelectElement>, memberId: string) => {
+    const newRole = event.target.value as "EDITOR" | "VIEWER";
+    // convert mewRole to type "EDITOR" |"VIEWER"
+    console.log(users)
+    handleChangeRole(memberId, newRole)
+  }
 
   return (
     <div className="w-full relative">
 
       {/* Top bar panel */}
       <div
-        className={`fixed z-50 top-0 right-[35px] w-[300px] max-h-[300px] overflow-y-auto bg-white text-black shadow-lg rounded-xl
+        className={`fixed z-50 top-0 right-[35px] w-[350px] max-h-[300px] overflow-y-auto bg-white text-black shadow-lg rounded-xl
         transform ${isVisible ? "translate-y-0" : "-translate-y-full"}
         transition-transform duration-300 ease-in-out px-4 py-2`}
       >
@@ -127,15 +141,31 @@ function TopRightBar() {
         <div className={`flex flex-col space-y-2 overflow-hidden  transform 
           ${isVisibleUsers ? "  opacity-100 translate-y-0 visible " : "opacity-0 max-h-0  -translate-y-full invisible"}
           transition-transform duration-300 ease-in-out`}>
-          {users.map((user, index) => (
+          {users.map((myuser, index) => (
             <div key={index} className="flex items-center space-x-2 p-2 bg-gray-100 rounded-md">
               <Avatar className="w-8 h-8">
-                <AvatarImage src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}`} />
-                <AvatarFallback>{user.firstName[0]}</AvatarFallback>
+                <AvatarImage src={`https://ui-avatars.com/api/?name=${myuser.firstName}+${myuser.lastName}`} />
+                <AvatarFallback>{myuser.firstName[0]}</AvatarFallback>
               </Avatar>
-              <div className="text-2xl">
-                <div className="font-medium">{user.firstName} {user.lastName}</div>
-                <div className="text-xl text-gray-600">{user.email}</div>
+              <div className="flex items-center justify-between w-full">
+                <div className="text-2xl">
+                  <div className="font-medium">{myuser.firstName} {myuser.lastName}</div>
+                  <div className="text-xl text-gray-600">{myuser.email}</div>
+                </div>
+                {user && user.id === board?.owner && (
+                  myuser.userId === board.owner ? (
+                    <div className="text-xl text-gray-600 ml-2 font-semibold">Owner</div>
+                  ) : (
+                    <select
+                      title="role"
+                      className="text-xl text-gray-600 ml-2"
+                      defaultValue={myuser.role}
+                      onChange={(e) => handleRoleChange(e, myuser.userId)}>
+                      <option value="EDITOR">Editor</option>
+                      <option value="VIEWER">Viewer</option>
+                    </select>
+                  )
+                )}
               </div>
             </div>
           ))}

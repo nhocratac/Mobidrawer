@@ -2,6 +2,7 @@ package com.example.ie213backend.service;
 
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.BoardFullDetailResponse;
+import com.example.ie213backend.domain.dto.BoardDto.MemberDetailDTO;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 
@@ -14,6 +15,7 @@ public interface BoardService {
      Board addMemberToBoard(String boardId, String email, Board.ROLE role,String ownerID);
      Board changeRoleOfMember(String boardId, String userId, Board.ROLE role,String ownerID);
      List<BoardDTO> findAllBoardofUser(String userId);
+     List<MemberDetailDTO> getMembersDetail(String boardId);
 }
 
 

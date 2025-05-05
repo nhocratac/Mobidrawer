@@ -1,11 +1,13 @@
 import { create } from "zustand";
 
 interface User {
-  id: string;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
+  role : "EDITOR" | "VIEWER";
   phone: string | null;
+  // isActive ?:  boolean;
 }
 
 interface UserStore {
@@ -21,7 +23,7 @@ const useUserInBoardStore = create<UserStore>((set) => ({
   addUser: (user) =>
     set((state) => ({ users: [...state.users, user] })),
   removeUser: (id) =>
-    set((state) => ({ users: state.users.filter((user) => user.id !== id) })),
+    set((state) => ({ users: state.users.filter((user) => user.userId !== id) })),
 }));
 
 export default useUserInBoardStore;

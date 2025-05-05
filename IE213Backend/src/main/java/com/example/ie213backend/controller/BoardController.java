@@ -18,6 +18,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @RestController
@@ -77,6 +78,11 @@ public class BoardController {
         return ResponseEntity.ok(boardService.findAllBoardofUser(userDto.getId()));
     }
 
-
+    @GetMapping("/getMembersDetail/{id}")
+    ResponseEntity<List<MemberDetailDTO>> getMembersDetail(
+            @PathVariable String id // boardId
+    ) {
+        return ResponseEntity.ok(boardService.getMembersDetail(id));
+    }
 
 }

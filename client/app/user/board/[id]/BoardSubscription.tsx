@@ -9,16 +9,16 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
   const { addCanvasPath } = useCanvasPathsStore()
   const { addStickyNote, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote} = useStickyNoteStore()
-  const {setUsers} = useUserInBoardStore();
+
   useEffect(() => {
     if (!client || !client.connected || !boardId || !sessionId ) {
       return;
     }
     // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
-      console.log("Received message:", message.body);
-      const payload = JSON.parse(message.body);
-      setUsers(payload);
+      // console.log("Received message:", message.body);
+      // const payload = JSON.parse(message.body);
+      // setUsers(payload);
     });
 
     const drawSubcription = client.subscribe(`/topic/draw/board/${boardId}`, (message) => {

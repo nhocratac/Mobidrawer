@@ -3,6 +3,7 @@ import boardTemplateConfig from "@/config/boardTemplates";
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
+import useUserInBoardStore from "@/lib/Zustand/userInBoardStore";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -16,7 +17,7 @@ export function useBoard() {
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
   const setBoard = useBoardStoreof((state) => state.setBoard);
   const setStickyNotes = useStickyNoteStore((state) => state.setStickyNotes);
-
+  const {setUsers} = useUserInBoardStore();
   useEffect(() => {
     if (!id) return;
     BoardAPI.getBoardById(id.toString())
@@ -35,6 +36,14 @@ export function useBoard() {
           // Clear the template index from local storage after use
           localStorage.removeItem('boardTemplateIndex');
         }
+      })
+      .catch(() => {
+        console.log("get board by id error:");
+      });
+    BoardAPI.getDetailMemberInBoard(id.toString())
+      .then((res) => {
+        setUsers(res);
+        console.log("users in board", res);
       })
       .catch(() => {
         console.log("get board by id error:");
@@ -158,7 +167,6 @@ export function useBoard() {
         console.error("STOMP client chưa kết nối!");
         return;
       }
-      
       client?.publish({
         destination: `/app/board/ChangeTextStickyNote/${id}`,
         body: JSON.stringify({
@@ -184,6 +192,15 @@ export function useBoard() {
     [setScale]
   );
 
+  const handleChangeRole = useCallback(async ( memberId : string , role : 'EDITOR' | 'VIEWER') => {
+    try {
+      const res  = await BoardAPI.changeRoleMember(id.toString() ,memberId,role)
+      setBoard(res)
+    } catch (error) {
+      console.log(error)
+    }
+  },[id])
+
   return {
     id,
     scale,
@@ -197,6 +214,7 @@ export function useBoard() {
     handleReSizeStickyNote,
     handleChangeTextStickyNote,
     handleLockStickyNote,
-    handleUnLockStickyNote
+    handleUnLockStickyNote,
+    handleChangeRole
   };
 }
