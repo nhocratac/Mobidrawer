@@ -218,4 +218,20 @@ public class BoardSocketController {
                 "userId", userDto.getId()
         );
     }
+
+    @MessageMapping("/board/deleteStickyNote/{boardId}")
+    @SendTo("/topic/board/deleteStickyNote/{boardId}")
+    public Map<String, Object> handleDeleteStickyNote(
+            @DestinationVariable String boardId,
+            SimpMessageHeaderAccessor headerAccessor,
+            @Payload DeleteStickyNote deleteStickyNote
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        stickyNoteService.deleteStickyNote(deleteStickyNote.getId(), boardId, userDto.getId());
+        return Map.of(
+                "id" , deleteStickyNote.getId(),
+                "userId", userDto.getId()
+        );
+    }
+
 }

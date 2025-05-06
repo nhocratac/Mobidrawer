@@ -8,17 +8,17 @@ import { useEffect } from 'react';
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
   const { addCanvasPath } = useCanvasPathsStore()
-  const { addStickyNote, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote} = useStickyNoteStore()
-
+  const { addStickyNote, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
+  const {markOnlineUsers} = useUserInBoardStore()
   useEffect(() => {
     if (!client || !client.connected || !boardId || !sessionId ) {
       return;
     }
     // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
-      // console.log("Received message:", message.body);
-      // const payload = JSON.parse(message.body);
-      // setUsers(payload);
+      console.log("Received message:", message.body);
+      const payload = JSON.parse(message.body);
+      markOnlineUsers(payload)
     });
 
     const drawSubcription = client.subscribe(`/topic/draw/board/${boardId}`, (message) => {
@@ -72,6 +72,11 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       deselectStickyNote(payload.id)
     })
 
+    const deleteStickyNoteSubcription = client.subscribe(`/topic/board/deleteStickyNote/${boardId}`, (message) => {
+      const payload = JSON.parse(message.body)
+      deleteStickyNote(payload.id)
+    })
+
     client.publish({
       destination: `/app/board/join/${boardId}`
     });
@@ -88,6 +93,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       changeTextSubcription.unsubscribe()
       lockStickNoteSubscription.unsubscribe()
       unLockStickNoteSubscription.unsubscribe()
+      deleteStickyNoteSubcription.unsubscribe()
     };
   }, [client, boardId,sessionId]);
 

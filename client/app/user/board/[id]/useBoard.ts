@@ -17,16 +17,16 @@ export function useBoard() {
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
   const setBoard = useBoardStoreof((state) => state.setBoard);
   const setStickyNotes = useStickyNoteStore((state) => state.setStickyNotes);
-  const {setUsers} = useUserInBoardStore();
+  const { setUsers } = useUserInBoardStore();
   useEffect(() => {
     if (!id) return;
     BoardAPI.getBoardById(id.toString())
       .then((res) => {
         setBoard(res);
         setStickyNotes(res.stickyNotes ? res.stickyNotes : []);
-        
+
         // Check if this is a newly created board with a template index
-        const templateIndex = localStorage.getItem('boardTemplateIndex');
+        const templateIndex = localStorage.getItem("boardTemplateIndex");
         if (templateIndex !== null) {
           // Create sticky notes based on the template index
           const index = parseInt(templateIndex, 10);
@@ -34,7 +34,7 @@ export function useBoard() {
             createTemplateNotes(index);
           }
           // Clear the template index from local storage after use
-          localStorage.removeItem('boardTemplateIndex');
+          localStorage.removeItem("boardTemplateIndex");
         }
       })
       .catch(() => {
@@ -51,20 +51,23 @@ export function useBoard() {
   }, [id]);
 
   // Function to create template-specific sticky notes
-  const createTemplateNotes = useCallback((templateIndex: number) => {
-    if (!client || !id) return;
+  const createTemplateNotes = useCallback(
+    (templateIndex: number) => {
+      if (!client || !id) return;
 
-    // Get the template notes configuration for this index
-    const templateNotes = boardTemplateConfig[templateIndex];
-    
-    // Create each template note
-    templateNotes.forEach(templateNote => {
-      client.publish({
-        destination: `/app/board/addStickyNote/${id}`,
-        body: JSON.stringify(templateNote),
+      // Get the template notes configuration for this index
+      const templateNotes = boardTemplateConfig[templateIndex];
+
+      // Create each template note
+      templateNotes.forEach((templateNote) => {
+        client.publish({
+          destination: `/app/board/addStickyNote/${id}`,
+          body: JSON.stringify(templateNote),
+        });
       });
-    });
-  }, [client, id]);
+    },
+    [client, id]
+  );
 
   // xóa shape
   useEffect(() => {
@@ -107,20 +110,20 @@ export function useBoard() {
   );
 
   const handleLockStickyNote = useCallback(
-    (stickyNoteId: string,) => {
+    (stickyNoteId: string) => {
       client?.publish({
         destination: `/app/board/lockStickyNote/${id}`,
-        body: JSON.stringify({ id: stickyNoteId}),
+        body: JSON.stringify({ id: stickyNoteId }),
       });
     },
     [client, id]
   );
 
   const handleUnLockStickyNote = useCallback(
-    (stickyNoteId: string,) => {
+    (stickyNoteId: string) => {
       client?.publish({
         destination: `/app/board/unLockStickyNote/${id}`,
-        body: JSON.stringify({ id: stickyNoteId}),
+        body: JSON.stringify({ id: stickyNoteId }),
       });
     },
     [client, id]
@@ -178,6 +181,23 @@ export function useBoard() {
     [client, id]
   );
 
+  const handleDeleteStickyNote = useCallback(
+    (stickyNoteId: string) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+      console.log(stickyNoteId)
+      client.publish({
+        destination: `/app/board/deleteStickyNote/${id}`,
+        body: JSON.stringify({
+          id: stickyNoteId,
+        }),
+      });
+    },
+    [id]
+  );
+
   const onClickAddShape = useCallback(
     (shape: ShapeComponent) => {
       setShapeList((prevShapes) => [...prevShapes, shape]);
@@ -192,14 +212,21 @@ export function useBoard() {
     [setScale]
   );
 
-  const handleChangeRole = useCallback(async ( memberId : string , role : 'EDITOR' | 'VIEWER') => {
-    try {
-      const res  = await BoardAPI.changeRoleMember(id.toString() ,memberId,role)
-      setBoard(res)
-    } catch (error) {
-      console.log(error)
-    }
-  },[id])
+  const handleChangeRole = useCallback(
+    async (memberId: string, role: "EDITOR" | "VIEWER") => {
+      try {
+        const res = await BoardAPI.changeRoleMember(
+          id.toString(),
+          memberId,
+          role
+        );
+        setBoard(res);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    [id]
+  );
 
   return {
     id,
@@ -215,6 +242,7 @@ export function useBoard() {
     handleChangeTextStickyNote,
     handleLockStickyNote,
     handleUnLockStickyNote,
-    handleChangeRole
+    handleChangeRole,
+    handleDeleteStickyNote,
   };
 }

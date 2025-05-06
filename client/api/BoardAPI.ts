@@ -75,6 +75,7 @@ const changeRoleMember  = async (boardId: string , memberId : string , role : 'E
     throw error
   }
 }
+
 const BoardAPI = {
   createBoard,
   getAllBoardOfUser,

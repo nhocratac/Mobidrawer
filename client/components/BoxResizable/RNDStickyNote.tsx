@@ -14,6 +14,7 @@ interface RNDStickyNoteProps {
   handleChangeTextStickyNote: (stickyNoteId: string, text: string) => void;
   handleLockStickyNote: (stickyNoteId: string) => void;
   handleUnLockStickyNote: (stickyNoteId: string) => void;
+  handleDeleteStickyNote: (id : string ) => void
 }
 
 const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
@@ -23,7 +24,8 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   handleReSizeStickyNote,
   handleChangeTextStickyNote,
   handleLockStickyNote,
-  handleUnLockStickyNote
+  handleUnLockStickyNote,
+  handleDeleteStickyNote
 }) => {
   const [text, setText] = useState<string>(stickyNote.text);
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -32,7 +34,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
   const { user } = useTokenStore();
-  const { moveStickyNote, resizeStickyNote } = useStickyNoteStore();
+  const { moveStickyNote, resizeStickyNote,changTextStickNote } = useStickyNoteStore();
   const debouncedText = useDebounce(text, 1000);
 
   useEffect(() => {
@@ -88,6 +90,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
 
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
+    changTextStickNote(stickyNote.id,e.target.value)
   };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
@@ -252,6 +255,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
               onClick={() => {
                 setContextMenu(null);
                 // TODO: deleteStickyNote(stickyNote.id)
+                handleDeleteStickyNote(stickyNote.id)
               }}
             >
               🗑 Delete Note

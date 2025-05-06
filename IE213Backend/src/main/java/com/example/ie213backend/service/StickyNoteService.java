@@ -11,4 +11,6 @@ public interface StickyNoteService {
     StickyNote updateStickyNoteSize(StickyNote stickyNote);
 
      StickyNote chaneTextStickyNote(StickyNote stickyNote);
+
+     void deleteStickyNote(String id, String boardId, String owner);
 }

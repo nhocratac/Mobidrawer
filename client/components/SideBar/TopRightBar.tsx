@@ -143,16 +143,24 @@ function TopRightBar({
           transition-transform duration-300 ease-in-out`}>
           {users.map((myuser, index) => (
             <div key={index} className="flex items-center space-x-2 p-2 bg-gray-100 rounded-md">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={`https://ui-avatars.com/api/?name=${myuser.firstName}+${myuser.lastName}`} />
-                <AvatarFallback>{myuser.firstName[0]}</AvatarFallback>
-              </Avatar>
+              <div className="relative inline-block">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={`https://ui-avatars.com/api/?name=${myuser.firstName}+${myuser.lastName}`} />
+                  <AvatarFallback>{myuser.firstName[0]}</AvatarFallback>
+                </Avatar>
+                {myuser.isOnline && (
+                  <>
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white" />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full animate-ping" />
+                  </>
+                )}
+              </div>
               <div className="flex items-center justify-between w-full">
                 <div className="text-2xl">
                   <div className="font-medium">{myuser.firstName} {myuser.lastName}</div>
                   <div className="text-xl text-gray-600">{myuser.email}</div>
                 </div>
-                {user && user.id === board?.owner && (
+                {user && user.id === board?.owner ? (
                   myuser.userId === board.owner ? (
                     <div className="text-xl text-gray-600 ml-2 font-semibold">Owner</div>
                   ) : (
@@ -165,6 +173,10 @@ function TopRightBar({
                       <option value="VIEWER">Viewer</option>
                     </select>
                   )
+                ) : (
+                  <div className="text-xl text-gray-600 ml-2">
+                    {myuser.role === "EDITOR" ? "Editor" : "Viewer"}
+                  </div>
                 )}
               </div>
             </div>

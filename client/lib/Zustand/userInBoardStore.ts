@@ -7,7 +7,7 @@ interface User {
   email: string;
   role : "EDITOR" | "VIEWER";
   phone: string | null;
-  // isActive ?:  boolean;
+  isOnline?: boolean;
 }
 
 interface UserStore {
@@ -15,6 +15,7 @@ interface UserStore {
   setUsers: (users: User[]) => void;
   addUser: (user: User) => void;
   removeUser: (id: string) => void;
+  markOnlineUsers: (userDtos: { id: string }[]) => void; 
 }
 
 const useUserInBoardStore = create<UserStore>((set) => ({
@@ -24,6 +25,15 @@ const useUserInBoardStore = create<UserStore>((set) => ({
     set((state) => ({ users: [...state.users, user] })),
   removeUser: (id) =>
     set((state) => ({ users: state.users.filter((user) => user.userId !== id) })),
+    markOnlineUsers: (userDtos) =>
+    set((state) => {
+      const onlineIds = new Set(userDtos.map((dto) => dto.id));
+      const updatedUsers = state.users.map((user) => ({
+        ...user,
+        isOnline: onlineIds.has(user.userId),
+      }));
+      return { users: updatedUsers };
+    }),
 }));
 
 export default useUserInBoardStore;

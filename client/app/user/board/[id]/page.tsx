@@ -34,7 +34,8 @@ const PlayGroundPage = () => {
     handleChangeTextStickyNote,
     handleLockStickyNote,
     handleUnLockStickyNote,
-    handleChangeRole
+    handleChangeRole,
+    handleDeleteStickyNote
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
@@ -62,6 +63,7 @@ const PlayGroundPage = () => {
                 handleChangeTextStickyNote={handleChangeTextStickyNote} 
                 handleLockStickyNote={handleLockStickyNote}
                 handleUnLockStickyNote={handleUnLockStickyNote}
+                handleDeleteStickyNote = {handleDeleteStickyNote}
                 />
             ))}
 

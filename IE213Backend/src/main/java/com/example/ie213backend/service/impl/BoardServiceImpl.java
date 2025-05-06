@@ -138,4 +138,18 @@ public class BoardServiceImpl implements BoardService {
 
         return allMembers;
     }
+
+    @Override
+    public    String getRoleOfMember(String boardId, String userId) {
+        Board board = boardRepository.findByid(boardId);
+        if(board.getOwner().equals(userId)) {
+            return "OWNER";
+        }
+        for (Board.Member member : board.getMembers()) {
+            if (member.getMemberId().equals(userId)) {
+                return member.getRole().toString();
+            }
+        }
+        return "NONE";
+    }
 }

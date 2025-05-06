@@ -4,6 +4,7 @@ import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.StickyNote;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.StickyNoteRepository;
+import com.example.ie213backend.service.BoardService;
 import com.example.ie213backend.service.StickyNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -14,12 +15,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
+
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class StickyNoteServiceImpl implements StickyNoteService {
     private final StickyNoteRepository stickyNoteRepository;
     private final BoardRepository boardRepository;
     private final MongoTemplate mongoTemplate;
+    private final BoardService boardService;
 
     public StickyNote createStickyNote(StickyNote stickyNote) {
         String boardId = stickyNote.getBoardId();
@@ -73,5 +78,13 @@ public class StickyNoteServiceImpl implements StickyNoteService {
                 FindAndModifyOptions.options().returnNew(true),
                 StickyNote.class
         );
+    }
+
+    public void deleteStickyNote(String id, String boardId, String userId) {
+        String role  = boardService.getRoleOfMember(boardId, userId);
+        if(Objects.equals(role, "EDITOR") | Objects.equals(role,"OWNER"))
+            stickyNoteRepository.deleteById(id);
+        else
+            throw new RuntimeException("Bạn không có quyền hoặc không tài tại tài sản này.");
     }
 }
