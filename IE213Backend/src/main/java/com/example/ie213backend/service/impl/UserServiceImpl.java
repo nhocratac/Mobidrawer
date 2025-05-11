@@ -1,6 +1,7 @@
 package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
+import com.example.ie213backend.domain.dto.UserDto.UploadAvatar;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.UserService;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -64,5 +66,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getBaseInFormation(String userId) {
         return userRepository.getBaseInformation(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+    }
+
+    @Override
+    public User uploadAvatar(UploadAvatar uploadAvatar) {
+        User user = userRepository.findById(uploadAvatar.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + uploadAvatar.getId()));
+        user.setAvatarUrl(uploadAvatar.getAvatarUrl());
+        return userRepository.save(user);
     }
 }

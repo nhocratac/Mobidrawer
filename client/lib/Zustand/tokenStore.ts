@@ -8,6 +8,7 @@ interface User {
   lastName: string;
   email: string;
   phone: string;
+  avatarUrl:string;
 }
 
 // Kiểu dữ liệu của Zustand Store
@@ -17,6 +18,7 @@ interface TokenState {
   setToken: (newToken: string) => void;
   clearToken: () => void;
   getUserByToken: () => User | null; // Hàm lấy user từ token
+  setUser:(user : User) => void
 }
 
 // 🆕 Store Zustand
@@ -48,7 +50,10 @@ const useTokenStore = create<TokenState>()(
             console.error("Invalid token:", error);
             return null;
           }
-        }
+        },
+        setUser: (user) =>  set({
+          user
+        }),
       }),
       {
         name: "access-token",

@@ -1,16 +1,14 @@
 package com.example.ie213backend.controller;
 
+import com.example.ie213backend.domain.dto.UserDto.UploadAvatar;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.support.HttpRequestHandlerServlet;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,6 +26,15 @@ public class UserController {
                 .stream().map(userMapper::toDto)
                 .toList();
         return ResponseEntity.ok(users);
+    }
+
+    @PostMapping("/uploadAvatar")
+    public ResponseEntity<UserDto> uploadAvatar(
+            @RequestBody @Valid UploadAvatar uploadAvatar ,
+            @RequestAttribute("user") UserDto userDto
+    ) {
+        uploadAvatar.setId(userDto.getId());
+        return ResponseEntity.ok(userMapper.toDto(userService.uploadAvatar(uploadAvatar)));
     }
 
 }

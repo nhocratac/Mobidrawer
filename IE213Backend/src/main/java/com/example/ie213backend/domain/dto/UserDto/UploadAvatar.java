@@ -1,20 +1,15 @@
 package com.example.ie213backend.domain.dto.UserDto;
 
-
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UploadAvatar {
+    @Nullable
     private String id;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phone;
     private String avatarUrl;
 }

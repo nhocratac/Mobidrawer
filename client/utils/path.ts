@@ -11,6 +11,7 @@ const path ={
         post : '/user/post',
         draftBlog: '/user/my-blogs/draft',
         publishedBlog: '/user/my-blogs/published',
+        profile:"/user/profile"
     },
     createBlog : '/new-blog',
     product : {
@@ -41,7 +42,7 @@ const path ={
     team:'/Team',
     feature:'/Feature',
     integration :'/Integration',
-    security:'/Security'
+    security:'/Security',
 }
 
 export default path

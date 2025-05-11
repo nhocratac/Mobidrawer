@@ -18,6 +18,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "miro.com",
       },
+      {
+        protocol:"https",
+        hostname:"cdn.builder.io"
+      }
     ],
   },
 };
