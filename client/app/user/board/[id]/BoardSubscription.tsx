@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
   const { addCanvasPath } = useCanvasPathsStore()
-  const { addStickyNote, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
+  const { addStickyNote,addStickyNotes, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
   const {markOnlineUsers} = useUserInBoardStore()
   useEffect(() => {
     if (!client || !client.connected || !boardId || !sessionId ) {
@@ -29,6 +29,11 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     const addStickyNoteSubscription = client.subscribe(`/topic/board/addStickyNote/${boardId}`, (message) => {
       const stickyNote = JSON.parse(message.body)
       addStickyNote(stickyNote)
+    });
+
+    const addStickyNotesSubscription = client.subscribe(`/topic/board/addStickyNotes/${boardId}`, (message) => {
+      const stickyNotes = JSON.parse(message.body)
+      addStickyNotes(stickyNotes)
     });
 
     const moveStickyNoteSubscription = client.subscribe(`/topic/board/moveStickyNote/${boardId}`, (message) => {
@@ -94,6 +99,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       lockStickNoteSubscription.unsubscribe()
       unLockStickNoteSubscription.unsubscribe()
       deleteStickyNoteSubcription.unsubscribe()
+      addStickyNotesSubscription.unsubscribe()
     };
   }, [client, boardId,sessionId]);
 

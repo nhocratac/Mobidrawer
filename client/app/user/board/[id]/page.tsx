@@ -38,7 +38,8 @@ const PlayGroundPage = () => {
     handleLockStickyNote,
     handleUnLockStickyNote,
     handleChangeRole,
-    handleDeleteStickyNote
+    handleDeleteStickyNote,
+    CreateManyStickyNotes
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
@@ -62,7 +63,7 @@ const PlayGroundPage = () => {
             onClickStickyNoteButton={onClickCreateStickyNote}
             onClickShape={onClickAddShape}
           />
-          <AIChatButton boardId={id.toString()} />
+          <AIChatButton boardId={id.toString()} CreateManyStickyNotes={CreateManyStickyNotes} />
           <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />

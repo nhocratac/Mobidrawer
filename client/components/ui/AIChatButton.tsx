@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { CreateStickNoteDto } from '@/lib/Zustand/type.type';
 import { MessageSquare } from 'lucide-react';
+import { useState } from 'react';
 import AIChatPopup from './AIChatPopup';
 
 interface AIChatButtonProps {
   boardId?: string;
+  CreateManyStickyNotes : (stickyNotes: CreateStickNoteDto[]) => void
 }
 
-const AIChatButton = ({ boardId }: AIChatButtonProps) => {
+const AIChatButton = ({ boardId, CreateManyStickyNotes }: AIChatButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleChat = () => {
@@ -30,6 +32,7 @@ const AIChatButton = ({ boardId }: AIChatButtonProps) => {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         boardId={boardId}
+        CreateManyStickyNotes={CreateManyStickyNotes}
       />
     </>
   );

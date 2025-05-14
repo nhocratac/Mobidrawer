@@ -5,7 +5,7 @@ interface PencilCanvasProps {
   color: string;
   thickness: number;
   scale: number;
-  opacity : number;
+  opacity: number;
   translate: { x: number, y: number };
   paths: { x: number, y: number }[];
   isSelected?: boolean; // Đánh dấu đường vẽ được chọn
@@ -15,13 +15,15 @@ const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSe
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const modeTool = useToolDevStore(state => state.mode)
 
-
   useEffect(() => {
     const canvasPen = canvasRef.current;
     if (!canvasPen) return;
 
     const ctx = canvasPen.getContext("2d");
     if (!ctx) return;
+
+    if (!paths)
+      return;
 
 
     // Set canvas size to full window
@@ -66,7 +68,9 @@ const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSe
     return () => {
       canvasPen.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [modeTool, scale, translate, paths,opacity]);
+  }, [modeTool, scale, translate, paths, opacity]);
+
+
 
   return (
     <canvas

@@ -154,6 +154,19 @@ export interface StickyNote {
   },
   owner : string;
   boardId : string;
-  updateAt: string;
+  updateAt?: string;
   isSelected ?: string | null;
+}
+
+export interface CreateStickNoteDto {
+  color: string;
+  text : string;
+  size :{
+    width: number;
+    height: number;
+  }
+  position : {
+    x: number;
+    y: number;
+  },
 }

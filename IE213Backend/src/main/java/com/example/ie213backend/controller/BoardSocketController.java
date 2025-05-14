@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -122,6 +123,28 @@ public class BoardSocketController {
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
         return stickyNoteService.createStickyNote(stickyNote);
+    }
+
+    @MessageMapping("/board/addStickyNotes/{boardId}")
+    @SendTo("/topic/board/addStickyNotes/{boardId}")
+    public List<StickyNote> addStickyNotes(
+            @DestinationVariable String boardId,
+            SimpMessageHeaderAccessor headerAccessor,
+            @Payload List<CreateStickyNote> createStickyNotes
+    ) {
+        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+
+        System.out.println("hello");
+        List<StickyNote> stickyNotes = createStickyNotes.stream()
+                .map(noteDto -> {
+                    StickyNote note = StickyNoteMapper.INSTANCE.createToEntity(noteDto);
+                    note.setBoardId(boardId);
+                    note.setOwner(userDto.getId());
+                    return note;
+                })
+                .collect(Collectors.toList());
+
+        return stickyNoteService.createStickyNotes(stickyNotes);
     }
 
     @MessageMapping("/board/moveStickyNote/{boardId}")

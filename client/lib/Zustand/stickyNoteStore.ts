@@ -5,6 +5,7 @@ interface StickyNoteState {
   stickyNotes: StickyNote[];
   setStickyNotes: (notes: StickyNote[]) => void;
   addStickyNote: (note: StickyNote) => void;
+  addStickyNotes: (notes: StickyNote[]) => void;
   moveStickyNote: (id: string, newPosition: { x: number; y: number }) => void;
   resizeStickyNote: (
     id: string,
@@ -28,6 +29,10 @@ const useStickyNoteStore = create<StickyNoteState>((set) => ({
           findItem.position = { ...findItem.position, ...newPosition };
         }
       }),
+    })),
+  addStickyNotes: (notes) =>
+    set((state) => ({
+      stickyNotes: [...state.stickyNotes, ...notes],
     })),
   resizeStickyNote: (id, newSize) =>
     set((state) => ({

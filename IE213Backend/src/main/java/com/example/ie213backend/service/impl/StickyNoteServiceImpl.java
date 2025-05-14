@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -86,5 +87,28 @@ public class StickyNoteServiceImpl implements StickyNoteService {
             stickyNoteRepository.deleteById(id);
         else
             throw new RuntimeException("Bạn không có quyền hoặc không tài tại tài sản này.");
+    }
+
+    @Override
+    public List<StickyNote> createStickyNotes(List<StickyNote> stickyNotes) {
+        if (stickyNotes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách sticky note không được để trống");
+        }
+
+        String boardId = stickyNotes.get(0).getBoardId();
+        String owner = stickyNotes.get(0).getOwner();
+
+        // Kiểm tra quyền truy cập bảng
+        Board board = boardRepository.findUserRoleInBoard(boardId, owner)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này"));
+
+        boolean isAllowed = board.getOwner().equals(owner) || board.getMembers().stream()
+                .anyMatch(member -> member.getMemberId().equals(owner) && member.getRole() == Board.ROLE.EDITOR);
+
+        if (!isAllowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này");
+        }
+
+        return stickyNoteRepository.saveAll(stickyNotes);
     }
 }

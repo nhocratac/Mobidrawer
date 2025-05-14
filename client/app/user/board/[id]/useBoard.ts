@@ -3,6 +3,7 @@ import boardTemplateConfig from "@/config/boardTemplates";
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
+import { CreateStickNoteDto } from "@/lib/Zustand/type.type";
 import useUserInBoardStore from "@/lib/Zustand/userInBoardStore";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -111,6 +112,16 @@ export function useBoard() {
     },
     [client, id]
   );
+
+  const CreateManyStickyNotes = useCallback(
+    (stickyNotes : CreateStickNoteDto[]) => {
+      console.log(stickyNotes)
+      client?.publish({
+        destination: `/app/board/addStickyNotes/${id}`,
+        body: JSON.stringify(stickyNotes),
+      });
+    }, [client]
+  )
 
   const handleMoveStickyNote = useCallback(
     (stickyNoteId: string, newPosition: { x: number; y: number }) => {
@@ -258,5 +269,6 @@ export function useBoard() {
     handleUnLockStickyNote,
     handleChangeRole,
     handleDeleteStickyNote,
+    CreateManyStickyNotes
   };
 }
