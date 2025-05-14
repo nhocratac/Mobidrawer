@@ -75,4 +75,37 @@ const login = async (data: { email: string; password: string }) => {
   }
 }
 
-export { register, login, verifyRegister ,refreshAccessToken};
+// ✅ Request Forget Password
+const requestForgetPassword = async (email: string) => {
+  try {
+    const res = await httpRequest.post("/auth/request-forget-password", { email });
+    return res.data;
+  } catch (error) {
+    console.error("Request forget password error: ", error);
+    throw error;
+  }
+}
+
+// ✅ Verify Forget Password Code
+const verifyForgetPassword = async (data: {
+  email: string;
+  code: string;
+  password: string;
+}) => {
+  try {
+    const res = await httpRequest.post("auth/verify-forget-password", data);
+    return res.data;
+  } catch(error) {
+    console.error("Verify forget password error: ", error);
+    throw error;
+  }
+}
+
+export { 
+  register, 
+  login, 
+  verifyRegister,
+  refreshAccessToken,
+  requestForgetPassword,
+  verifyForgetPassword
+};
