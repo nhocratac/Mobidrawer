@@ -1,5 +1,7 @@
 'use client';
 import BoardSubscription from '@/app/user/board/[id]/BoardSubscription';
+import NotFoundBoard from '@/app/user/board/[id]/notfound';
+import UnauthorizeBoard from '@/app/user/board/[id]/unauthorize';
 import { useBoard } from '@/app/user/board/[id]/useBoard';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
 import RNDBase from "@/components/BoxResizable/RNDBase";
@@ -23,6 +25,7 @@ const PlayGroundPage = () => {
   const {
     id,
     scale,
+    status,
     setScaleHandle,
     textItemCount,
     setTextItemCount,
@@ -39,6 +42,15 @@ const PlayGroundPage = () => {
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
+  if (status == 401)
+    return (
+      <UnauthorizeBoard />
+    )
+  else if (status == 404) {
+    return (
+      <NotFoundBoard />
+    )
+  }
   return (
     <div className="w-screen h-screen bg-slate-500">
       {typeof id === 'string' &&
@@ -60,11 +72,11 @@ const PlayGroundPage = () => {
                 stickyNote={stickyNote}
                 handlemoveStickyNote={handleMoveStickyNote}
                 handleReSizeStickyNote={handleReSizeStickyNote}
-                handleChangeTextStickyNote={handleChangeTextStickyNote} 
+                handleChangeTextStickyNote={handleChangeTextStickyNote}
                 handleLockStickyNote={handleLockStickyNote}
                 handleUnLockStickyNote={handleUnLockStickyNote}
-                handleDeleteStickyNote = {handleDeleteStickyNote}
-                />
+                handleDeleteStickyNote={handleDeleteStickyNote}
+              />
             ))}
 
             {shapeList.map((ShapeComponent, index) => (

@@ -76,13 +76,23 @@ const changeRoleMember  = async (boardId: string , memberId : string , role : 'E
   }
 }
 
+const sendRequestJoin = async(boardId: string) => {
+  try {
+    const res = await httpRequest.post(`/notification/joinBoard/${boardId}`)
+    return res.data
+  } catch (error) {
+    throw error
+  }
+}
+
 const BoardAPI = {
   createBoard,
   getAllBoardOfUser,
   getBoardById,
   addPersonToBoard,
   getDetailMemberInBoard,
-  changeRoleMember
+  changeRoleMember,
+  sendRequestJoin
 };
 export default BoardAPI;
 

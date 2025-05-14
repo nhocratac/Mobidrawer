@@ -62,6 +62,8 @@ public class BoardController {
         return boardService.addMemberToBoard(id,addMember.getEmail(), Board.ROLE.valueOf(addMember.getRole()),userDto.getId());
     }
 
+
+
     @PostMapping("/change-role/{id}")
     Board changeRoleOfMember(
             @PathVariable String id, // boardId

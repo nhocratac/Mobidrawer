@@ -9,15 +9,19 @@ import { useCallback, useEffect, useState } from "react";
 
 type ShapeComponent = React.FC<React.SVGProps<SVGSVGElement>>;
 
+type Status = 401 | 404 | 200
+
 export function useBoard() {
   const { id } = useParams();
   const { client } = useStompStore();
   const [scale, setScale] = useState(1);
   const [textItemCount, setTextItemCount] = useState(0);
   const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
+  const [status, setStatus] = useState<Status>(200);
   const setBoard = useBoardStoreof((state) => state.setBoard);
   const setStickyNotes = useStickyNoteStore((state) => state.setStickyNotes);
   const { setUsers } = useUserInBoardStore();
+
   useEffect(() => {
     if (!id) return;
     BoardAPI.getBoardById(id.toString())
@@ -36,19 +40,28 @@ export function useBoard() {
           // Clear the template index from local storage after use
           localStorage.removeItem("boardTemplateIndex");
         }
+
+        BoardAPI.getDetailMemberInBoard(id.toString())
+          .then((res) => {
+            setUsers(res);
+            console.log("users in board", res);
+          })
+          .catch(() => {
+            console.log("get board by id error:");
+          });
       })
-      .catch(() => {
-        console.log("get board by id error:");
+      .catch((e) => {
+        if (
+          e.response.data.message == "You are not allowed to access this board"
+        ) {
+          console.error("You are not allowed to access this board");
+          setStatus(401);
+        } else if (e.status == 404) {
+          console.log("notfound")
+          setStatus(404)
+        } else console.log("get board by id error: ", e);
       });
-    BoardAPI.getDetailMemberInBoard(id.toString())
-      .then((res) => {
-        setUsers(res);
-        console.log("users in board", res);
-      })
-      .catch(() => {
-        console.log("get board by id error:");
-      });
-  }, [id]);
+  }, []);
 
   // Function to create template-specific sticky notes
   const createTemplateNotes = useCallback(
@@ -187,7 +200,7 @@ export function useBoard() {
         console.error("STOMP client chưa kết nối!");
         return;
       }
-      console.log(stickyNoteId)
+      console.log(stickyNoteId);
       client.publish({
         destination: `/app/board/deleteStickyNote/${id}`,
         body: JSON.stringify({
@@ -230,6 +243,7 @@ export function useBoard() {
 
   return {
     id,
+    status,
     scale,
     setScaleHandle,
     textItemCount,

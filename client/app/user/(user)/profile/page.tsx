@@ -35,7 +35,10 @@ function ProfileSetting() {
     }
     const { url } = await res.json();
     setPreviewUrl(url);
-    setUser(url)
+    setUser({
+      ...user,
+      avatarUrl: url,
+    })
 
     // Gửi avatar URL tới backend (Spring Boot chẳng hạn)
     try {
@@ -61,7 +64,7 @@ function ProfileSetting() {
         </div>
         <div className="flex relative flex-wrap gap-5 my-auto text-base whitespace-nowrap text-stone-400 max-md:max-w-full">
           <Image
-            src={user?.avatarUrl || 'https://cdn.builder.io/api/v1/image/assets/TEMP/3f8642bab6c52b757147bfe733d6f992960e1d83?placeholderIfAbsent=true'}
+            src={user?.avatarUrl || previewUrl || 'https://cdn.builder.io/api/v1/image/assets/TEMP/3f8642bab6c52b757147bfe733d6f992960e1d83?placeholderIfAbsent=true'}
             alt="User profile"
             width={52}
             height={52}
@@ -97,7 +100,7 @@ function ProfileSetting() {
             <div className="flex flex-col">
               <div className="flex gap-5 justify-between">
                 <Image
-                  src={ user?.avatarUrl || "https://cdn.builder.io/api/v1/image/assets/TEMP/f9b9a92e6b2a716a89b67fe7cc59827aca530a94?placeholderIfAbsent=true"}
+                  src={ user?.avatarUrl || previewUrl  || "https://cdn.builder.io/api/v1/image/assets/TEMP/f9b9a92e6b2a716a89b67fe7cc59827aca530a94?placeholderIfAbsent=true"}
                   alt="Profile picture"
                   width={100}
                   height={100}

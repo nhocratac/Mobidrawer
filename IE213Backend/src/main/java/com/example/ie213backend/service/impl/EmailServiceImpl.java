@@ -5,6 +5,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,6 +15,7 @@ import org.thymeleaf.context.Context;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -22,6 +24,10 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
+
+    @Value("${app.environment}")
+    private String environment;
+
 
     public EmailServiceImpl(JavaMailSender emailSender, TemplateEngine templateEngine) {
         this.emailSender = emailSender;
@@ -84,8 +90,6 @@ public class EmailServiceImpl implements EmailService {
             helper.setSubject("Xác thực email");
             helper.setTo(email);
 
-
-
             // Tạo context cho template
             Context context = new Context(Locale.getDefault());
             context.setVariable("verificationCode", verificationCode);
@@ -94,10 +98,72 @@ public class EmailServiceImpl implements EmailService {
             String htmlContent = templateEngine.process("VerifyRegistrationEmail", context);
             helper.setText(htmlContent, true);
 
+            helper.setSubject("Yêu cầu tham gia");
+            helper.setTo(email);
             emailSender.send(message);
             logger.info("Verification email sent successfully to {}", email);
         } catch (MessagingException e) {
             logger.error("Failed to send verification email to {}: {}", email, e.getMessage());
+        }
+    }
+
+    @Override
+    public void  sendRequestPermission(String email, String firstName, String lastName, String userEmail, String boardId) {
+        try {
+            if (emailSender == null || templateEngine == null) {
+                logger.error("JavaMailSender or TemplateEngine is not configured properly.");
+                return;
+            }
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            Context context = new Context(Locale.getDefault());
+            context.setVariable("firstName", firstName);
+            context.setVariable("lastName", lastName);
+            if (Objects.equals(environment, "dev"))
+                context.setVariable("acceptUrl", "http://localhost:3000/user/board/join/?email=" + userEmail + "&boardId=" + boardId);
+            else
+                context.setVariable("acceptUrl", "https://mobidrawer.id.vn/user/board/join/?email=" + userEmail + "&boardId=" + boardId);
+
+            String htmlContent = templateEngine.process("RequestPermission", context);
+            helper.setText(htmlContent, true);
+
+            helper.setTo(email);
+            helper.setSubject("Request for Permission");
+            emailSender.send(message);
+            logger.info("Verification email sent successfully to {}", email);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendNotificationSuccessfullJoinBoard(String email, String firstName, String lastName, String userEmail, String boardId, String boardName) {
+        try {
+            if (emailSender == null || templateEngine == null) {
+                logger.error("JavaMailSender or TemplateEngine is not configured properly.");
+                return;
+            }
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            Context context = new Context(Locale.getDefault());
+            context.setVariable("firstName", firstName);
+            context.setVariable("lastName", lastName);
+            context.setVariable("nameBoard", boardName);
+            if (Objects.equals(environment, "dev"))
+                context.setVariable("acceptUrl", "http://localhost:3000/user/board/" + boardId);
+            else
+                context.setVariable("acceptUrl", "https://mobidrawer.id.vn/user/board/"+ boardId);
+
+            String htmlContent = templateEngine.process("NotificaitionJoinBoardSuccessfull", context);
+            helper.setText(htmlContent, true);
+
+            helper.setTo(email);
+            helper.setSubject("Request for Permission");
+            emailSender.send(message);
+            logger.info("Verification email sent successfully to {}", email);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
         }
     }
 }

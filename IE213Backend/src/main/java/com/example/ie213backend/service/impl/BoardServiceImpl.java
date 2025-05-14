@@ -11,12 +11,15 @@ import com.example.ie213backend.repository.BoardCustomRepository;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
+import com.example.ie213backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +36,14 @@ public class BoardServiceImpl implements BoardService {
     private final BoardCustomRepository boardCustomRepository;
 
     private final MongoTemplate mongoTemplate;
+    private final NotificationService notificationService;
 
     @Override
     public BoardFullDetailResponse getBoard(String id, String userId ) {
         //
         BoardFullDetailResponse foundBoard = boardCustomRepository.getBoardWithCanvasPaths(id);
         if (foundBoard == null) {
-            throw new IllegalArgumentException("Board not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found");
         }
 
         // Kiểm tra quyền truy cập
@@ -99,7 +103,7 @@ public class BoardServiceImpl implements BoardService {
         }
         // Thêm user vào board
         board.getMembers().add(new Board.Member(user.getId(), role));
-
+        notificationService.joinBoardSuccessful(ownerID, board, user);
         return boardRepository.save(board);
     }
 
