@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
-  const { addCanvasPath } = useCanvasPathsStore()
+  const { canvasPaths, setCanvasPaths, addCanvasPath} = useCanvasPathsStore()
   const { addStickyNote,addStickyNotes, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
   const {markOnlineUsers} = useUserInBoardStore()
   useEffect(() => {
@@ -25,6 +25,10 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       const pathCreated = JSON.parse(message.body)
       addCanvasPath(pathCreated)
     });
+
+    const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, () => {
+      setCanvasPaths(canvasPaths.filter(path => !path.isSelected))
+    })
 
     const addStickyNoteSubscription = client.subscribe(`/topic/board/addStickyNote/${boardId}`, (message) => {
       const stickyNote = JSON.parse(message.body)
@@ -92,6 +96,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       });
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
+      deletePathsSubscription.unsubscribe()
       addStickyNoteSubscription.unsubscribe()
       moveStickyNoteSubscription.unsubscribe()
       reSizeStickyNoteSubcription.unsubscribe()

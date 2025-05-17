@@ -44,7 +44,7 @@ public class StickyNoteServiceImpl implements StickyNoteService {
     }
 
 
-    public  StickyNote updateStickyNotePosition(String id,String boardId,String owner, int x, int y) {
+    public StickyNote updateStickyNotePosition(String id,String boardId,String owner, int x, int y) {
         Query query = new Query(Criteria.where("_id").is(id));
         Update update = new Update()
                 .set("position.x", x)

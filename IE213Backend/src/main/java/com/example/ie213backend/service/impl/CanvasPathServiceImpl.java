@@ -6,13 +6,18 @@ import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.CanvaPathRepository;
 import com.example.ie213backend.service.CanvasPathService;
+import com.example.ie213backend.service.BoardService;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -21,69 +26,33 @@ import java.util.stream.Collectors;
 public class CanvasPathServiceImpl implements CanvasPathService {
     private final CanvaPathRepository canvasPathRepository;
     private final BoardRepository boardRepository;
+    private final BoardService boardService;
 
-    public CanvasPath CreateCanvas(CanvasPath canvas, String owner)  {
+    public CanvasPath createCanvas(CanvasPath canvas)  {
         String boardId = canvas.getBoardId();
-
-        Board board = boardRepository.findUserRoleInBoard(boardId, owner)
+        Board board = boardRepository.findUserRoleInBoard(boardId, canvas.getOwner())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này"));
-        canvas.setOwner(owner);
-        if(board.getOwner().equals(owner)) {
-
+        if(board.getOwner().equals(canvas.getOwner())) {
             return canvasPathRepository.save(canvas);
         }
         if( board.getMembers().stream().anyMatch(
-                member -> (member.getMemberId().equals(owner) && member.getRole() == Board.ROLE.EDITOR)
+                member -> (member.getMemberId().equals(canvas.getOwner()) && member.getRole() == Board.ROLE.EDITOR)
         )) {
-
             return canvasPathRepository.save(canvas);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này");
     }
 
-    public void deleteCanvas(String id, String userId) {
-        ObjectId objectId;
-        try {
-            objectId = new ObjectId(id);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID không hợp lệ");
-        }
-
-        CanvasPath canvasPath = canvasPathRepository.findById(objectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy canvas"));
-
-        String boardId = canvasPath.getBoardId();
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bảng"));
-
-        // Cho phép owner hoặc member có quyền EDIT xóa canvas
-        if (board.getOwner().equals(userId)) {
-            canvasPathRepository.delete(canvasPath);
-            return;
-        }
-
-        boolean isEditor = board.getMembers().stream()
-                .anyMatch(member -> member.getMemberId().equals(userId) && member.getRole() == Board.ROLE.EDITOR);
-
-        if (isEditor) {
-            canvasPathRepository.delete(canvasPath);
-            return;
-        }
-
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa canvas này");
+    public void deleteCanvas(String id, String boardId, String userId) {
+        String role  = boardService.getRoleOfMember(boardId, userId);
+        if(Objects.equals(role, "EDITOR") | Objects.equals(role,"OWNER"))
+            canvasPathRepository.deleteById(id);
+        else
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa canvas này");
     }
 
     public CanvasPath updateCanvas(UpdateCanvasPath updatePath, String userId) {
-        // 1. Validate ObjectId
-        ObjectId objectId;
-        try {
-            objectId = new ObjectId(updatePath.getId());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID không hợp lệ");
-        }
-
-        // 2. Kiểm tra tồn tại path
-        CanvasPath existingPath = canvasPathRepository.findById(objectId)
+        CanvasPath existingPath = canvasPathRepository.findById(updatePath.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đường vẽ"));
 
         // 3. Validate owner

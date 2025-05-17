@@ -74,16 +74,19 @@ public class BoardSocketController {
     public CanvasPath  createCanvasPath(
             @DestinationVariable String boardId,
             SimpMessageHeaderAccessor headerAccessor,
-            @Payload  CreateCanvasPath canvasPath
+            @Payload  CreateCanvasPath createCanvasPath
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        return (canvasPathService.CreateCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath),userDto.getId() ));
+        CanvasPath canvasPath = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(createCanvasPath);
+        canvasPath.setBoardId(boardId);
+        canvasPath.setOwner(userDto.getId());
+        return canvasPathService.createCanvas(canvasPath);
     }
 
-    @MessageMapping("/board/delete-paths/{id}")
-    @SendTo("/topic/board/{id}")
+    @MessageMapping("/board/delete-paths/{boardId}")
+    @SendTo("/topic/board/delete-paths/{boardId}")
     public ResponseEntity<List<String>> handleDeletePaths(
-            @DestinationVariable String id,
+            @DestinationVariable String boardId,
             @Payload List<String> pathIds,          // Danh sách ID các path cần xóa
             SimpMessageHeaderAccessor headerAccessor // Để lấy thông tin user (nếu cần)
     ) {
@@ -92,15 +95,15 @@ public class BoardSocketController {
 
         // Xóa từng path một (phù hợp với service hiện có)
         pathIds.forEach(pathId -> {
-            canvasPathService.deleteCanvas(pathId, userDto.getId());
+            canvasPathService.deleteCanvas(pathId, boardId, userDto.getId());
         });
 
         // Trả về danh sách ID đã xóa để client cập nhật UI
         return ResponseEntity.ok(pathIds);
     }
 
-    @MessageMapping("/board/update-path/{boardId}")
-    @SendTo("/topic/board/{boardId}")
+    @MessageMapping("/board/update-paths/{boardId}")
+    @SendTo("/topic/board/update-paths/{boardId}")
     public ResponseEntity<CanvasPath> handleUpdatePaths(
             @DestinationVariable String boardId,
             @Payload @Valid UpdateCanvasPath canvas,

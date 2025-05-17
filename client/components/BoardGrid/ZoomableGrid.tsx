@@ -117,15 +117,23 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         e.preventDefault();
         const hasSelectedPaths = canvasPaths.some(path => path.isSelected);
         if (hasSelectedPaths) {
-          const updatedPaths = canvasPaths.filter(path => !path.isSelected);
-          setCanvasPaths(updatedPaths);
+          const pathIds = canvasPaths
+            .filter(path => path.isSelected)
+            .map(path => path.id)
+            .filter(Boolean); // Đảm bảo pathIds không chứa undefined
 
-          const pathIds = canvasPaths.filter(path => path.isSelected).map(path => path.id);
+          console.log(typeof pathIds);
+          console.log(Array.isArray(pathIds));
+          console.log(pathIds.constructor?.name);
+          console.log(pathIds);
+
           // Gửi thông báo xóa đường vẽ
           client?.publish({
             destination: `/app/board/delete-paths/${boardId}`,
             body: JSON.stringify(pathIds)
-          });
+          })
+
+          setCanvasPaths(canvasPaths.filter(path => !path.isSelected))
         }
       }
     };
@@ -147,7 +155,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
 
   // Hàm kiểm tra đường vẽ có nằm trong vùng chọn không
   const isPathInSelection = (path: Point[], selectionRect: SelectionRect): boolean => {
-    return path.some(({ x, y }) => {
+    return path?.some(({ x, y }) => {
       return (
         x >= Math.min(selectionRect.x1, selectionRect.x2) &&
         x <= Math.max(selectionRect.x1, selectionRect.x2) &&
@@ -444,7 +452,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         }}
       >
         {canvasPaths &&
-          canvasPaths.map((pathData, index) => (
+          canvasPaths?.map((pathData, index) => (
             <PencilCanvas
               key={index}
               color={pathData.color}
