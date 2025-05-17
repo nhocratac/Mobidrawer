@@ -86,7 +86,7 @@ export default function InputForm() {
               </label>
             </div>
             <div>
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 text-base sm:text-xl md:text-2xl underline">
+              <a href="forget-password" className="font-medium text-indigo-600 hover:text-indigo-500 text-base sm:text-xl md:text-2xl underline">
                 Quên mật khấu?
               </a>
             </div>
