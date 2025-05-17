@@ -133,8 +133,7 @@ public class BoardSocketController {
             @Payload List<CreateStickyNote> createStickyNotes
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-
-        System.out.println("hello");
+        
         List<StickyNote> stickyNotes = createStickyNotes.stream()
                 .map(noteDto -> {
                     StickyNote note = StickyNoteMapper.INSTANCE.createToEntity(noteDto);

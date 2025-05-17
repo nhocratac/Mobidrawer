@@ -4,6 +4,7 @@ const env = {
     HOST: process.env.HOST || 'localhost',
     PORT: process.env.PORT || 3000,
     NEXT_PUBLIC_MODE_ENV: process.env.NEXT_PUBLIC_MODE_ENV || 'development',
+    NEXT_PUBLIC_FRONTEND_URL: isProduction ? process.env.NEXT_PUBLIC_FRONTEND_URL  :'http://localhost:3000',
     NEXT_PUBLIC_BACKEND_URL: isProduction 
         ? process.env.NEXT_PUBLIC_BACKEND_URL 
         : 'http://localhost:8080/api/v1',

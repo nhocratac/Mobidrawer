@@ -2,15 +2,18 @@
 import BoardAPI from "@/api/BoardAPI";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useBoardStoreof } from "@/lib/Zustand/store";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import useUserInBoardStore from "@/lib/Zustand/userInBoardStore";
+import env from "@/utils/environment";
+import path from "@/utils/path";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { ChevronUp, UserRoundPlus, Users } from "lucide-react";
+import { ChevronUp, Info, Share, UserRoundPlus, Users } from "lucide-react";
 import { ChangeEvent, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,6 +35,7 @@ function TopRightBar({
   const { users } = useUserInBoardStore()
   const { user } = useTokenStore()
   const { toast } = useToast()
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const formAddUser = useForm<z.infer<typeof AddUserSchema>>({
     resolver: zodResolver(AddUserSchema),
@@ -74,6 +78,27 @@ function TopRightBar({
     handleChangeRole(memberId, newRole)
   }
 
+  const handleCoppyShareLink = async () => {
+    if (!board?.id) return
+    try {
+      await navigator.clipboard.writeText(`${env.NEXT_PUBLIC_FRONTEND_DOMAIN}/${path.user.board}/${board.id}`)
+      toast({
+        title: "Đã copy vào clipboard của bạn",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("Failed to copy text:", error);
+      toast({
+        title: "Thất bại",
+        description: `hiện không thể copy đường dẫn vào clipboard của bạn`,
+        variant: "destructive",
+      })
+    }
+  }
+
+
+  if (!board) return;
+
   return (
     <div className="w-full relative">
 
@@ -91,6 +116,33 @@ function TopRightBar({
             <Button size="icon" variant="outline" onClick={() => setIsVisibleUsers(!isVisibleUsers)}>
               <Users />
             </Button>
+            <Button size="icon" variant="outline" onClick={handleCoppyShareLink}>
+              <Share />
+            </Button>
+            <div >
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="icon" variant="outline">
+                    <Info />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Board Information</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 text-sm">
+                    <p><strong>Name:</strong> {board.name}</p>
+                    <p><strong>Owner:</strong> {board.owner}</p>
+                    <p><strong>Type:</strong> {board.type}</p>
+                    <p><strong>Description:</strong> {board.description}</p>
+                    <p><strong>Grid:</strong> {board.option.grid ? "Enabled" : "Disabled"}</p>
+                    <p><strong>Background:</strong> {board.option.backgroundColor}</p>
+                    <p><strong>Last Updated:</strong> {new Date(board.updateAt).toLocaleString()}</p>
+                    <p><strong>Members:</strong> {board.members.length}</p>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
         {/* Add User Form */}
