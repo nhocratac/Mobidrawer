@@ -37,7 +37,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       if(payload.senderSessionId === sessionId) return;
 
       const pathUpdated = payload.updatedPaths;
-      console.log(pathUpdated);
 
       setCanvasPaths(pathUpdated);
     });
@@ -47,7 +46,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       if(payload.senderSessionId === sessionId) return;
 
       const pathUpdated = payload.updatedPaths;
-      console.log(pathUpdated);
 
       setCanvasPaths(pathUpdated);
     });

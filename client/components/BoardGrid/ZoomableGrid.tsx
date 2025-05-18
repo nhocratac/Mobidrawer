@@ -141,7 +141,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     return () => {
-      console.log("remove event listener and unmount");
+      //console.log("remove event listener and unmount");
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
@@ -235,7 +235,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         });
       });
 
-      console.log(canvasPathBatch);
+      //console.log(canvasPathBatch);
   
       canvasPathBatch = []; // Reset batch sau khi gửi
     }
@@ -273,7 +273,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
 
     const now = Date.now();
 
-    console.log(now - lastUpdateTimeRef.current);
+    //console.log(now - lastUpdateTimeRef.current);
     if(isFirstMove.current) {
       lastUpdateTimeRef.current = now;
       isFirstMove.current = false;
