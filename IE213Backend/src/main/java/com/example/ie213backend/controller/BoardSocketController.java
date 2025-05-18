@@ -2,17 +2,20 @@ package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
 import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateCanvasPath;
+import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateMultipleCanvasPaths;
 import com.example.ie213backend.domain.dto.StickyNote.*;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.StickyNote;
 import com.example.ie213backend.mapper.CanvasPathMapper;
 import com.example.ie213backend.mapper.StickyNoteMapper;
+import com.example.ie213backend.service.BoardService;
 import com.example.ie213backend.service.CacheUserInBoardService;
 import com.example.ie213backend.service.CanvasPathService;
 import com.example.ie213backend.service.StickyNoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,6 +24,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,8 @@ public class BoardSocketController {
     private final StickyNoteService stickyNoteService;
 
     private final CacheUserInBoardService cacheUserInBoardService;
+
+    private final BoardService boardService;
 
     @MessageMapping("/connect")
     @SendToUser("/queue/session")
@@ -85,7 +91,7 @@ public class BoardSocketController {
 
     @MessageMapping("/board/delete-paths/{boardId}")
     @SendTo("/topic/board/delete-paths/{boardId}")
-    public ResponseEntity<List<String>> handleDeletePaths(
+    public Map<String, Object> handleDeletePaths(
             @DestinationVariable String boardId,
             @Payload List<String> pathIds,          // Danh sách ID các path cần xóa
             SimpMessageHeaderAccessor headerAccessor // Để lấy thông tin user (nếu cần)
@@ -98,20 +104,52 @@ public class BoardSocketController {
             canvasPathService.deleteCanvas(pathId, boardId, userDto.getId());
         });
 
+        String senderSessionId = headerAccessor.getSessionId();
+
         // Trả về danh sách ID đã xóa để client cập nhật UI
-        return ResponseEntity.ok(pathIds);
+        return Map.of(
+                "deletePaths", pathIds,
+                "senderSessionId", senderSessionId
+        );
     }
 
     @MessageMapping("/board/update-paths/{boardId}")
     @SendTo("/topic/board/update-paths/{boardId}")
-    public ResponseEntity<CanvasPath> handleUpdatePaths(
+    public Map<String, Object> handleUpdatePaths(
             @DestinationVariable String boardId,
-            @Payload @Valid UpdateCanvasPath canvas,
+            @Payload @Valid UpdateMultipleCanvasPaths canvas,
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
-        CanvasPath updatedCanvas = canvasPathService.updateCanvas(canvas, userDto.getId());
-        return ResponseEntity.ok(updatedCanvas);
+        List<CanvasPath> updatedPaths = canvasPathService.updateMultipleCanvasPaths(canvas, boardId, userDto.getId());
+
+        String senderSessionId = headerAccessor.getSessionId();
+
+        return Map.of(
+                "updatedPaths", updatedPaths,
+                "senderSessionId", senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/move-paths/{boardId}")
+    @SendTo("/topic/board/move-paths/{boardId}")
+    public Map<String, Object> handleMovePaths(
+            @DestinationVariable String boardId,
+            @Payload @Valid List<CanvasPath> canvas,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+        UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
+        String role = boardService.getRoleOfMember(boardId, userDto.getId());
+        if(!Objects.equals(role, "EDITOR") && !Objects.equals(role, "OWNER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa path này");
+        }
+
+        String senderSessionId = headerAccessor.getSessionId();
+
+        return Map.of(
+                "updatedPaths", canvas,
+                "senderSessionId", senderSessionId
+        );
     }
 
     @MessageMapping("/board/addStickyNote/{boardId}")

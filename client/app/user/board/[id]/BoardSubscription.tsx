@@ -26,9 +26,31 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       addCanvasPath(pathCreated)
     });
 
-    const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, () => {
+    const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, (message) => {
+      const pathDeleted = JSON.parse(message.body);
+      if(pathDeleted.senderSessionId === sessionId) return;
       setCanvasPaths(canvasPaths.filter(path => !path.isSelected))
     })
+
+    const updatePathsSubscription = client.subscribe(`/topic/board/update-paths/${boardId}`, (message) => {
+      const payload = JSON.parse(message.body);
+      if(payload.senderSessionId === sessionId) return;
+
+      const pathUpdated = payload.updatedPaths;
+      console.log(pathUpdated);
+
+      setCanvasPaths(pathUpdated);
+    });
+
+    const movePathsSubscription = client.subscribe(`/topic/board/move-paths/${boardId}`, (message) => {
+      const payload = JSON.parse(message.body);
+      if(payload.senderSessionId === sessionId) return;
+
+      const pathUpdated = payload.updatedPaths;
+      console.log(pathUpdated);
+
+      setCanvasPaths(pathUpdated);
+    });
 
     const addStickyNoteSubscription = client.subscribe(`/topic/board/addStickyNote/${boardId}`, (message) => {
       const stickyNote = JSON.parse(message.body)
@@ -97,6 +119,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()
+      updatePathsSubscription.unsubscribe()
+      movePathsSubscription.unsubscribe()
       addStickyNoteSubscription.unsubscribe()
       moveStickyNoteSubscription.unsubscribe()
       reSizeStickyNoteSubcription.unsubscribe()
