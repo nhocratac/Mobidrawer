@@ -1,32 +1,69 @@
+import BoardAPI from "@/api/BoardAPI";
+import BoardCard from "@/app/user/(user)/dashboard/BoardCard";
+import BoardRow from "@/app/user/(user)/dashboard/BoardRow";
 import useDashBoard, { ListBoardOfUserProps } from "@/app/user/(user)/dashboard/useDashBoard";
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
-
-function ContextMenuWrapper({ children }: { children: React.ReactNode }) {
-    return (
-        <ContextMenu>
-            <ContextMenuTrigger className="w-full">{children}</ContextMenuTrigger>
-            <ContextMenuContent className="z-50">
-                <ContextMenuItem>Hồ sơ</ContextMenuItem>
-                <ContextMenuItem>Thanh toán</ContextMenuItem>
-                <ContextMenuItem>Nhóm</ContextMenuItem>
-                <ContextMenuItem>Đăng kí</ContextMenuItem>
-                <ContextMenuItem>Đổi tên</ContextMenuItem>
-            </ContextMenuContent>
-        </ContextMenu>
-    )
-}
+import useTokenStore from "@/lib/Zustand/tokenStore";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
     const { boards } = useDashBoard();
-    
+    const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const { user } = useTokenStore();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const acceptUploadImage = useCallback(async (localPreviewUrl: string) => {
+        if (!selectedBoardId || !inputRef.current?.files?.length) return;
+
+        console.log("Uploading image...", localPreviewUrl);
+        const file = inputRef.current.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("userId", user?.id || "");
+
+        try {
+            const res = await fetch("/api/upload-board-thumbnail", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (data.url) {
+                await BoardAPI.changeThumbnail(selectedBoardId, data.url);
+                console.log("Thumbnail updated:", data.url);
+            }
+        } catch (error) {
+            console.error("Upload failed", error);
+            // reset lại preview nếu lỗi
+            setPreviewUrl(null);
+        }
+    }, [selectedBoardId, user]);
+
+    const onChangeImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url); // gán URL để preview
+            acceptUploadImage(url); // upload ngay sau khi chọn
+        }
+    }, [acceptUploadImage]);
+
+    const onClickChangeImage = useCallback((boardId: string) => {
+        setSelectedBoardId(boardId);
+        inputRef.current?.click();
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            // cleanup object URL tránh leak bộ nhớ
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
+
     if (!boards) {
         return (
             <div className="w-full flex-1 p-4 md:p-8 flex flex-col gap-4">
@@ -37,17 +74,22 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
             </div>
         );
     }
-    
+
     if (modeView === 'List') {
         return (
             <div className={`px-2 sm:px-4 md:px-12 w-full flex-1 overflow-auto ${props}`}>
                 <div className="min-w-full overflow-x-auto pb-4">
+                    <input
+                        type="file"
+                        ref={inputRef}
+                        className="hidden"
+                        onChange={onChangeImage}
+                        accept="image/png, image/jpeg" />
                     <table className="w-full min-w-[640px]">
                         <thead>
                             <tr className="font-light text-base sm:text-lg md:text-2xl text-left">
                                 <th className="w-2/5 p-2">Tên</th>
-                                <th className="w-[15%] p-2">Hoạt động</th>
-                                <th className="w-[15%] p-2">Khoảng Trống</th>
+                                <th className="w-[15%] p-2">Thành viên</th>
                                 <th className="w-[15%] p-2">Lần cuối mở</th>
                                 <th className="w-[15%] p-2">Chủ sở hữu</th>
                             </tr>
@@ -55,33 +97,18 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
                         <tbody>
                             {
                                 boards.map((data, index) => (
-                                    <tr className="p-2 hover:cursor-pointer hover:bg-slate-100" key={index}>
-                                        <td className="flex">
-                                            <ContextMenuWrapper>
-                                                <div className="flex p-1 sm:p-2">
-                                                    <Link href={`/user/board/${data.id}`} className="flex">
-                                                        <Image src={data.thumbnail} alt="thumbnail" width={40} height={40} className="w-[40px] h-[40px] sm:w-[56px] sm:h-[56px] object-cover" />
-                                                        <div className="h-[40px] sm:h-[56px] ml-2"> 
-                                                            <p className="text-base sm:text-xl md:text-2xl font-bold truncate max-w-[200px] sm:max-w-none">{data.name}</p>
-                                                            <p className="text-xs sm:text-sm md:text-lg font-light truncate max-w-[200px] sm:max-w-none">{data.description}</p>
-                                                        </div>
-                                                    </Link>
-                                                </div>
-                                            </ContextMenuWrapper>
-                                        </td>
-                                        <td className="p-2">
-                                            <Link href={`/user/board/${data.id}`} className="text-sm sm:text-lg md:text-2xl">0</Link>
-                                        </td>
-                                        <td className="p-2">
-                                            <Link href={`/user/board/${data.id}`} className="text-sm sm:text-lg md:text-2xl">0</Link>
-                                        </td>
-                                        <td className="p-2">
-                                            <Link href={`/user/board/${data.id}`} className="text-sm sm:text-lg md:text-2xl">{data.updateAt}</Link>
-                                        </td>
-                                        <td className="p-2">
-                                            <Link href={`/user/board/${data.id}`} className="text-sm sm:text-lg md:text-2xl">{data.owner}</Link>
-                                        </td>
-                                    </tr>
+                                    <BoardRow
+                                        key={index}
+                                        id={data.id}
+                                        name={data.name}
+                                        description={data.description}
+                                        type={data.type}
+                                        updateAt={data.updateAt}
+                                        owner={data.owner}
+                                        // nếu là board đang chọn và có preview thì show preview
+                                        thumbnail={(data.id === selectedBoardId && previewUrl) ? previewUrl : data.thumbnail}
+                                        onClickChangeImage={() => onClickChangeImage(data.id)}
+                                    />
                                 ))
                             }
                         </tbody>
@@ -90,34 +117,26 @@ function ListBoardOfUser({ modeView, ...props }: ListBoardOfUserProps) {
             </div>
         );
     }
-    
+
     if (modeView === 'Grid') {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 px-2 sm:px-4 md:px-12 flex-1 overflow-y-auto pb-4">
                 {
                     boards.map((data, index) => (
-                        <ContextMenuWrapper key={index}>
-                            <Link href={`/user/board/${data.id}`}>
-                                <div key={index} className="p-3 sm:p-6 md:p-10 hover:cursor-pointer hover:bg-slate-100 hover:scale-105 hover:-rotate-1 h-auto flex flex-col">
-                                    <Image src={data.thumbnail} alt="thumbnail" width={80} height={80} className="w-full aspect-square object-cover flex-1 rounded-sm" />
-                                    <div className="mt-2">
-                                        <p className="text-base sm:text-xl md:text-2xl font-bold truncate">{data.name}</p>
-                                        <p className="text-xs sm:text-sm md:text-lg font-light truncate">{data.description}</p>
-                                    </div>
-                                </div>
-                            </Link>
-                        </ContextMenuWrapper>
+                        <BoardCard
+                            key={index}
+                            id={data.id}
+                            name={data.name}
+                            description={data.description}
+                            thumbnail={data.thumbnail}
+                        />
                     ))
                 }
             </div>
         );
     }
-    
-    return (
-        <div>
-            {/* Other view modes can be implemented here */}
-        </div>
-    );
+
+    return <div />;
 }
 
 export default ListBoardOfUser;

@@ -46,7 +46,6 @@ interface ZoomableGridProps {
 const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, boardId }) => {
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
-
   // Trạng thái quản lý scale, translate và các option khác
   const penColor = useToolDevStore((state) => state.pencil?.color);
   const [scale, setScale] = useState<number>(1);
@@ -117,15 +116,18 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         e.preventDefault();
         const hasSelectedPaths = canvasPaths.some(path => path.isSelected);
         if (hasSelectedPaths) {
-          const updatedPaths = canvasPaths.filter(path => !path.isSelected);
-          setCanvasPaths(updatedPaths);
+          const pathIds = canvasPaths
+            .filter(path => path.isSelected)
+            .map(path => path.id)
+            .filter(Boolean); // Đảm bảo pathIds không chứa undefined
 
-          const pathIds = canvasPaths.filter(path => path.isSelected).map(path => path.id);
           // Gửi thông báo xóa đường vẽ
           client?.publish({
             destination: `/app/board/delete-paths/${boardId}`,
             body: JSON.stringify(pathIds)
-          });
+          })
+
+          setCanvasPaths(canvasPaths.filter(path => !path.isSelected))
         }
       }
     };
@@ -139,7 +141,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     return () => {
-      console.log("remove event listener and unmount");
+      //console.log("remove event listener and unmount");
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
@@ -147,7 +149,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
 
   // Hàm kiểm tra đường vẽ có nằm trong vùng chọn không
   const isPathInSelection = (path: Point[], selectionRect: SelectionRect): boolean => {
-    return path.some(({ x, y }) => {
+    return path?.some(({ x, y }) => {
       return (
         x >= Math.min(selectionRect.x1, selectionRect.x2) &&
         x <= Math.max(selectionRect.x1, selectionRect.x2) &&
@@ -233,13 +235,16 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         });
       });
 
-      console.log(canvasPathBatch);
+      //console.log(canvasPathBatch);
   
       canvasPathBatch = []; // Reset batch sau khi gửi
     }
   };
 
   // Hàm di chuyển canvasPaths đã chọn
+  const lastUpdateTimeRef = useRef<number>(0);
+  const isFirstMove = useRef<boolean>(true);
+
   const moveSelectedPaths = (e: React.MouseEvent) => {
     if (!isMoving) return;
     
@@ -250,20 +255,40 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   
     // Sử dụng Immer để update state
     const updatedPaths = produce(canvasPaths, draftPaths => {
-      draftPaths.forEach(path => {
-        if (path.isSelected) {
+      const filteredPaths = draftPaths.filter(path => 
+        path.isSelected && path.paths && path.paths.length > 0
+      )
+
+      filteredPaths.forEach(path => {
           path.paths = path.paths.map(point => ({
             ...point,
             x: point.x + dx,
             y: point.y + dy
           }));
-        }
       });
     });
   
     setCanvasPaths(updatedPaths);
     setMoveStart({ x, y });
-  };
+
+    const now = Date.now();
+
+    //console.log(now - lastUpdateTimeRef.current);
+    if(isFirstMove.current) {
+      lastUpdateTimeRef.current = now;
+      isFirstMove.current = false;
+      return;
+    }
+
+    if(now - lastUpdateTimeRef.current >= 500) {
+        client?.publish({
+          destination: `/app/board/move-paths/${boardId}`,
+          body: JSON.stringify(updatedPaths),
+        })
+
+      lastUpdateTimeRef.current = now;
+    };
+  }
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (mode === "drag" && e.button === 0) {
@@ -346,27 +371,27 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
       }
       else if(isMoving) {
         setIsMoving(false);
+        isFirstMove.current = true;
 
         // Debounce gửi update
         if (moveUpdateTimeout) clearTimeout(moveUpdateTimeout);
         moveUpdateTimeout = setTimeout(() => {
           const selectedPaths = canvasPaths.filter(p => p.isSelected);
           if (selectedPaths.length > 0 && client) {
-            selectedPaths.forEach((path) => {
-              const pathWithBoardId = {
-                ...path,
-                boardId: boardId,     // Thêm boardId
-              };
+            const pathsToUpdate = selectedPaths.map(path => ({
+              ...path,
+              boardId: boardId
+            }))
 
-              delete pathWithBoardId.isSelected; // Xóa thuộc tính isSelected trước khi gửi
-            
-              console.log("send update path", pathWithBoardId);
-              client?.publish({
-                destination: `/app/board/update-path/${boardId}`,  // Endpoint mới (singular)
-                body: JSON.stringify(pathWithBoardId),
-              });
+            pathsToUpdate.forEach(p => delete p.isSelected);
+
+            client?.publish({
+              destination: `/app/board/update-paths/${boardId}`,
+              body: JSON.stringify({
+                paths: pathsToUpdate
+              }),
             });
-          }
+            };
         }, 500);
       } else {
         setSelectedPath([]);
@@ -444,7 +469,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
         }}
       >
         {canvasPaths &&
-          canvasPaths.map((pathData, index) => (
+          canvasPaths?.map((pathData, index) => (
             <PencilCanvas
               key={index}
               color={pathData.color}

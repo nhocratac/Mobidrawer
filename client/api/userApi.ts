@@ -12,7 +12,17 @@ const uploadAvatar = async (avatarUrl: string) => {
   }
 };
 
+const getUserDetailById = async (id: string) => {
+  try {
+    const res = await httpRequest.get("users/" + id);
+    return res.data
+  } catch (error) {
+    throw error
+  }
+};
+
 const userApi = {
   uploadAvatar,
+  getUserDetailById
 };
 export default userApi;

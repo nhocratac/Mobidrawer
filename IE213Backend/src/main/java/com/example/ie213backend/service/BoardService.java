@@ -17,6 +17,7 @@ public interface BoardService {
      List<BoardDTO> findAllBoardofUser(String userId);
      List<MemberDetailDTO> getMembersDetail(String boardId);
      String getRoleOfMember(String boardId, String userId);
+     Board updateThumbnail(String boardId,String userId ,String newThumbnail);
 }
 
 

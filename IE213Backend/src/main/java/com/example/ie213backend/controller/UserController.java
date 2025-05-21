@@ -28,6 +28,11 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(userMapper.toDto(userService.getUserById(id)));
+    }
+
     @PostMapping("/uploadAvatar")
     public ResponseEntity<UserDto> uploadAvatar(
             @RequestBody @Valid UploadAvatar uploadAvatar ,

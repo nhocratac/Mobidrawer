@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -155,5 +156,17 @@ public class BoardServiceImpl implements BoardService {
             }
         }
         return "NONE";
+    }
+
+    @Override
+    public  Board updateThumbnail(String boardId, String userId,String newThumbnail) {
+        String role = getRoleOfMember(boardId,userId);
+        if(Objects.equals(role, "OWNER")) {
+            Board board = boardRepository.findById(boardId)
+                    .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
+            board.setThumbnail(newThumbnail);
+            return boardRepository.save(board);
+        }
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Bạn không được phép cập nhật thumnail cho board");
     }
 }

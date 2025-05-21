@@ -80,6 +80,15 @@ public class BoardController {
         return ResponseEntity.ok(boardService.findAllBoardofUser(userDto.getId()));
     }
 
+    @PutMapping("/thumbnail/{id}")
+    ResponseEntity<Board> thumbnailBoard(
+            @RequestAttribute("user") UserDto userDto,
+            @RequestBody UpdateThumbnail updateThumbnail,
+            @PathVariable String id
+    ) {
+        return ResponseEntity.ok(boardService.updateThumbnail(id,userDto.getId(),updateThumbnail.getThumbnail()));
+    }
+
     @GetMapping("/getMembersDetail/{id}")
     ResponseEntity<List<MemberDetailDTO>> getMembersDetail(
             @PathVariable String id // boardId

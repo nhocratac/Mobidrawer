@@ -11,7 +11,8 @@ const path ={
         post : '/user/post',
         draftBlog: '/user/my-blogs/draft',
         publishedBlog: '/user/my-blogs/published',
-        profile:"/user/profile"
+        profile:"/user/profile",
+        board: "/user/board"
     },
     createBlog : '/new-blog',
     product : {
@@ -24,14 +25,14 @@ const path ={
     admin: '/admin',
     logout: '/logout',
     forgotPassword: '/forgot-password',
-    board:{
-        flowchart:'/board/flowchart/:id',
-        brainwriting:'/board/brainwriting/:id',
-        intelligentTemplates:'/board/intelligentTemplates/:id',
-        kanbanFramework:'/board/kanbanFramework/:id',
-        mindMap:'/board/mindMap/:id',
-        quickRetrospective:'/board/quickRetrospective/:id',
-    },
+    // board:{
+    //     flowchart:'/board/flowchart/:id',
+    //     brainwriting:'/board/brainwriting/:id',
+    //     intelligentTemplates:'/board/intelligentTemplates/:id',
+    //     kanbanFramework:'/board/kanbanFramework/:id',
+    //     mindMap:'/board/mindMap/:id',
+    //     quickRetrospective:'/board/quickRetrospective/:id',
+    // },
     pricing : '/Pricing',
     contact : '/Contact',
     blog:'/Blog',

@@ -80,5 +80,5 @@ export const useCanvasPathsStore = create<CanvasPathsState>((set) => ({
       newPaths[lastPathIndex] = updatedLastPath;
 
       return { canvasPaths: newPaths };
-    }),
+    })
 }));

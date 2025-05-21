@@ -31,19 +31,22 @@ const getAllBoardOfUser = async () => {
     throw error;
   }
 };
-const getBoardById = async (id: string)  : Promise<Board>=> {
+const getBoardById = async (id: string): Promise<Board> => {
   try {
     const board = await httpRequest.get("/board/" + id);
-    return board.data
+    return board.data;
   } catch (error) {
-    throw error
+    throw error;
   }
 };
 
-const addPersonToBoard = async (boardId: string, data : {
-  email : string,
-  role: "EDITOR" | "VIEWER"
-}) => {
+const addPersonToBoard = async (
+  boardId: string,
+  data: {
+    email: string;
+    role: "EDITOR" | "VIEWER";
+  }
+) => {
   try {
     const response = await httpRequest.post(
       `/board/addMember/${boardId}`,
@@ -53,18 +56,24 @@ const addPersonToBoard = async (boardId: string, data : {
   } catch (error) {
     throw error;
   }
-}
+};
 
 const getDetailMemberInBoard = async (boardId: string) => {
   try {
-    const response = await httpRequest.get(`/board/getMembersDetail/${boardId}`);
+    const response = await httpRequest.get(
+      `/board/getMembersDetail/${boardId}`
+    );
     return response.data;
   } catch (error) {
     throw error;
   }
-}
+};
 
-const changeRoleMember  = async (boardId: string , memberId : string , role : 'EDITOR' | 'VIEWER' ) => {
+const changeRoleMember = async (
+  boardId: string,
+  memberId: string,
+  role: "EDITOR" | "VIEWER"
+) => {
   try {
     const response = await httpRequest.post(`/board/change-role/${boardId}`, {
       memberId,
@@ -72,18 +81,29 @@ const changeRoleMember  = async (boardId: string , memberId : string , role : 'E
     });
     return response.data;
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};
 
-const sendRequestJoin = async(boardId: string) => {
+const sendRequestJoin = async (boardId: string) => {
   try {
-    const res = await httpRequest.post(`/notification/joinBoard/${boardId}`)
-    return res.data
+    const res = await httpRequest.post(`/notification/joinBoard/${boardId}`);
+    return res.data;
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};
+
+const changeThumbnail = async (boardId: string, thumbnail: string) => {
+  try {
+    const res = await httpRequest.put(`/board/thumbnail/${boardId}`, {
+      thumbnail
+    })
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const BoardAPI = {
   createBoard,
@@ -92,7 +112,8 @@ const BoardAPI = {
   addPersonToBoard,
   getDetailMemberInBoard,
   changeRoleMember,
-  sendRequestJoin
+  sendRequestJoin,
+  changeThumbnail
 };
 export default BoardAPI;
 
