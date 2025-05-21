@@ -8,6 +8,7 @@ import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDText from '@/components/BoxResizable/RNDText';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
+import TopLeftBar from '@/components/SideBar/TopLeftBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
 import AIChatButton from '@/components/ui/AIChatButton';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
@@ -57,6 +58,7 @@ const PlayGroundPage = () => {
       {typeof id === 'string' &&
         (<>
           <BoardSubscription boardId={id.toString()} />
+          <TopLeftBar />
           <TopRightBar handleChangeRole={handleChangeRole} />
           <LeftToolBar
             onClickTextButton={() => setTextItemCount(textItemCount + 1)}

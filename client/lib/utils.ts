@@ -1,6 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -77,3 +81,37 @@ export function generateSlug(input: string | null | undefined): string {
 
   return slug;
 }
+
+
+
+async function handleSaveAsImage() {
+    const element = document.getElementById('board-area')
+    if (!element) return
+
+    const canvas = await html2canvas(element)
+    const dataUrl = canvas.toDataURL('image/png')
+
+    const link = document.createElement('a')
+    link.href = dataUrl
+    link.download = 'board.png'
+    link.click()
+}
+
+async function handleSaveAsPDF() {
+    const element = document.getElementById('board-area')
+    if (!element) return
+
+    const canvas = await html2canvas(element)
+    const imgData = canvas.toDataURL('image/png')
+
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+    })
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+    pdf.save('board.pdf')
+}
+
+export { handleSaveAsImage, handleSaveAsPDF }
