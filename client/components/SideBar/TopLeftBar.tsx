@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button'
-import { handleSaveAsImage, handleSaveAsPDF } from '@/lib/utils'
+import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore'
+import { useBoardStoreof } from '@/lib/Zustand/store'
+import { handleExportMobidrawerFile, handleSaveAsImage, handleSaveAsPDF } from '@/lib/utils'
 import { useState } from 'react'
 
 export default function TopLeftBar() {
@@ -59,8 +61,51 @@ function SaveOtionMenu() {
     return (
         <div className='absolute top-0 left-[8rem] w-32 bg-white shadow-lg rounded-md border border-gray-200 z-50'>
             <div className='flex flex-col'>
-                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2' onClick={handleSaveAsPDF}>PDF</Button>
-                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2' onClick={handleSaveAsImage}>IMAGE</Button>
+                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2'
+                    onClick={handleSaveAsPDF}>
+                    PDF
+                </Button>
+                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2'
+                    onClick={handleSaveAsImage}>
+                    IMAGE
+                </Button>
+                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2'
+                    onClick={handleExportMobidrawerFile}>
+                    .mobi File
+                </Button>
+                <Button
+                    variant='ghost'
+                    className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2'
+                >
+                    <label htmlFor="import-file" className="cursor-pointer w-full text-left">
+                        Import
+                    </label>
+                    <input
+                        id="import-file"
+                        type="file"
+                        accept=".mobi"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                                const reader = new FileReader()
+                                reader.onload = (event) => {
+                                    try {
+                                        const json = JSON.parse(event.target?.result as string)
+                                        if (json.board) {
+                                            useBoardStoreof.getState().setBoard(json.board)
+                                            useStickyNoteStore.getState().setStickyNotes(json.board.stickyNotes)
+                                            console.log('Board imported successfully.')
+                                        }
+                                    } catch (e) {
+                                        console.error('Invalid mobidrawer file.', e)
+                                    }
+                                }
+                                reader.readAsText(file)
+                            }
+                        }}
+                    />
+                </Button>
             </div>
         </div>
     )
