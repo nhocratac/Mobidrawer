@@ -1,13 +1,12 @@
+import { fetchBlogById } from "@/app/(MobiDrawerPages)/(Resources)/Blog/[slug]/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDate, parseTokenInfo } from "@/lib/utils";
 import { serializeSlateToHtml } from "@/utils/slateToHtml";
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { Descendant } from "slate";
-import DropdownButton from "./DropdownButton";
-import { fetchBlogById } from "@/app/(MobiDrawerPages)/(Resources)/Blog/[slug]/api";
 import Comments from "../Components/CommentsBlock";
+import DropdownButton from "./DropdownButton";
 
 export async function generateMetadata({
   params,
@@ -18,7 +17,7 @@ export async function generateMetadata({
   const blog: Blog = await fetchBlogById(id as string);
 
   if (!blog) {
-    redirect("/404");
+    return {};
   }
 
   // Lấy thông tin từ headers
@@ -59,7 +58,7 @@ const page = async (props: Props<{ slug: string }>) => {
   const blog = await fetchBlogById(id as string);
 
   if (!blog) {
-    redirect("/404");
+    return <div>Blog not found</div>;
   }
 
   if (
@@ -84,7 +83,7 @@ const page = async (props: Props<{ slug: string }>) => {
 
         <div className="profile-bar flex gap-5 items-center">
           <Avatar className="w-[50px] h-[50px]">
-            <AvatarImage src={blog.owner.avatar} alt={blog.owner.firstName} />
+            <AvatarImage src={blog.owner.avatarUrl} alt={blog.owner.firstName} />
             <AvatarFallback>{blog.owner.lastName}</AvatarFallback>
           </Avatar>
 

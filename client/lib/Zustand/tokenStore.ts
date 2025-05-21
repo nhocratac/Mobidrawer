@@ -2,14 +2,14 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
 // Định nghĩa kiểu dữ liệu cho user
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  avatarUrl:string;
-}
+// interface User {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   phone: string;
+//   avatarUrl:string;
+// }
 
 // Kiểu dữ liệu của Zustand Store
 interface TokenState {

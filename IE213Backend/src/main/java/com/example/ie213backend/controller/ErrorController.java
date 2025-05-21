@@ -1,7 +1,6 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.ApiErrorResponse;
-import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoWriteException;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;

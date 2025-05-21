@@ -1,11 +1,15 @@
 package com.example.ie213backend.domain.model;
 
+import com.example.ie213backend.domain.Plans;
+import com.example.ie213backend.domain.UserRoles;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.util.Objects;
 
@@ -23,7 +27,11 @@ public class User {
     private String password;
     private String phone;
     private String avatarUrl;
+    private UserRoles role;
+    private Plans plan;
 
+    @Field(targetType = FieldType.OBJECT_ID)
+    private String userPlansId;
 
     @Override
     public boolean equals(Object o) {

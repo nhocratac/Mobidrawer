@@ -75,4 +75,9 @@ public class UserServiceImpl implements UserService {
         user.setAvatarUrl(uploadAvatar.getAvatarUrl());
         return userRepository.save(user);
     }
+
+    @Override
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
 }

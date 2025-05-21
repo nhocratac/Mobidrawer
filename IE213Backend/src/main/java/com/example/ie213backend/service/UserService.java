@@ -15,4 +15,5 @@ public interface UserService {
     User getUserById(String userId);
     User getBaseInFormation(String userId);
     User uploadAvatar(UploadAvatar uploadAvatar);
+    User saveUser(User user);
 }

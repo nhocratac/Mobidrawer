@@ -4,6 +4,7 @@ import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.security.DrawUserDetailsService;
 import com.example.ie213backend.security.JwtAuthenticationFilter;
 import com.example.ie213backend.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -91,8 +92,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(AuthService authService) {
-        return new JwtAuthenticationFilter(authService);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(AuthService authService, ObjectMapper objectMapper) {
+        return new JwtAuthenticationFilter(authService, objectMapper);
     }
 
 }

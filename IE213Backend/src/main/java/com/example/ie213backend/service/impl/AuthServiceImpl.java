@@ -10,6 +10,7 @@ import com.example.ie213backend.service.AuthService;
 import com.example.ie213backend.service.EmailService;
 import com.example.ie213backend.service.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -100,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (requestTokenType != tokenType) {
             log.info("Wrong type of token!");
-            return null;
+            throw new JwtException("Wrong type of token!");
         }
 
         return claims.getSubject();

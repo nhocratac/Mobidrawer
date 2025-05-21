@@ -167,7 +167,7 @@ const Comment = ({
         <div className="flex gap-3">
           <Avatar className="w-[35px] h-[35px]">
             <AvatarImage
-              src={comment.owner?.avatar}
+              src={comment.owner?.avatarUrl}
               alt={comment.owner.firstName}
             />
             <AvatarFallback>{comment.owner.lastName}</AvatarFallback>

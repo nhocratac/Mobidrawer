@@ -16,7 +16,10 @@ type User = {
   lastName: string;
   email: string;
   phone: string;
-  avatar?: string;
+  avatarUrl?: string;
+  role?: 'USER' | 'ADMIN';
+  plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
+  userPlansId?: string;
 };
 
 type Blog = {
@@ -76,3 +79,9 @@ type CreatedCommentInfo = {
 };
 
 type ReactionType = "LIKE" | "DISLIKE";
+
+interface APITemplateResponse<T> {
+  status: string;
+  message: string;
+  data: T;
+}
