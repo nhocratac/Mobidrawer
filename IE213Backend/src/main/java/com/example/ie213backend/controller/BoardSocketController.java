@@ -297,4 +297,23 @@ public class BoardSocketController {
         );
     }
 
+    @MessageMapping("/board/cursor/{boardId}")
+    @SendTo("/topic/board/cursor/{boardId}")
+    public Map<String, Object> handleCursorMovement(
+            @DestinationVariable String boardId,
+            @Payload Map<String, Object> cursorData,
+            SimpMessageHeaderAccessor headerAccessor) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+
+        cursorData.put("userId", user.getId());
+        cursorData.put("userName", user.getFirstName() + " " + user.getLastName());
+        cursorData.put("color", user.getColor());
+        String senderSessionId = headerAccessor.getSessionId();
+
+        cursorData.put("lastUpdated", System.currentTimeMillis());
+        return Map.of(
+                "cursorData", cursorData,
+                "senderSessionId", senderSessionId
+        );
+    }
 }
