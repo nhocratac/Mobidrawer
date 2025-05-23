@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
-  const { canvasPaths, setCanvasPaths, addCanvasPath} = useCanvasPathsStore()
+  const { setCanvasPaths, addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
   const { addStickyNote,addStickyNotes, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
   const {markOnlineUsers} = useUserInBoardStore()
   useEffect(() => {
@@ -27,9 +27,14 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     });
 
     const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, (message) => {
-      const pathDeleted = JSON.parse(message.body);
-      if(pathDeleted.senderSessionId === sessionId) return;
-      setCanvasPaths(canvasPaths.filter(path => !path.isSelected))
+      const payload= JSON.parse(message.body);
+      if(payload.senderSessionId === sessionId) return;
+
+      const pathIdsToDelete = payload.deletePaths;
+      // const newPaths = canvasPaths.filter(path => !pathIdsToDelete.includes(path.id));
+
+      // setCanvasPaths(newPaths);
+      deletePaths(pathIdsToDelete);
     })
 
     const updatePathsSubscription = client.subscribe(`/topic/board/update-paths/${boardId}`, (message) => {
@@ -38,7 +43,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
 
       const pathUpdated = payload.updatedPaths;
 
-      setCanvasPaths(pathUpdated);
+      updatePaths(pathUpdated);
     });
 
     const movePathsSubscription = client.subscribe(`/topic/board/move-paths/${boardId}`, (message) => {
@@ -47,7 +52,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
 
       const pathUpdated = payload.updatedPaths;
 
-      setCanvasPaths(pathUpdated);
+      updatePaths(pathUpdated);
     });
 
     const addStickyNoteSubscription = client.subscribe(`/topic/board/addStickyNote/${boardId}`, (message) => {
