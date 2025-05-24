@@ -1,5 +1,6 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
 import com.example.ie213backend.domain.dto.UserDto.UploadAvatar;
 import com.example.ie213backend.domain.model.User;
@@ -41,6 +42,9 @@ public class UserServiceImpl implements UserService {
     public User createUser(CreateUserDto user) {
         User newUser = new User();
         newUser.setEmail(user.getEmail());
+
+        // Role mặc định của user
+        newUser.setRole(UserRoles.USER);
 
         // Hash mật khẩu trước khi lưu
         String hashedPassword = passwordEncoder.encode(user.getPassword());

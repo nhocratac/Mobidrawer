@@ -3,7 +3,6 @@ const path ={
     login: '/login',
     register: '/register',
     home: '/',
-    landingPage : '/LandingPage',
     user : {
         dashboard : '/user/dashboard',
         recent : '/user/recent',
