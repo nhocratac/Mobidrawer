@@ -1,8 +1,10 @@
 'use client';
 
-import { geminiChatWithStickyNotes } from '@/api/AiApi';
+import { ChatMessage, geminiChatWithStickyNotes } from '@/api/AiApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { clearChatHistory, loadChatHistory, saveChatHistory } from '@/lib/chatHistoryStorage';
+import useTokenStore from '@/lib/Zustand/tokenStore';
 import { CreateStickNoteDto } from '@/lib/Zustand/type.type';
 import { Bot, Send, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -25,21 +27,29 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Add initial greeting message
+  const { user } = useTokenStore();
+  
+  // Load chat history from localStorage when component mounts
   useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: '1',
-          content: 'Xin chào! Tôi là trợ lý AI MobiDrawer. Tôi có thể giúp gì cho bạn hôm nay?',
-          role: 'assistant',
-          timestamp: new Date(),
-        },
-      ]);
+    if (user?.id && boardId) {
+      const savedMessages = loadChatHistory(user.id, boardId);
+      if (savedMessages && savedMessages.length > 0) {
+        setMessages(savedMessages);
+      } else {
+        // Add initial greeting message if no history exists
+        setMessages([
+          {
+            id: '1',
+            content: 'Xin chào! Tôi là trợ lý AI MobiDrawer. Tôi có thể giúp gì cho bạn hôm nay?',
+            role: 'assistant',
+            timestamp: new Date(),
+          },
+        ]);
+      }
     }
-  }, [messages.length]);
+  }, [boardId, user?.id]);
 
   // Auto scroll to the latest message
   useEffect(() => {
@@ -67,9 +77,15 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
 
     }));
   };
+  // Save messages to localStorage
+  useEffect(() => {
+    if (user?.id && boardId && messages.length > 0) {
+      saveChatHistory(user.id, boardId, messages);
+    }
+  }, [messages, user?.id, boardId]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !user?.id) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -83,15 +99,14 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
     setIsLoading(true);
 
     try {
-      // Call Gemini API to process the message
+      // Call Gemini API to process the message with chat history
       const response = await geminiChatWithStickyNotes(
         inputValue,
         3, // Default number of sticky notes to create if needed
         undefined,
-        'bg-yellow-200'
-      );
-
-      // Add AI response to chat
+        'bg-yellow-200',
+        chatHistory // Pass the chat history to maintain context
+      );      // Add AI response to chat
       if (response.responseText) {
         const assistantMessage = {
           id: Date.now().toString(),
@@ -100,6 +115,11 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, assistantMessage]);
+      }
+      
+      // Update chat history for context in future messages
+      if (response.history) {
+        setChatHistory(response.history);
       }
 
       // If sticky notes were created via function calling
@@ -149,16 +169,46 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-16 right-16 w-[350px] bg-white rounded-lg shadow-lg flex flex-col z-50">
-      {/* Header */}
+    <div className="fixed bottom-16 right-16 w-[350px] bg-white rounded-lg shadow-lg flex flex-col z-50">      {/* Header */}
       <div className="flex justify-between items-center px-4 py-3 bg-blue-600 text-white rounded-t-lg">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5" />
           <span className="font-semibold">MobiDrawer AI</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-blue-700 p-1 h-auto">
-          <X className="w-5 h-5 text-white" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {messages.length > 1 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                if (user?.id && boardId) {
+                  // Clear local state
+                  setMessages([{
+                    id: '1',
+                    content: 'Xin chào! Tôi là trợ lý AI MobiDrawer. Tôi có thể giúp gì cho bạn hôm nay?',
+                    role: 'assistant',
+                    timestamp: new Date(),
+                  }]);
+                  setChatHistory([]);
+                    // Clear from localStorage
+                  clearChatHistory(user.id, boardId);
+                }
+              }} 
+              className="hover:bg-blue-700 p-1 h-auto"
+              title="Clear History"
+            >
+              <span className="text-xs text-white">Clear</span>
+            </Button>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClose} 
+            className="hover:bg-blue-700 p-1 h-auto"
+          >
+            <X className="w-5 h-5 text-white" />
+          </Button>
+        </div>
       </div>
 
       {/* Messages container */}
