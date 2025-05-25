@@ -469,6 +469,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     <div
       className={`relative ${backgroundColor ? backgroundColor : "bg-slate-700"}`}
       style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
+      id="board-area"
       onWheel={handleZoom}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

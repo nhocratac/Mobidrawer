@@ -115,7 +115,6 @@ export function useBoard() {
 
   const CreateManyStickyNotes = useCallback(
     (stickyNotes : CreateStickNoteDto[]) => {
-      console.log(stickyNotes)
       client?.publish({
         destination: `/app/board/addStickyNotes/${id}`,
         body: JSON.stringify(stickyNotes),

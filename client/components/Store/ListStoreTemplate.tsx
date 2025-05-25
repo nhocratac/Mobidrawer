@@ -1,95 +1,77 @@
 'use client'
+import templatesApi from "@/api/teamplatesApi"
 import LiItem from "@/components/Store/Item"
-import { ItemProps } from '@/lib/Zustand/type.type'
+import useTemplateStore from "@/lib/Zustand/templateStore"
 import { useEffect, useState } from 'react'
 
-const Images = [
-  '../../assets/svg/store1.svg',
-  '../../assets/svg/store2.svg',
-  '../../assets/svg/store3.svg',
-  '../../assets/svg/store4.svg',
-  '../../assets/svg/store5.svg',
-  '../../assets/svg/store6.svg',
-  '../../assets/svg/store7.svg',
-  '../../assets/svg/store8.svg',
-  '../../assets/svg/store9.svg',
-]
-
-const Owner = [
-  {
-    name: "SpaceX",
-    logo: '../../assets/svg/onwer1Logo.svg'
-  },
-  {
-    name: "team meta",
-    logo: '../../assets/svg/onwer2Logo.svg'
-  },
-  {
-    name: 'google',
-    logo: '../../assets/svg/miroLogo.svg'
-  }
-]
-
-const names = [
-  "sáng tạo",
-  "mẫu thông minh",
-  "chart card",
-  "aws flow",
-]
-
-const infos = [
-  {
-    description: "The Falcon 9 is a partially reusable two-stage-to-orbit medium-lift launch vehicle designed and manufactured by SpaceX in the United States.",
-    price: 1000000,
-    rating: 4.5
-  },
-  {
-    description: "Mẫu dễ sử dụng mạnh mẽ tạo các bảng thông minh, biểu đồ, sơ đồ và nhiều hơn nữa.",
-    price: 500000,
-    rating: 3.5
-  },
-  {
-    description: "Mẫu thiết nhằm tạo ra các biểu đồ thông minh, dễ sử dụng và hiệu quả.",
-    price: 300000,
-    rating: 5.0
-  },
-  {
-    description: "Chúng tôi thiết kế mẫu giúp bạn, hãy sử dụng. Tạo các biểu đồ mà bạn muốn. Nhận mức lương cao với mẫu này.",
-    price: 1200000,
-    rating: 4.5
-  },
-  {
-    description: "đừng ngần ngại khi sử dụng mẫu thiết kế này, nó sẽ giúp bạn tạo ra các biểu đồ thông minh và hiệu quả.",
-    price: 1500000,
-    rating: 4.0
-  }
-]
-
 function ListStoreTemplate() {
-  const [storeData, setStoreData] = useState<ItemProps[]>([]);
+  const storeData = useTemplateStore((state) => state.templates)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [search, setSearch] = useState("")
+
   useEffect(() => {
-    const generationData = (length: number) => {
-      const data: ItemProps[] = []
-      for (let i = 0; i < length; i++) {
-        data.push({
-          id: i.toString(),
-          ImageThumnail: Images[Math.floor(Math.random() * Images.length)],
-          owner: Owner[Math.floor(Math.random() * Owner.length)],
-          name: names[Math.floor(Math.random() * names.length)],
-          info: infos[Math.floor(Math.random() * infos.length)],
-        })
-      }
-      return data
-    }
-    setStoreData(generationData(20))
-  }, [])
+    templatesApi.getTemplates({
+      page,
+      size: 20,
+      search: search.trim() !== "" ? search : undefined,
+    }).then((res) => {
+      useTemplateStore.getState().setTemplates(res.content)
+      setTotalPages(res.totalPages)
+    }).catch((err) => {
+      console.error("Error fetching templates:", err)
+    })
+  }, [page, search]) // gọi lại khi page hoặc search thay đổi
+
+  // Reset về trang đầu khi search thay đổi
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+    setPage(0) // reset về page đầu
+  }
 
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {storeData.map((item) => (
-        <LiItem key={item.id} {...item} />
-      ))}
-    </ul>
+    <div className="flex flex-col gap-4">
+      {/* Search Input */}
+      <div className="flex justify-center">
+        <input
+          type="text"
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="Tìm kiếm theo tên mẫu..."
+          className="px-4 py-2 border rounded w-full max-w-md"
+        />
+      </div>
+
+      {/* Template Grid */}
+      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {storeData.map((item) => (
+          <LiItem key={item.id} {...item} />
+        ))}
+      </ul>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          type="button"
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => setPage(prev => Math.max(prev - 1, 0))}
+          disabled={page === 0}
+        >
+          Previous
+        </button>
+
+        <span>Page {page + 1} of {totalPages}</span>
+
+        <button
+          type="button"
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
+          disabled={page >= totalPages - 1}
+        >
+          Next
+        </button>
+      </div>
+    </div>
   )
 }
 

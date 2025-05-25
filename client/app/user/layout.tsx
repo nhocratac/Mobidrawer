@@ -31,7 +31,7 @@ export default function UserLayout({
           console.log("🔌 Ngắt kết nối WebSocket");
           useStompStore.getState().disconnect();
         };
-      }, []);
+      });
     return (
         <>
             {children}

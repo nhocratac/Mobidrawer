@@ -6,11 +6,15 @@ import { useBoard } from '@/app/user/board/[id]/useBoard';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
 import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
+import RNDStickyNoteTemp from '@/components/BoxResizable/RNDStickyNoteTemp';
 import RNDText from '@/components/BoxResizable/RNDText';
+import ConfirmSaveBar from '@/components/SideBar/ConfirmSaveBar';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
+import TopLeftBar from '@/components/SideBar/TopLeftBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
 import AIChatButton from '@/components/ui/AIChatButton';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
+import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { useEffect } from 'react';
 
 const PlayGroundPage = () => {
@@ -43,6 +47,7 @@ const PlayGroundPage = () => {
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
+  const { stickyNotes: tempStickyNotes } = useTempChangeStore();
   if (status == 401)
     return (
       <UnauthorizeBoard />
@@ -57,6 +62,16 @@ const PlayGroundPage = () => {
       {typeof id === 'string' &&
         (<>
           <BoardSubscription boardId={id.toString()} />
+          <TopLeftBar />
+          {(tempStickyNotes && tempStickyNotes.length > 0) &&
+            <ConfirmSaveBar
+              onDiscard={() => {
+                useTempChangeStore.getState().clearTempChanges()
+              }}
+              onSave={() => {
+                CreateManyStickyNotes(tempStickyNotes)
+                useTempChangeStore.getState().clearTempChanges()
+              }} />}
           <TopRightBar handleChangeRole={handleChangeRole} />
           <LeftToolBar
             onClickTextButton={() => setTextItemCount(textItemCount + 1)}
@@ -68,8 +83,8 @@ const PlayGroundPage = () => {
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />
             ))}
-            {stickyNotes.map((stickyNote) => (
-              <RNDStickyNote key={stickyNote.id} parentScale={scale}
+            {stickyNotes.map((stickyNote, index) => (
+              <RNDStickyNote key={index} parentScale={scale}
                 stickyNote={stickyNote}
                 handlemoveStickyNote={handleMoveStickyNote}
                 handleReSizeStickyNote={handleReSizeStickyNote}
@@ -79,7 +94,9 @@ const PlayGroundPage = () => {
                 handleDeleteStickyNote={handleDeleteStickyNote}
               />
             ))}
-
+            {tempStickyNotes.map((stickyNote, index) => (
+              <RNDStickyNoteTemp key={`temp-${index}`} parentScale={scale} stickyNote={stickyNote} />
+            ))}
             {shapeList.map((ShapeComponent, index) => (
               <RNDBase key={index} parentScale={scale}  >
                 <ShapeComponent />
