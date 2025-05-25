@@ -6,9 +6,16 @@ import useTokenStore from "@/lib/Zustand/tokenStore";
 import { Frown, Laugh, Loader } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 const PaymentCallback = () => {
+  return (
+    <Suspense fallback={<div className="text-white text-xl">Đang tải...</div>}>
+      <PaymentCallbackContent />
+    </Suspense>
+  )
+}
+const PaymentCallbackContent = () => {
   const searchParams = useSearchParams();
   const params = Object.fromEntries(searchParams.entries());
   const [isLoading, setIsLoading] = useState(true);
