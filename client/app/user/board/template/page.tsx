@@ -1,33 +1,31 @@
 "use client";
 // schema/templateSchema.ts
-import { z } from "zod";
-
-export const TemplateFormSchema = z.object({
-    title: z.string().min(3, "Tiêu đề phải có ít nhất 3 ký tự."),
-    description: z.string().optional(),
-    isPublic: z.boolean(),
-});
-
-export type TemplateFormValues = z.infer<typeof TemplateFormSchema>;
+import templatesApi from "@/api/teamplatesApi";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import templatesApi from "@/api/teamplatesApi";
-import { useBoardStoreof } from "@/lib/Zustand/store";
-import Image from "next/image";
-import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
-import Link from "next/link";
+import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
+import { useBoardStoreof } from "@/lib/Zustand/store";
 import path from "@/utils/path";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const TemplateFormSchema = z.object({
+    title: z.string().min(3, "Tiêu đề phải có ít nhất 3 ký tự."),
+    description: z.string().optional(),
+    isPublic: z.boolean(),
+});
+
+type TemplateFormValues = z.infer<typeof TemplateFormSchema>;
 
 export default function CreateTemplateForm() {
     const { toast } = useToast();
-    const router = useRouter();
 
     const { board } = useBoardStoreof()
     const stickyNotes = useStickyNoteStore((state) => state.stickyNotes);

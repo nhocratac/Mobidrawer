@@ -1,4 +1,3 @@
-import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 
 interface ConfirmSaveBarProps {
   onSave: () => void;
