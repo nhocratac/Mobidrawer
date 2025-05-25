@@ -17,8 +17,8 @@ type User = {
   email: string;
   phone: string;
   avatarUrl?: string;
-  role?: 'USER' | 'ADMIN';
-  plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
+  role: "USER" | "ADMIN";
+  plan?: "FREE" | "PRO" | "ENTERPRISE";
   userPlansId?: string;
 };
 
@@ -84,4 +84,14 @@ interface APITemplateResponse<T> {
   status: string;
   message: string;
   data: T;
+}
+
+interface UserPlanInfo {
+  id: string;
+  userId: string;
+  plan: "PRO" | "ENTERPRISE";
+  amount: number;
+  createdAt: string;
+  expiresAt: string;
+  active: boolean;
 }

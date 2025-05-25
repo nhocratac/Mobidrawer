@@ -29,5 +29,5 @@ public class UserPlans {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private String orderCode;
-    private boolean isActive;
+    private boolean active;
 }
