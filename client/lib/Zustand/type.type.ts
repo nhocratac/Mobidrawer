@@ -1,4 +1,3 @@
-
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -45,62 +44,19 @@ export interface member {
   role: ModeRole,
 }
 
-export enum boardType {
-    flowchart = 'flowchart',
-    brainWritting='brainwritting',
-    intelligentTemplate = 'intelligentTemplate',
-    kanbanFramework = 'kanbanFramework',
-    mindMap = 'mindMap',
-    quickRetrospective ='quickRetrospectives',
-}
-
-export interface BoardState {
-  id: number;
-  name ?: string ;
-  owner ?: string ,
-  type : boardType;
-  description ?: string ,
-  options: {
-    grid ?: boolean;
-    backgroundColor ?: string;
-  };
-  thumbnail : string;
-  updateAt ?: string,
-  members: member[],
-  canvasPaths: canvasPath[];
-}
-
-export interface ListBoardState {
-  boards: BoardState[];
-  addnewBoard: (newBoard: BoardState) => void;
-  updateBoard: (newBoard: BoardState) => void;
-  setBoardColor: (id: number, color: string) => void;
-  setGridVisible: (id: number) => void;
-  selectPath: (boardId: number, pathIndex: number) => void; //Chọn đối tượng
-  deselectPath: (boardId: number) => void; // Bỏ chọn tất cả
-}
-
 export interface ItemProps {
   id : string ;
   ImageThumnail: string;
-  owner: {
-      name: string;
-      logo: string;
-  };
+  previewImageUrl : string;
+  title : string;
+  description: string;
   name: string;
-  info: {
-      description: string;
-      price: number;
-      rating: number;
-  }
+  owner : string;
+  canvasPaths: canvasPath[];
+  stickyNotes: StickyNote[];
 }  
 
-export interface TemplateStoreState {
-  templates : ItemProps[];
-  addTemplate : (template: ItemProps) => void;
-  updateTemplate : (template: ItemProps) => void;
-  deleteTemplate : (id: string) => void;
-}
+
 
 export interface Member {
   memberId : string,

@@ -128,7 +128,6 @@ const handleExportMobidrawerFile = () => {
     color: path.color,
     opacity: path.opacity,
     paths: path.paths,
-    isSelected: undefined, // Bỏ thuộc tính isSelected
   }));
 
   const stickyNotes = board?.stickyNotes.map((note) => ({

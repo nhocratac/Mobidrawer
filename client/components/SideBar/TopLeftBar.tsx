@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
-import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore'
-import { useBoardStoreof } from '@/lib/Zustand/store'
 import { handleExportMobidrawerFile, handleImportMobidrawerFile, handleSaveAsImage, handleSaveAsPDF } from '@/lib/utils'
+import Link from 'next/link'
 import { useState } from 'react'
 
 export default function TopLeftBar() {
@@ -86,6 +85,9 @@ function SaveOtionMenu() {
                 <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl border-b-2'
                     onClick={handleExportMobidrawerFile}>
                     .mobi File
+                </Button>
+                <Button variant='ghost' className='justify-start p-2 hover:bg-gray-100 text-xl'>
+                    <Link href={"/user/board/template"}>To template</Link>
                 </Button>
             </div>
         </div>
