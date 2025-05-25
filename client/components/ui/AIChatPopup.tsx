@@ -4,7 +4,6 @@ import { ChatMessage, geminiChatWithStickyNotes } from '@/api/AiApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { clearChatHistory, loadChatHistory, saveChatHistory } from '@/lib/chatHistoryStorage';
-import useTokenStore from '@/lib/Zustand/tokenStore';
 import { CreateStickNoteDto } from '@/lib/Zustand/type.type';
 import { Bot, Send, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -29,12 +28,12 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useTokenStore();
   
   // Load chat history from localStorage when component mounts
   useEffect(() => {
-    if (user?.id && boardId) {
-      const savedMessages = loadChatHistory(user.id, boardId);
+    if (boardId) {
+      // Use boardId as key instead of user.id since we don't have authentication
+      const savedMessages = loadChatHistory('anonymous', boardId);
       if (savedMessages && savedMessages.length > 0) {
         setMessages(savedMessages);
       } else {
@@ -48,8 +47,18 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
           },
         ]);
       }
+    } else {
+      // If no boardId, still show greeting message
+      setMessages([
+        {
+          id: '1',
+          content: 'Xin chào! Tôi là trợ lý AI MobiDrawer. Tôi có thể giúp gì cho bạn hôm nay?',
+          role: 'assistant',
+          timestamp: new Date(),
+        },
+      ]);
     }
-  }, [boardId, user?.id]);
+  }, [boardId]);
 
   // Auto scroll to the latest message
   useEffect(() => {
@@ -76,16 +85,15 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
       },
 
     }));
-  };
-  // Save messages to localStorage
+  };  // Save messages to localStorage
   useEffect(() => {
-    if (user?.id && boardId && messages.length > 0) {
-      saveChatHistory(user.id, boardId, messages);
+    if (boardId && messages.length > 0) {
+      // Use 'anonymous' as user identifier since we don't have authentication
+      saveChatHistory('anonymous', boardId, messages);
     }
-  }, [messages, user?.id, boardId]);
-
+  }, [messages, boardId]);
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !user?.id) return;
+    if (!inputValue.trim()) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -175,13 +183,12 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
           <Bot className="w-5 h-5" />
           <span className="font-semibold">MobiDrawer AI</span>
         </div>
-        <div className="flex items-center gap-2">
-          {messages.length > 1 && (
+        <div className="flex items-center gap-2">          {messages.length > 1 && (
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => {
-                if (user?.id && boardId) {
+                if (boardId) {
                   // Clear local state
                   setMessages([{
                     id: '1',
@@ -190,8 +197,8 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
                     timestamp: new Date(),
                   }]);
                   setChatHistory([]);
-                    // Clear from localStorage
-                  clearChatHistory(user.id, boardId);
+                  // Clear from localStorage using 'anonymous' as user identifier
+                  clearChatHistory('anonymous', boardId);
                 }
               }} 
               className="hover:bg-blue-700 p-1 h-auto"

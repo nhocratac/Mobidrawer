@@ -107,10 +107,21 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     x: (x - translate.x) / scale,
     y: (y - translate.y) / scale,
   })
-
   // Xử lý undo bằng phím z
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if the target is an input element (input, textarea, contenteditable)
+      const target = e.target as HTMLElement;
+      const isInputElement = target instanceof HTMLInputElement || 
+                            target instanceof HTMLTextAreaElement || 
+                            target.contentEditable === 'true' ||
+                            target.closest('input, textarea, [contenteditable="true"]');
+      
+      // Skip global keyboard handling if user is typing in an input field
+      if (isInputElement) {
+        return;
+      }
+
       if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
         if (!undoPressed) {
           e.preventDefault();
