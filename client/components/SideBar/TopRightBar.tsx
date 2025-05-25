@@ -17,6 +17,12 @@ import { ChevronUp, Info, Share, UserRoundPlus, Users } from "lucide-react";
 import { ChangeEvent, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import QRCode from "react-qr-code";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 
 const AddUserSchema = z.object({
@@ -36,6 +42,8 @@ function TopRightBar({
   const { user } = useTokenStore()
   const { toast } = useToast()
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [shareLink, setShareLink] = useState("");
 
   const formAddUser = useForm<z.infer<typeof AddUserSchema>>({
     resolver: zodResolver(AddUserSchema),
@@ -71,6 +79,11 @@ function TopRightBar({
     setIsVisibleUsers(false);
   };
 
+  const handleToggleUsers = () => {
+    setIsVisibleUsers(!isVisibleUsers)
+    setIsVisibleAddUser(false);
+  }
+
   const handleRoleChange = async (event: ChangeEvent<HTMLSelectElement>, memberId: string) => {
     const newRole = event.target.value as "EDITOR" | "VIEWER";
     // convert mewRole to type "EDITOR" |"VIEWER"
@@ -79,9 +92,12 @@ function TopRightBar({
   }
 
   const handleCoppyShareLink = async () => {
-    if (!board?.id) return
+    if (!board?.id) return;
+    const link = `${env.NEXT_PUBLIC_FRONTEND_DOMAIN}/${path.user.board}/${board.id}`;
+    setShareLink(link);
+
     try {
-      await navigator.clipboard.writeText(`${env.NEXT_PUBLIC_FRONTEND_DOMAIN}/${path.user.board}/${board.id}`)
+      await navigator.clipboard.writeText(link)
       toast({
         title: "Đã copy vào clipboard của bạn",
         variant: "default",
@@ -113,12 +129,41 @@ function TopRightBar({
             <Button size="icon" variant="outline" onClick={handleToggleAddUser}>
               <UserRoundPlus />
             </Button>
-            <Button size="icon" variant="outline" onClick={() => setIsVisibleUsers(!isVisibleUsers)}>
+            <Button size="icon" variant="outline" onClick={handleToggleUsers}>
               <Users />
             </Button>
-            <Button size="icon" variant="outline" onClick={handleCoppyShareLink}>
-              <Share />
-            </Button>
+            <Popover open={showQR} onOpenChange={setShowQR}>
+              <PopoverTrigger asChild>
+              <Button 
+                size="icon" 
+                variant="outline" 
+                onClick={() => {
+                  handleCoppyShareLink();
+                  setShowQR(true);
+                }}>
+                <Share />
+              </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4">
+                <div className="flex flex-col items-center space-y-2">
+                  <QRCode 
+                    value={shareLink}
+                    size={128}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                    level="Q"
+                  />
+                  <p className="text-sm text-gray-600">Quét QR code để mở bảng</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigator.clipboard.writeText(shareLink)}
+                  >
+                    Copy Link
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <div >
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>

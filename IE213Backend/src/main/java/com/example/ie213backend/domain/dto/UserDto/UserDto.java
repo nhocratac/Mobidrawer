@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Transient;
 
 @Data
 @Builder
@@ -22,4 +23,16 @@ public class UserDto {
     private UserRoles role;
     private Plans plan;
     private String userPlansId;
+
+    @Transient
+    private String color;
+
+    public String getColor() {
+        if(color == null && firstName != null) {
+            int hash = firstName.hashCode() & 0xFFFFFF;
+            String hex = String.format("%06x", hash);
+            color = "#" + hex.substring(Math.max(0, hex.length() - 6));
+        }
+        return color;
+    }
 }

@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class BlogController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADNMIN')")
     public ResponseEntity<BlogDto> createBlog(@RequestBody @Valid CreateBlogDto createBlogDto) {
         BlogDto blog = blogService.createBlog(createBlogDto);
 
@@ -52,6 +54,7 @@ public class BlogController {
     }
 
     @PutMapping("/{blogId}")
+    @PreAuthorize("hasRole('ADNMIN')")
     public ResponseEntity<BlogDto> updateBlog(@PathVariable String blogId, @RequestBody UpdateBlogDto updateBlogDto) {
         BlogDto blog = blogService.updateBlog(updateBlogDto, blogId);
 
@@ -59,15 +62,16 @@ public class BlogController {
     }
 
     @DeleteMapping("/{blogId}")
+    @PreAuthorize("hasRole('ADNMIN')")
     public void deleteBlog(@PathVariable String blogId) {
         blogService.deleteBlog(blogId);
     }
 
     @GetMapping("/users/{userId}")
-        public ResponseEntity<Page<BlogDto>> listBlogs(@PathVariable String userId,
-                                                        @RequestParam(defaultValue = "0") int page,
-                                                        @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(defaultValue = "false") boolean isPublished) {
+    public ResponseEntity<Page<BlogDto>> listBlogs(@PathVariable String userId,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size,
+                                                   @RequestParam(defaultValue = "false") boolean isPublished) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<BlogDto> blogDtos = blogService.listBlogByUserId(userId, isPublished, pageable);
 

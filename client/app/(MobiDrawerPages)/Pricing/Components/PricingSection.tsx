@@ -50,16 +50,12 @@ export default function PricingSection() {
     if (!user) return "Bắt đầu ngay";
 
     if (planName === "Miễn phí") {
-      if (user.plan === null || user?.plan === "FREE") {
-        return "Gói hiện tại của bạn";
-      } else if (user?.plan === "PRO") {
-        return "Quay lại gói miễn phí";
-      }
+      return "Bắt đầu ngay";
     } else if (planName === "Pro") {
       if (user.plan === null || user?.plan === "FREE") {
         return "Nâng cấp lên gói Pro";
       } else if (user?.plan === "PRO") {
-        return "Gói hiện tại của bạn";
+        return "Gia hạn gói Pro";
       }
     } else {
       return "Liên hệ với chúng tôi";
@@ -103,33 +99,27 @@ export default function PricingSection() {
                 onClick={() => {
                   if (!user) return;
 
-                  if (
-                    plan.name === "Pro" &&
-                    (!user?.plan || user?.plan === "FREE")
-                  ) {
-                    paymentsAPI
-                      .createPaymentUrl(
-                        plan.amount,
-                        `User với ID ${user.id} yêu cầu nâng cấp lên gói Pro`,
-                        "other"
-                      )
-                      .then((res) => {
-                        window.location.href = res.data;
-                      })
-                      .catch((err) => {
-                        console.log("err", err);
-                        toast({
-                          title: "Có lỗi xảy ra",
-                          description: "Vui lòng thử lại sau",
-                          variant: "destructive",
-                        });
+                  paymentsAPI
+                    .createPaymentUrl(
+                      plan.amount,
+                      `User với ID ${user.id} yêu cầu nâng cấp lên gói Pro`,
+                      "other"
+                    )
+                    .then((res) => {
+                      window.location.href = res.data;
+                    })
+                    .catch((err) => {
+                      console.log("err", err);
+                      toast({
+                        title: "Có lỗi xảy ra",
+                        description: "Vui lòng thử lại sau",
+                        variant: "destructive",
                       });
-                  }
+                    });
                 }}
                 disabled={
-                  (plan.name === "Pro" && user?.plan === "PRO") ||
-                  (plan.name === "Miễn phí" &&
-                    (!user?.plan || user?.plan === "FREE"))
+                  plan.name === "Miễn phí" &&
+                  (user?.plan === "PRO" || user?.plan === "ENTERPRISE")
                 }
               >
                 {determinePlanText(plan.name)}
