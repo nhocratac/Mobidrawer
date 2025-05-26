@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/blogs/{blogId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/blogs/users/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/blogs").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/v1/users/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/check-env").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/comments/{commentId}/replies").permitAll()

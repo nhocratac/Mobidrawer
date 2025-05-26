@@ -1,9 +1,7 @@
 "use client";
 import {
   BoardStore,
-  ItemProps,
   ModeType,
-  TemplateStoreState,
   ToolDevState
 } from "@/lib/Zustand/type.type";
 import { create } from "zustand";
@@ -99,42 +97,6 @@ const useToolDevStore = create<ToolDevState>()(
   )
 );
 
-const useTemplateStore = create<TemplateStoreState>()(
-  devtools(
-    persist(
-      (set) => ({
-        templates: [],
-        addTemplate: (newTemplate: ItemProps) => {
-          set((state) => ({
-            templates: [...state.templates, newTemplate],
-          }));
-        },
-        updateTemplate: (newTemplate: ItemProps) => {
-          set((state) => ({
-            templates: state.templates.map((template) =>
-              template.id === newTemplate.id ? newTemplate : template
-            ),
-          }));
-        },
-        deleteTemplate: (id: string) => {
-          set((state) => ({
-            templates: state.templates.filter((template) => template.id !== id),
-          }));
-        },
-      }),
-      {
-        name: "Templates-storage",
-        merge: (persistedState: any, currentState) => ({
-          ...currentState,
-          ...persistedState,
-          addnewTemplate: currentState.addTemplate,
-          deleteTemplate: currentState.deleteTemplate,
-          updateTemplate: currentState.updateTemplate,
-        }),
-      }
-    )
-  )
-);
 
 export const useBoardStoreof = create<BoardStore>((set) => ({
   board: null,
@@ -179,4 +141,5 @@ export const useBoardStoreof = create<BoardStore>((set) => ({
   },
 }));
 
-export { useTemplateStore, useToolDevStore };
+export {useToolDevStore };
+

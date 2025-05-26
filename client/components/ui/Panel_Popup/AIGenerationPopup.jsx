@@ -93,20 +93,13 @@ const AIGenerationPopup = ({ togglePopup }) => {
         <label htmlFor="imagePrompt" className="block text-sm font-medium text-gray-700 mb-1">
           Mô tả hình ảnh bạn muốn tạo
         </label>
-        <div className="relative">
-          <textarea 
+        <div className="relative">          <textarea 
             ref={textareaRef}
             id="imagePrompt"
             className="w-full min-h-[100px] p-3 border rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-transparent resize-none text-gray-800"
             placeholder="Mô tả chi tiết về hình ảnh bạn muốn (VD: Một bãi biển nhiệt đới với nước trong xanh và cây dừa)"
             value={prompt}
             onChange={handlePromptChange}
-            onKeyDown={(e) => {
-              if (e.key === 'Backspace') {
-                // Allow normal backspace behavior
-                return true;
-              }
-            }}
           />
           {prompt && (
             <button 

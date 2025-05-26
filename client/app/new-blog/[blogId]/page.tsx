@@ -1,19 +1,19 @@
 "use client";
 
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { Descendant } from "slate";
-import { motion } from "framer-motion";
-import { usePathname, useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import useDebounce from "@/hooks/useDebounce";
 import blogAPIs from "@/api/blogAPI";
-import TextEditor from "@/components/TextEditor/TextEditor";
-import { ChevronLeft } from "lucide-react";
 import PublishedDialog from "@/components/Blog/PublishedDialog";
+import TextEditor from "@/components/TextEditor/TextEditor";
+import { Button } from "@/components/ui/button";
 import { DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import useDebounce from "@/hooks/useDebounce";
 import useTokenStore from "@/lib/Zustand/tokenStore";
+import { motion } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Descendant } from "slate";
 
 const initialValue: Descendant[] = [
   { type: "paragraph", children: [{ text: "" }] },

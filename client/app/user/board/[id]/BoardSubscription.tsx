@@ -111,9 +111,9 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       deleteStickyNote(payload.id)
     })
 
-    client.publish({
-      destination: `/app/board/join/${boardId}`
-    });
+    // client.publish({
+    //   destination: `/app/board/join/${boardId}`
+    // });
   
     return () => {
       client.publish({
