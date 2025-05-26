@@ -13,17 +13,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import paymentsAPI from "@/api/paymentsAPI";
+import userApi from "@/api/userApi";
 
 interface HeaderDefaultProps {
   [key: string]: unknown;
 }
 
 export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
-  const { token, user } = useTokenStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false); // Trạng thái mở thông báo
   const [isOpenPlan, setIsOpenPlan] = useState(false); // Trạng thái mở kế hoạch
   const [expiredDate, setExpiredDate] = useState<string | null>(null); // Ngày hết hạn
+  const { token, user: tokenUser, setUser: setTokenUser } = useTokenStore();
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (token && isOpen) {
@@ -43,6 +45,21 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
         );
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!tokenUser) return;
+
+    userApi
+      .getUserDetailById(tokenUser?.id)
+      .then((data) => {
+        setUser(data);
+        setTokenUser(data); // Cập nhật user trong token store
+      })
+      .catch((error) => {
+        console.error("Failed to fetch user details:", error);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenUser]);
 
   const fetchNotifications = async () => {
     try {
@@ -74,7 +91,7 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
                     : "text-white bg-gradient-to-r from-indigo-400 to-pink-300 px-2 py-1 rounded-xl text-[1.2rem]"
                 }`}
               >
-                {user?.plan || "Free"}
+                {user?.plan || "FREE"}
               </div>
             </PopoverTrigger>
 

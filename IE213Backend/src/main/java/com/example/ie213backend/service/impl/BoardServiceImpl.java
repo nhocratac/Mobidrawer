@@ -97,17 +97,17 @@ public class BoardServiceImpl implements BoardService {
     public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
-//        User owner = userRepository.findById(ownerID)
-//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerID));
+        User owner = userRepository.findById(ownerID)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerID));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
 
         // Kiểm tra xem nếu user đang là plan free và số lượng member vượt quá cho phép là 3 hay chưa
-//        if (board.getMembers().size() >= 3 && (owner.getPlan() == null || owner.getPlan() == Plans.FREE)) {
-//            throw new IllegalArgumentException("Bạn đã vượt mức member tối đa cho phép ở board này!");
-//        }
+        if (board.getMembers().size() >= 3 && (owner.getPlan() == null || owner.getPlan() == Plans.FREE)) {
+            throw new IllegalArgumentException("Bạn đã vượt mức member tối đa cho phép ở board này!");
+        }
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
