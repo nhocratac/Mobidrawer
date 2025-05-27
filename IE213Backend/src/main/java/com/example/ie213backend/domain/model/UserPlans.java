@@ -30,4 +30,5 @@ public class UserPlans {
     private LocalDateTime expiresAt;
     private String orderCode;
     private boolean active;
+    private boolean notified;
 }

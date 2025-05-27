@@ -10,12 +10,15 @@ import com.example.ie213backend.domain.model.UserPlans;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.mapper.UserPlanMapper;
 import com.example.ie213backend.repository.UserPlansRepository;
+import com.example.ie213backend.service.EmailService;
+import com.example.ie213backend.service.NotificationService;
 import com.example.ie213backend.service.UserService;
 import com.example.ie213backend.service.VNPayService;
 import com.example.ie213backend.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
@@ -30,11 +33,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class VNPayServiceImpl implements VNPayService {
     private final VNPayUtil vnPayUtil;
-    private final UserService userService;
     private final UserPlansRepository userPlansRepository;
     private final UserMapper userMapper;
     private final RedisTemplate<String, PaymentRequest> redisTemplate;
     private final UserPlanMapper userPlanMapper;
+    private final UserService userService;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Override
     public String createPaymentUrl(CreatePaymentDto createPaymentDto, HttpServletRequest req) {
@@ -126,7 +131,7 @@ public class VNPayServiceImpl implements VNPayService {
         String redisKey = req.getAttribute("userId") + "+-+" + req.getParameter("vnp_TxnRef");
         System.out.println(redisKey);
         PaymentRequest paymentRequest = redisTemplate.opsForValue().get(redisKey);
-//        System.out.println(paymentRequest.toString());
+        System.out.println(paymentRequest.toString());
         if (paymentRequest == null) {
             throw new IllegalArgumentException("Lỗi user ko có payment này");
         }
@@ -168,20 +173,79 @@ public class VNPayServiceImpl implements VNPayService {
         return userPlanMapper.toDto(userPlans);
     }
 
+    @Override
+    @Scheduled(fixedRate = 50000) // For testing, each 50s will execute this method
+    public void checkExpiringMemberships() {
+        // Lựa chọn ra 2 tập member: sắp hết hạn và chưa thông báo; đã hết hạn và đã thông báo
+        System.out.println("checkExpiringMemberships");
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime beforeThreeDateFromNow = now.minusDays(3);
+        List<UserPlans> notExpiredUsers = userPlansRepository.findByExpiresAtBetweenAndActiveAndNotified(
+                beforeThreeDateFromNow, now, true, false
+        );
+        List<UserPlans> expiredUsers = userPlansRepository.findByExpiresAtBeforeAndActive(
+                now, true
+        );
+
+        // Thông báo cho member thông qua email và notification
+        notifyUsersWithExpiringMemberships(notExpiredUsers);
+
+        // Hạ plan của member nếu plan hết hạn
+        downgradeExpiredMemberships(expiredUsers);
+    }
+
+    private void notifyUsersWithExpiringMemberships(List<UserPlans> notExpiredUsers) {
+        notExpiredUsers.forEach(
+                notExpiredUser -> {
+                    LocalDateTime expirationTime = notExpiredUser.getExpiresAt();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+                    String formatExpirationTime = expirationTime.format(formatter);
+                    System.out.println(formatExpirationTime);
+                    User user = userService.getUserById(notExpiredUser.getUserId());
+
+                    notExpiredUser.setNotified(true);
+                    userPlansRepository.save(notExpiredUser);
+
+                    notificationService.sendNotification("Plan sắp hết hạn", "Plan của bạn sắp hết hạn vào ngày " + formatExpirationTime + " .Hãy gia hạn để sử dụng không bị gián đoạn!", List.of(notExpiredUser.getUserId()));
+                    emailService.sendRenewPlanEmail(user.getEmail(), user.getFirstName(), user.getLastName(), formatExpirationTime);
+                }
+        );
+    }
+
+    private void downgradeExpiredMemberships(List<UserPlans> expiredUsers) {
+        expiredUsers.forEach(
+                expiredUser -> {
+                    LocalDateTime expirationTime = expiredUser.getExpiresAt();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+                    String formatExpirationTime = expirationTime.format(formatter);
+                    User user = userService.getUserById(expiredUser.getUserId());
+                    user.setPlan(Plans.FREE);
+                    user.setUserPlansId(null);
+                    expiredUser.setActive(false);
+                    notificationService.sendNotification("Plan đã hết hạn", "Plan của bạn đã hết hạn vào ngày " + formatExpirationTime, List.of(expiredUser.getUserId()));
+
+                    userService.saveUser(user);
+                    userPlansRepository.save(expiredUser);
+                }
+        );
+    }
+
     private UserDto processPayment(String userId, Plans plan, Long amount, String orderCode, String payDate) {
         User user = userService.getUserById(userId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         LocalDateTime createdDate = LocalDateTime.parse(payDate, formatter);
-        LocalDateTime expireDate = createdDate.plusMonths(1);
+        LocalDateTime expireDate = createdDate.plusMinutes(2); // For testing
 
-        Optional<UserPlans> optionalUserPlans = userPlansRepository.findById(user.getUserPlansId());
-        if (optionalUserPlans.isPresent()) {
-            UserPlans userPlans = optionalUserPlans.get();
-            if (userPlans.getExpiresAt().isAfter(createdDate)) {
-                expireDate = userPlans.getExpiresAt().plusMonths(1);
+        if (user.getUserPlansId() != null) {
+            Optional<UserPlans> optionalUserPlans = userPlansRepository.findById(user.getUserPlansId());
+            if (optionalUserPlans.isPresent()) {
+                UserPlans userPlans = optionalUserPlans.get();
+                if (userPlans.getExpiresAt().isAfter(createdDate)) {
+                    expireDate = userPlans.getExpiresAt().plusMinutes(2); // For testing
+                }
+                userPlans.setActive(false);
+                userPlansRepository.save(userPlans);
             }
-            userPlans.setActive(false);
-            userPlansRepository.save(userPlans);
         }
 
         UserPlans userPlans = UserPlans.builder()
@@ -192,6 +256,7 @@ public class VNPayServiceImpl implements VNPayService {
                 .expiresAt(expireDate)
                 .orderCode(orderCode)
                 .active(true)
+                .notified(false)
                 .build();
 
         UserPlans saveUserPlan = userPlansRepository.save(userPlans);
@@ -199,7 +264,12 @@ public class VNPayServiceImpl implements VNPayService {
         user.setUserPlansId(saveUserPlan.getId());
         User updateUser = userService.saveUser(user);
 
-        redisTemplate.delete(userId + "-" + orderCode);
+        redisTemplate.delete(userId + "+-+" + orderCode);
+
+        DateTimeFormatter anotherformatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+        String formatExpirationTime = expireDate.format(anotherformatter);
+        notificationService.sendNotification("Đăng kí thành công gói Pro", "Bạn đã đăng kí thành công gói Pro với ngày hết hạn vào " + formatExpirationTime, List.of(updateUser.getId()));
+        emailService.sendConfirmPaymentEmail(updateUser.getEmail(), orderCode);
         return userMapper.toDto(updateUser);
     }
 }

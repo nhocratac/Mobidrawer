@@ -51,6 +51,8 @@ const PublishedBlog = () => {
           {isLoading ? (
             <div className="space-y-5">
               <Skeleton className="w-full h-[100px]" />
+              <Skeleton className="w-full h-[100px]" />
+              <Skeleton className="w-full h-[100px]" />
             </div>
           ) : (
             <>

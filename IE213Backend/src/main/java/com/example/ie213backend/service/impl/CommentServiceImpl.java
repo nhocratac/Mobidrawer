@@ -1,18 +1,17 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.dto.BlogDto.BlogDto;
 import com.example.ie213backend.domain.dto.CommentDto.CommentDto;
 import com.example.ie213backend.domain.dto.CommentDto.CommentReactInfoDto;
 import com.example.ie213backend.domain.dto.CommentDto.CreateCommentDto;
 import com.example.ie213backend.domain.dto.CommentDto.UpdateCommentDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Comment;
+import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.CommentMapper;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.repository.CommentRepository;
-import com.example.ie213backend.service.BlogService;
-import com.example.ie213backend.service.CommentReactionService;
-import com.example.ie213backend.service.CommentService;
-import com.example.ie213backend.service.UserService;
+import com.example.ie213backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -32,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final UserMapper userMapper;
     private final CommentReactionService commentReactionService;
+    private final NotificationService notificationService;
 
     private static final int defaultSubCommentsSize = 3;
     private static final Pageable defaultSubCommentPageable = PageRequest.of(0, defaultSubCommentsSize, Sort.by("createdAt").descending());
@@ -58,8 +59,22 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         userService.getUserById(createCommentDto.getUserId());
-        blogservice.getBlogById(createCommentDto.getBlogId());
+        BlogDto blogDto = blogservice.getBlogById(createCommentDto.getBlogId());
         Comment comment = commentMapper.toEntity(createCommentDto);
+
+        if(comment.getRepliedId() != null) {
+            Comment repliedComment = getCommentById(comment.getRepliedId());
+
+            if (!repliedComment.getUserId().equals(createCommentDto.getUserId())) {
+                User repliedUser = userService.getUserById(repliedComment.getUserId());
+
+                notificationService.sendNotification(repliedUser.getLastName() + " đã phản hồi comment của bạn!",
+                        repliedUser.getLastName() + " đã phản hồi comment của bạn trong bài viết " + blogDto.getTitle(),
+                        List.of(repliedUser.getId())
+                );
+            }
+
+        }
 
         return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), defaultSubCommentPageable);
     }

@@ -107,8 +107,18 @@ html, body {
   margin: 1rem 0;
 }
 
+.no-reset h2 {
+  font-size: 2.2rem;
+  margin: 1rem 0;
+}
+
+.no-reset h3 {
+  font-size: 1.8rem;
+  margin: 1rem 0;
+}
+
 .no-reset p {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
 }
 
 .no-reset li {

@@ -14,10 +14,12 @@ const Comment = ({
   blogId,
   initialComment,
   onDeleteComment,
+  blogOwnerId
 }: {
   blogId: string;
   initialComment: CommentObj;
   onDeleteComment: (commentId: string) => void;
+  blogOwnerId: string
 }) => {
   const [comment, setComment] = useState<CommentObj>(initialComment);
   const [reaction, setReaction] = useState<ReactionType | null>(
@@ -178,6 +180,10 @@ const Comment = ({
               <h1 className="text-2xl font-medium">
                 {comment.owner.firstName} {comment.owner.lastName}
               </h1>
+              {blogOwnerId === comment.owner.id && (
+                <span className="ml-2 text-lg bg-blue-200 rounded-lg px-2">Tác giả</span>
+              )}
+
               <Dot size={24} />
               <span className="text-xl text-black/70">
                 {formatDate(comment.updatedAt)}
@@ -330,6 +336,7 @@ const Comment = ({
                     blogId={blogId}
                     initialComment={reply}
                     onDeleteComment={handleReplyDeleted}
+                    blogOwnerId={blogOwnerId}
                   />
                 ))
               )}

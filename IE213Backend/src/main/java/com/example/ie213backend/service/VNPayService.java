@@ -9,4 +9,5 @@ public interface VNPayService {
     String createPaymentUrl(CreatePaymentDto createPaymentDto, HttpServletRequest req);
     UserDto validPayment(HttpServletRequest req);
     UserPlansDto getUserPlanInfo(String userPlanId);
+    void checkExpiringMemberships();
 }

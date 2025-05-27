@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import paymentsAPI from "@/api/paymentsAPI";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import userApi from "@/api/userApi";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -43,8 +45,22 @@ const plans = [
 ];
 
 export default function PricingSection() {
-  const { user } = useTokenStore();
+  const { user: tokenUser } = useTokenStore();
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!tokenUser) return;
+
+    userApi
+      .getUserDetailById(tokenUser?.id)
+      .then((data) => {
+        setUser(data);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch user details:", error);
+      });
+  }, [tokenUser]);
 
   function determinePlanText(planName: string): string | undefined {
     if (!user) return "Bắt đầu ngay";
