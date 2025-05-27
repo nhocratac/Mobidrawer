@@ -9,16 +9,18 @@ import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.EmailService;
 import com.example.ie213backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImpl  implements NotificationService {
+public class NotificationServiceImpl implements NotificationService {
     private final BoardRepository boardRepository;
     private final EmailService emailService;
     private final UserRepository userRepository;
@@ -28,7 +30,7 @@ public class NotificationServiceImpl  implements NotificationService {
     public Notification sendRequestJoinBoard(String userId, String boardId) {
         Optional<Board> board = boardRepository.findById(boardId);
         Optional<User> user = userRepository.findById(userId);
-        board.orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+        board.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
         Optional<User> owner = userRepository.findById(board.get().getOwner());
 
         if (user.isEmpty() || owner.isEmpty()) {
@@ -46,13 +48,18 @@ public class NotificationServiceImpl  implements NotificationService {
         Notification notification = new Notification();
         notification.setTitle("Join Request");
         notification.setBody(user.get().getFirstName() + " " + user.get().getLastName() + " requested to join board " + board.get().getName());
-        notification.setReceivers(List.of(owner.get().getId()));
+
+        Notification.Receiver receiver = Notification.Receiver.builder()
+                .id(owner.get().getId())
+                .read(false)
+                .build();
+        notification.setReceivers(List.of(receiver));
 
         return notificationRepository.save(notification); // giả sử bạn có NotificationRepository
     }
 
     public List<Notification> getNotifications(String userId) {
-        return notificationRepository.findAllByReceivers(userId);
+        return notificationRepository.findByReceivers_Id(userId, Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     public void joinBoardSuccessful(String ownerId, Board board, User user) {
@@ -72,7 +79,12 @@ public class NotificationServiceImpl  implements NotificationService {
         Notification notification2 = new Notification();
         notification2.setTitle("Board joined successfully");
         notification2.setBody("You " + " joined the board " + board.getName());
-        notification2.setReceivers(List.of(user.getId()));
+
+        Notification.Receiver receiver = Notification.Receiver.builder()
+                .id(user.getId())
+                .read(false)
+                .build();
+        notification2.setReceivers(List.of(receiver));
         notificationRepository.save(notification2);
     }
 
@@ -81,7 +93,39 @@ public class NotificationServiceImpl  implements NotificationService {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setBody(content);
-        notification.setReceivers(receivers);
+
+        List<Notification.Receiver> receiverList = receivers.stream().map(
+                receiver ->
+                        Notification.Receiver.builder()
+                                .id(receiver)
+                                .read(false)
+                                .build()
+        ).collect(Collectors.toList());
+
+        notification.setReceivers(receiverList);
         notificationRepository.save(notification);
+    }
+
+    @Override
+    public List<Notification> markNotificationAsRead(String userId, List<String> notificationIds) {
+        return notificationIds.stream().map(notificationId -> {
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
+
+            boolean found = false;
+            for (Notification.Receiver receiver : notification.getReceivers()) {
+                if (receiver.getId().equals(userId)) {
+                    receiver.setRead(true);
+                    found = true;
+                    break; // Thoát sớm khi tìm thấy
+                }
+            }
+
+            if (!found) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not a receiver of this notification");
+            }
+
+            return notificationRepository.save(notification);
+        }).toList();
     }
 }

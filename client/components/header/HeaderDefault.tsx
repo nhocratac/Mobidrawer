@@ -4,9 +4,13 @@ import path from "@/utils/path";
 import Link from "next/link";
 import HamburgerMenu from "@/components/header/HamburgerMenu";
 import useTokenStore from "@/lib/Zustand/tokenStore";
-import { Bell } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Notification, getNotifications } from "@/api/notificationAPI";
+import {
+  Notification,
+  getNotifications,
+  markNotificationAsRead,
+} from "@/api/notificationAPI";
 import {
   Popover,
   PopoverContent,
@@ -21,17 +25,24 @@ interface HeaderDefaultProps {
 
 export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationNotSeen, setNotificationNotSeen] = useState<
+    Notification[]
+  >([]); // Số lượng thông báo chưa đọc
   const [isOpen, setIsOpen] = useState(false); // Trạng thái mở thông báo
   const [isOpenPlan, setIsOpenPlan] = useState(false); // Trạng thái mở kế hoạch
   const [expiredDate, setExpiredDate] = useState<string | null>(null); // Ngày hết hạn
-  const { token, user: tokenUser, setUser: setTokenUser } = useTokenStore();
+  const { token, user: tokenUser } = useTokenStore();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    if (token && isOpen) {
-      fetchNotifications();
-    }
-  }, [token, isOpen]);
+    fetchNotifications();
+
+    setInterval(async () => {
+      await fetchNotifications();
+    }, 1000 * 60); // Lấy thông báo mỗi 1 phút
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (user?.plan !== "FREE" && user?.userPlansId) {
@@ -53,12 +64,10 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
       .getUserDetailById(tokenUser?.id)
       .then((data) => {
         setUser(data);
-        setTokenUser(data); // Cập nhật user trong token store
       })
       .catch((error) => {
         console.error("Failed to fetch user details:", error);
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenUser]);
 
   const fetchNotifications = async () => {
@@ -67,6 +76,37 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
       setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!user || !notifications) return;
+
+    const notificationNotSeen = notifications.filter((notification) =>
+      notification.receivers.some(
+        (receiver) => receiver.id === user?.id && !receiver.read
+      )
+    );
+
+    setNotificationNotSeen(notificationNotSeen);
+    console.log("notificationNotSeen", notificationNotSeen);
+  }, [user, notifications]);
+
+  const handleMarkAsRead = async (notificationIds: string[]) => {
+    if (!user || notificationNotSeen.length === 0) return;
+
+    try {
+      const notifications = await markNotificationAsRead(
+        user?.id,
+        notificationIds
+      );
+
+      console.log("notifications", notifications);
+      setNotificationNotSeen((prev) =>
+        prev.filter((n) => !notificationIds.includes(n.id))
+      );
+    } catch (error) {
+      console.error("Error marking notifications as read: ", error);
     }
   };
 
@@ -130,29 +170,69 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
             <Popover open={isOpen} onOpenChange={setIsOpen}>
               <PopoverTrigger className="p-2 rounded-full hover:bg-gray-100">
                 <div className="relative">
-                  <Bell className="h-6 w-6" />
+                  <Bell size={23} />
+                  {notificationNotSeen.length > 0 && (
+                    <span className="absolute -top-3 -right-2 bg-red-500 text-white text-[1rem] rounded-full px-2">
+                      {notificationNotSeen.length}
+                    </span>
+                  )}
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-80 mr-4 p-0">
+              <PopoverContent className="w-[320px] mr-4 p-0">
                 <div className="max-h-[400px] overflow-y-auto">
+                  <div className="p-3 border-b border-gray-200 flex justify-between">
+                    <h3 className="text-[1.5rem] font-semibold">Thông báo</h3>
+
+                    <Button
+                      variant="ghost"
+                      className="p-0 text-[1rem]"
+                      onClick={() => {
+                        handleMarkAsRead(notificationNotSeen.map((n) => n.id));
+                      }}
+                    >
+                      Đánh dấu đã đọc tất cả
+                    </Button>
+                  </div>
+
                   {notifications.length > 0 ? (
                     <div className="divide-y divide-gray-200">
                       {notifications.map((notification) => (
                         <div
                           key={notification.id}
-                          className="p-3 hover:bg-gray-50 cursor-pointer"
+                          className={`p-3 hover:bg-gray-50 ${
+                            notificationNotSeen.some(
+                              (n) => n.id === notification.id
+                            )
+                              ? "bg-blue-50"
+                              : ""
+                          }`}
                         >
                           <div className="flex justify-between">
-                            <h4 className="font-medium">
+                            <h4 className="font-medium text-[1.2rem]">
                               {notification.title}
                             </h4>
-                            <span className="text-xs text-gray-500">
-                              {new Date(notification.updateAt).toLocaleString()}
+                            <span className="text-[1rem] text-gray-500">
+                              {new Date(
+                                notification.createdAt
+                              ).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-[1rem] text-gray-600 mt-1">
                             {notification.body}
                           </p>
+                          {notificationNotSeen.some(
+                            (n) => n.id === notification.id
+                          ) && (
+                            <div className="flex justify-end ">
+                              <Check
+                                size={14}
+                                className="hover:text-blue-500 cursor-pointer"
+                                onClick={() =>
+                                  handleMarkAsRead([notification.id])
+                                }
+                              />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

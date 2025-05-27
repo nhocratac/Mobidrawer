@@ -45,7 +45,7 @@ const plans = [
 ];
 
 export default function PricingSection() {
-  const { user: tokenUser, setUser: setTokenUser } = useTokenStore();
+  const { user: tokenUser } = useTokenStore();
   const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
 
@@ -56,12 +56,10 @@ export default function PricingSection() {
       .getUserDetailById(tokenUser?.id)
       .then((data) => {
         setUser(data);
-        setTokenUser(data); // Cập nhật user trong token store
       })
       .catch((error) => {
         console.error("Failed to fetch user details:", error);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenUser]);
 
   function determinePlanText(planName: string): string | undefined {

@@ -111,7 +111,7 @@ const page = async (props: Props<{ slug: string }>) => {
           </div>
         )}
 
-        <Comments blogId={id as string} />
+        <Comments blogId={id as string} blogOwnerId={blog.owner.id} />
       </div>
     </div>
   );

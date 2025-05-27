@@ -46,8 +46,6 @@ export const serializeSlateToHtml = (node: Descendant) => {
       return `<div class="flex justify-center items-center py-5">
         <Image style="width: 600px; height: 350px; " src="${node.url}" alt="${node.alt}">${children}</Image>
       </div>`;
-    case "heading-three":
-      return `<h3 style="${style}">${children}</h3>`;
     case "link":
       return `<a href="${node.url}" target="_blank">${children}</a>`;
     default:

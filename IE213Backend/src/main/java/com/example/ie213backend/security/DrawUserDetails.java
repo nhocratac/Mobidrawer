@@ -19,10 +19,10 @@ public class DrawUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        if (user.getPlan() != null && user.getRole() != null) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
-            authorities.add(new SimpleGrantedAuthority("PLAN_" + user.getPlan()));
-        }
+//        System.out.println("User role: " + user.getRole());
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().toString());
+//        System.out.println("Granted authority: " + authority.getAuthority());
+        authorities.add(authority);
         return authorities;
     }
 

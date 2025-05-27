@@ -12,7 +12,7 @@ import Comment from "./Comment";
 import CommentInput from "./CommentInput";
 import { toast } from "@/hooks/use-toast";
 
-const CommentsBlock = ({ blogId }: { blogId: string }) => {
+const CommentsBlock = ({ blogId, blogOwnerId }: { blogId: string, blogOwnerId: string }) => {
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<Pageable<CommentObj>[]>([]);
   const [loading, setLoading] = useState(false);
@@ -139,6 +139,7 @@ const CommentsBlock = ({ blogId }: { blogId: string }) => {
               blogId={blogId}
               initialComment={comment}
               onDeleteComment={handleReplyDeleted}
+              blogOwnerId={blogOwnerId}
             />
           ))
         )}

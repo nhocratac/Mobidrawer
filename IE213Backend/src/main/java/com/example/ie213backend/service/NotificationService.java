@@ -11,4 +11,5 @@ public interface NotificationService {
     List<Notification> getNotifications(String userId) ;
     void joinBoardSuccessful(String ownerId, Board board, User user);
     void sendNotification(String title, String content, List<String> receivers);
+    List<Notification> markNotificationAsRead(String userId, List<String> notificationIds);
 }

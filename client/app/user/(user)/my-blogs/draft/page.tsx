@@ -14,19 +14,15 @@ const DraftBlog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
 
-
   useEffect(() => {
     const fetchDraftBlogs = async () => {
       if (!user) {
-        return null
+        return null;
       }
       try {
         setIsLoading(true);
-        const blogs: Pageable<Blog> = await blogAPIs.getBlogsByUserIdAndIsPublished(
-          user?.id,
-          false,
-          page
-        );
+        const blogs: Pageable<Blog> =
+          await blogAPIs.getBlogsByUserIdAndIsPublished(user?.id, false, page);
 
         setDraftBlogs(blogs);
       } catch (error) {
@@ -37,7 +33,7 @@ const DraftBlog = () => {
     };
 
     fetchDraftBlogs();
-  }, [refresh, page,user?.id]);
+  }, [refresh, page, user?.id]);
 
   return (
     <div className="space-y-6">
@@ -50,6 +46,8 @@ const DraftBlog = () => {
           {isLoading ? (
             <div className="space-y-5">
               <Skeleton className="w-full h-[100px]" />
+              <Skeleton className="w-full h-[100px]" />
+              <Skeleton className="w-full h-[100px]" />
             </div>
           ) : (
             <>
@@ -58,11 +56,13 @@ const DraftBlog = () => {
               ))}
             </>
           )}
-          {draftBlogs.totalPages > 1 && <Pageable
-            page={page}
-            setPage={setPage}
-            totalPages={draftBlogs.totalPages}
-          />}
+          {draftBlogs.totalPages > 1 && (
+            <Pageable
+              page={page}
+              setPage={setPage}
+              totalPages={draftBlogs.totalPages}
+            />
+          )}
         </>
       ) : (
         <p className="text-2xl">Chưa có blog nào</p>

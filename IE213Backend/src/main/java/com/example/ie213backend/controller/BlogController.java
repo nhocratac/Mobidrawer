@@ -39,7 +39,7 @@ public class BlogController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADNMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BlogDto> createBlog(@RequestBody @Valid CreateBlogDto createBlogDto) {
         BlogDto blog = blogService.createBlog(createBlogDto);
 
@@ -54,7 +54,7 @@ public class BlogController {
     }
 
     @PutMapping("/{blogId}")
-    @PreAuthorize("hasRole('ADNMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BlogDto> updateBlog(@PathVariable String blogId, @RequestBody UpdateBlogDto updateBlogDto) {
         BlogDto blog = blogService.updateBlog(updateBlogDto, blogId);
 
@@ -62,15 +62,16 @@ public class BlogController {
     }
 
     @DeleteMapping("/{blogId}")
-    @PreAuthorize("hasRole('ADNMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteBlog(@PathVariable String blogId) {
         blogService.deleteBlog(blogId);
     }
 
     @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<BlogDto>> listBlogs(@PathVariable String userId,
                                                    @RequestParam(defaultValue = "0") int page,
-                                                   @RequestParam(defaultValue = "10") int size,
+                                                   @RequestParam(defaultValue = "3") int size,
                                                    @RequestParam(defaultValue = "false") boolean isPublished) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<BlogDto> blogDtos = blogService.listBlogByUserId(userId, isPublished, pageable);
