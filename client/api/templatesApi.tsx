@@ -11,13 +11,13 @@ const getTemplates = async (params: { page: number; size: number; search?: strin
 }
 
 
-const createTemplate = async (data : {
+const createTemplate = async (data: {
     title: string;
     description: string;
     isPublic: boolean;
-    previewImageUrl : string;
-    canvasPaths : {}[],
-    stickyNotes : {}[],
+    previewImageUrl: string;
+    canvasPaths: {}[],
+    stickyNotes: {}[],
 }) => {
     try {
         const response = await httpRequest.post("/template", data);
@@ -27,11 +27,20 @@ const createTemplate = async (data : {
     }
 }
 
+const usingTemplate = async (templatId: string) => {
+    try {
+        const response = await httpRequest.post("/template/using/template/" + templatId);
+        return response.data;
+    } catch (error) {
+     throw error   
+    }
+}
 
 const templatesApi = {
 
     getTemplates,
     createTemplate,
+    usingTemplate
 };
 
 export default templatesApi;

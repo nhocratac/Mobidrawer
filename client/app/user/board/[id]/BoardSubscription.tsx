@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client,sessionId } = useStompStore();
-  const { setCanvasPaths, addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
+  const { addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
   const { addStickyNote,addStickyNotes, moveStickyNote ,resizeStickyNote,changTextStickNote,selectStickyNote,deselectStickyNote,deleteStickyNote} = useStickyNoteStore()
   const {markOnlineUsers} = useUserInBoardStore()
   useEffect(() => {
@@ -111,9 +111,9 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       deleteStickyNote(payload.id)
     })
 
-    // client.publish({
-    //   destination: `/app/board/join/${boardId}`
-    // });
+    client.publish({
+      destination: `/app/board/join/${boardId}`
+    });
   
     return () => {
       client.publish({

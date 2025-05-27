@@ -45,6 +45,11 @@ public class CanvasPathServiceImpl implements CanvasPathService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền vẽ trên bảng này");
     }
 
+    @Override
+    public List<CanvasPath> createCanvasPaths(List<CanvasPath> canvasPaths) {
+        return canvasPathRepository.saveAll(canvasPaths);
+    }
+
     public void deleteCanvas(String id, String boardId, String userId) {
         String role  = boardService.getRoleOfMember(boardId, userId);
         if(Objects.equals(role, "EDITOR") | Objects.equals(role,"OWNER"))

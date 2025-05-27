@@ -1,5 +1,5 @@
 'use client'
-import templatesApi from "@/api/teamplatesApi"
+import templatesApi from "@/api/templatesApi"
 import LiItem from "@/components/Store/Item"
 import useTemplateStore from "@/lib/Zustand/templateStore"
 import { useEffect, useState } from 'react'

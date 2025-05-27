@@ -1,6 +1,7 @@
 package com.example.ie213backend.controller;
 
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
+import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.Template;
 import com.example.ie213backend.service.TemplateService;
 import lombok.RequiredArgsConstructor;
@@ -62,5 +63,13 @@ public class TemplateController {
     public ResponseEntity<Void> deleteTemplate(@PathVariable String id) {
         templateService.deleteTemplate(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/using/template/{id}")
+    public ResponseEntity<Board> usingTemplate(
+            @PathVariable String id,
+            @RequestAttribute("user") UserDto userDto
+    ) {
+        return ResponseEntity.ok(templateService.usingTemplate(templateService.getTemplate(id), userDto.getId()));
     }
 }

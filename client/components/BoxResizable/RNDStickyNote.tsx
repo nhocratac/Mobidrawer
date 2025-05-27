@@ -2,6 +2,7 @@ import useDebounce from "@/hooks/useDebounce";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import { StickyNote } from "@/lib/Zustand/type.type";
+import { exportStickyNoteToPDF } from "@/lib/export";
 import React, { memo, useEffect, useRef, useState } from "react";
 import { DraggableData, DraggableEvent } from "react-draggable";
 import { Rnd } from "react-rnd";
@@ -14,7 +15,7 @@ interface RNDStickyNoteProps {
   handleChangeTextStickyNote: (stickyNoteId: string, text: string) => void;
   handleLockStickyNote: (stickyNoteId: string) => void;
   handleUnLockStickyNote: (stickyNoteId: string) => void;
-  handleDeleteStickyNote: (id : string ) => void
+  handleDeleteStickyNote: (id: string) => void
 }
 
 const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
@@ -34,7 +35,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
   const lastUpdateRef = useRef<number>(0);
   const RndRef = useRef<Rnd | null>(null);
   const { user } = useTokenStore();
-  const { moveStickyNote, resizeStickyNote,changTextStickNote } = useStickyNoteStore();
+  const { moveStickyNote, resizeStickyNote, changTextStickNote } = useStickyNoteStore();
   const debouncedText = useDebounce(text, 1000);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
 
   const onChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-    changTextStickNote(stickyNote.id,e.target.value)
+    changTextStickNote(stickyNote.id, e.target.value)
   };
 
   const onDrag = (e: DraggableEvent, d: DraggableData) => {
@@ -196,7 +197,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
           }}
         />
         {!!stickyNote.isSelected && <div className="absolute top-0 right-0 p-1 max-w-[80px] whitespace-nowrap overflow-hidden text-ellipsis bg-lime-700 text-white rounded-bl-xl">
-          Peter
+          Locking
         </div>}
 
         {contextMenu && (
@@ -249,6 +250,22 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
             >
               ✏️ Edit Note
             </button>
+            <button
+              className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
+              onClick={() => {
+                setContextMenu(null);
+                exportStickyNoteToPDF({
+                  text: stickyNote.text,
+                  color: stickyNote.color,
+                  width: stickyNote.size.width,
+                  height: stickyNote.size.height,
+                  noteId: stickyNote.id,
+                });
+              }}
+
+            >
+              🧾 Export PDF
+            </button>
 
             <button
               className="w-full text-left px-2 py-1 text-red-600 hover:bg-red-100 rounded"
@@ -260,6 +277,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
             >
               🗑 Delete Note
             </button>
+
           </div>
         )}
       </div>
