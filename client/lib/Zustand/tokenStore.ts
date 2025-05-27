@@ -24,7 +24,7 @@ interface TokenState {
 const useTokenStore = create<TokenState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         token: "",
         user: null, // 🆕 Thêm user vào store
 
