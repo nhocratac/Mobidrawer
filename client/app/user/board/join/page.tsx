@@ -58,14 +58,14 @@ export default function JoinBoardPage() {
         <div className="h-screen bg-green-500 w-screen flex flex-col lg:flex-row justify-center items-center">
             <Suspense fallback={<div className="text-white text-xl">Đang tải...</div>}>
                 <JoinBoardContent />
+                <Image
+                    src="https://res.cloudinary.com/dk922duea/image/upload/v1747119098/women_with_tab_1_fnuxb9.png"
+                    height={553}
+                    width={793}
+                    alt="women touching tablet"
+                    className="bg-gradient-to-tr from-[#CFED38] to-[#F4E181] h-full"
+                />
             </Suspense>
-            <Image
-                src="https://res.cloudinary.com/dk922duea/image/upload/v1747119098/women_with_tab_1_fnuxb9.png"
-                height={553}
-                width={793}
-                alt="women touching tablet"
-                className="bg-gradient-to-tr from-[#CFED38] to-[#F4E181] h-full w-full"
-            />
-        </div>  
+        </div>
     );
 }

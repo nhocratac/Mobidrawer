@@ -1,10 +1,12 @@
 'use client'
+import templatesApi from "@/api/templatesApi";
 import userApi from "@/api/userApi";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Template } from "@/lib/Zustand/templateStore";
 import { Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -47,6 +49,7 @@ const UserLiItem = ({ owner }: { owner: string }) => {
 }
 
 const LiItem = ({
+    id,
     previewImageUrl,
     owner,
     title,
@@ -55,10 +58,24 @@ const LiItem = ({
     const { toast } = useToast()
 
     const handleAdd = () => {
-        toast({
-            title: "Thành công",
-            description: "Bạn đã thêm mẫu thành công",
-        })
+        templatesApi.usingTemplate(id)
+            .then(res => {
+                console.log(res)
+                toast({
+                    title: "Thành công",
+                    description: (
+                        <div>
+                            Bạn đã thêm mẫu thành công <Link href={"/user/board/" + res.id} className="font-bold underline"> tại đây</Link>.
+                        </div>
+                    ),
+                })
+            }).catch((err) => {
+                toast({
+                    title: "Thất bại",
+                    description : `${err.response.data.message}`,
+                    variant: "destructive",
+                })
+            })
     }
     return (
         <li className="flex flex-col gap-1 border-b pb-2 mx-auto w-full max-w-[280px]">
