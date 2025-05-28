@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto createComment(CreateCommentDto createCommentDto) {
-        userService.getUserById(createCommentDto.getUserId());
+        User owner = userService.getUserById(createCommentDto.getUserId());
         BlogDto blogDto = blogservice.getBlogById(createCommentDto.getBlogId());
         Comment comment = commentMapper.toEntity(createCommentDto);
 
@@ -66,11 +66,11 @@ public class CommentServiceImpl implements CommentService {
             Comment repliedComment = getCommentById(comment.getRepliedId());
 
             if (!repliedComment.getUserId().equals(createCommentDto.getUserId())) {
-                User repliedUser = userService.getUserById(repliedComment.getUserId());
+                String name = owner.getFirstName() + " " + owner.getLastName();
 
-                notificationService.sendNotification(repliedUser.getLastName() + " đã phản hồi comment của bạn!",
-                        repliedUser.getLastName() + " đã phản hồi comment của bạn trong bài viết " + blogDto.getTitle(),
-                        List.of(repliedUser.getId())
+                notificationService.sendNotification(name + " đã phản hồi comment của bạn!",
+                        name + " đã phản hồi comment của bạn trong bài viết " + blogDto.getTitle(),
+                        List.of(repliedComment.getUserId())
                 );
             }
 

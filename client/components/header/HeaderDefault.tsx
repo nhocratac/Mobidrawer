@@ -171,15 +171,16 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
               <PopoverTrigger className="p-2 rounded-full hover:bg-gray-100">
                 <div className="relative">
                   <Bell size={23} />
-                  {notificationNotSeen.length > 0 && (
-                    <span className="absolute -top-3 -right-2 bg-red-500 text-white text-[1rem] rounded-full px-2">
-                      {notificationNotSeen.length}
-                    </span>
-                  )}
+                  <span className="absolute -top-3 -right-2 bg-red-500 text-white text-[1rem] rounded-full px-2">
+                    {notificationNotSeen.length > 0 &&
+                      notificationNotSeen.length <= 99 &&
+                      notificationNotSeen.length}
+                    {notificationNotSeen.length > 99 && "99+"}
+                  </span>
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] mr-4 p-0">
-                <div className="max-h-[400px] overflow-y-auto">
+                <div>
                   <div className="p-3 border-b border-gray-200 flex justify-between">
                     <h3 className="text-[1.5rem] font-semibold">Thông báo</h3>
 
@@ -194,53 +195,55 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
                     </Button>
                   </div>
 
-                  {notifications.length > 0 ? (
-                    <div className="divide-y divide-gray-200">
-                      {notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 hover:bg-gray-50 ${
-                            notificationNotSeen.some(
-                              (n) => n.id === notification.id
-                            )
-                              ? "bg-blue-50"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex justify-between">
-                            <h4 className="font-medium text-[1.2rem]">
-                              {notification.title}
-                            </h4>
-                            <span className="text-[1rem] text-gray-500">
-                              {new Date(
-                                notification.createdAt
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-[1rem] text-gray-600 mt-1">
-                            {notification.body}
-                          </p>
-                          {notificationNotSeen.some(
-                            (n) => n.id === notification.id
-                          ) && (
-                            <div className="flex justify-end ">
-                              <Check
-                                size={14}
-                                className="hover:text-blue-500 cursor-pointer"
-                                onClick={() =>
-                                  handleMarkAsRead([notification.id])
-                                }
-                              />
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      <div className="divide-y divide-gray-200">
+                        {notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`p-3 hover:bg-gray-50 ${
+                              notificationNotSeen.some(
+                                (n) => n.id === notification.id
+                              )
+                                ? "bg-blue-50"
+                                : ""
+                            }`}
+                          >
+                            <div className="flex justify-between">
+                              <h4 className="font-medium text-[1.2rem]">
+                                {notification.title}
+                              </h4>
+                              <span className="text-[1rem] text-gray-500">
+                                {new Date(
+                                  notification.createdAt
+                                ).toLocaleString()}
+                              </span>
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-gray-500">
-                      No notifications
-                    </div>
-                  )}
+                            <p className="text-[1rem] text-gray-600 mt-1">
+                              {notification.body}
+                            </p>
+                            {notificationNotSeen.some(
+                              (n) => n.id === notification.id
+                            ) && (
+                              <div className="flex justify-end ">
+                                <Check
+                                  size={14}
+                                  className="hover:text-blue-500 cursor-pointer"
+                                  onClick={() =>
+                                    handleMarkAsRead([notification.id])
+                                  }
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-gray-500">
+                        No notifications
+                      </div>
+                    )}
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>

@@ -113,7 +113,7 @@ export default function PricingSection() {
               <Button
                 className="w-full bg-black text-white hover:bg-black/80 text-xl py-6"
                 onClick={() => {
-                  if (!user) return;
+                  if (!user || plan.name === "Miễn phí") return;
 
                   paymentsAPI
                     .createPaymentUrl(
@@ -135,7 +135,7 @@ export default function PricingSection() {
                 }}
                 disabled={
                   plan.name === "Miễn phí" &&
-                  (user?.plan === "PRO" || user?.plan === "ENTERPRISE")
+                  (!user?.plan || user?.plan === "FREE" || user?.plan === "PRO" || user?.plan === "ENTERPRISE")
                 }
               >
                 {determinePlanText(plan.name)}

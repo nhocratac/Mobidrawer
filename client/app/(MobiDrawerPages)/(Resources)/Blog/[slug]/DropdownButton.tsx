@@ -34,26 +34,25 @@ const DropdownButton = ({
   };
 
   const shareOnFacebook = () => {
+    const url = window.location.href;
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        currentUrl
-      )}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       "_blank"
     );
   };
 
   const shareOnTwitter = () => {
+    const url = window.location.href;
     window.open(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}`,
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`,
       "_blank"
     );
   };
 
   const shareOnLinkedIn = () => {
+    const url = window.location.href;
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        currentUrl
-      )}`,
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       "_blank"
     );
   };

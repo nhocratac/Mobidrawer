@@ -122,7 +122,7 @@ public class VNPayServiceImpl implements VNPayService {
                         .orderCode(vnp_TxnRef)
                         .createdAt(vnp_CreateDate)
                         .build(),
-                Duration.ofMinutes(10));
+                Duration.ofMinutes(15));
         return vnPayUtil.vnp_PayUrl + "?" + queryUrl;
     }
 
