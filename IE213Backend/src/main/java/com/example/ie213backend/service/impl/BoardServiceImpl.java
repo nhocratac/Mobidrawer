@@ -1,5 +1,7 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.Plans;
+import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.dto.BoardDto.BoardDTO;
 import com.example.ie213backend.domain.dto.BoardDto.BoardFullDetailResponse;
 import com.example.ie213backend.domain.dto.BoardDto.MemberDetailDTO;
@@ -40,7 +42,7 @@ public class BoardServiceImpl implements BoardService {
     private final NotificationService notificationService;
 
     @Override
-    public BoardFullDetailResponse getBoard(String id, String userId ) {
+    public BoardFullDetailResponse getBoard(String id, String userId) {
         //
         BoardFullDetailResponse foundBoard = boardCustomRepository.getBoardWithCanvasPaths(id);
         if (foundBoard == null) {
@@ -60,12 +62,20 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board createBoard(Board board,String ownerId) {
+    public Board createBoard(Board board, String ownerId) {
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerId));
+
+        if (boardRepository.countByOwner(ownerId) >= 1 && (user.getPlan() == null || user.getPlan() == Plans.FREE)) {
+            System.out.println(boardRepository.countByOwner(ownerId));
+            throw new IllegalArgumentException("User đã đạt mức tối đã của plan Free!");
+        }
+
         if (board.getMembers() == null) {
             board.setMembers(new ArrayList<>());
         }
 
-        if(board.getOption() == null) {
+        if (board.getOption() == null) {
             board.setOption(new Board.Option(
                     true,
                     "bg-slate-700"
@@ -87,10 +97,17 @@ public class BoardServiceImpl implements BoardService {
     public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
+//        User owner = userRepository.findById(ownerID)
+//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerID));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
+
+        // Kiểm tra xem nếu user đang là plan free và số lượng member vượt quá cho phép là 3 hay chưa
+//        if (board.getMembers().size() >= 3 && (owner.getPlan() == null || owner.getPlan() == Plans.FREE)) {
+//            throw new IllegalArgumentException("Bạn đã vượt mức member tối đa cho phép ở board này!");
+//        }
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
@@ -109,7 +126,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board  changeRoleOfMember(String boardId, String userId, Board.ROLE role,String ownerID) {
+    public Board changeRoleOfMember(String boardId, String userId, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
 
@@ -145,9 +162,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public    String getRoleOfMember(String boardId, String userId) {
+    public String getRoleOfMember(String boardId, String userId) {
         Board board = boardRepository.findByid(boardId);
-        if(board.getOwner().equals(userId)) {
+        if (board.getOwner().equals(userId)) {
             return "OWNER";
         }
         for (Board.Member member : board.getMembers()) {
@@ -159,14 +176,14 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public  Board updateThumbnail(String boardId, String userId,String newThumbnail) {
-        String role = getRoleOfMember(boardId,userId);
-        if(Objects.equals(role, "OWNER")) {
+    public Board updateThumbnail(String boardId, String userId, String newThumbnail) {
+        String role = getRoleOfMember(boardId, userId);
+        if (Objects.equals(role, "OWNER")) {
             Board board = boardRepository.findById(boardId)
                     .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
             board.setThumbnail(newThumbnail);
             return boardRepository.save(board);
-        }
-        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Bạn không được phép cập nhật thumnail cho board");
+        } else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn không được phép cập nhật thumnail cho board");
     }
 }

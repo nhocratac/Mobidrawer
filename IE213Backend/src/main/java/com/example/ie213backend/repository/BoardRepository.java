@@ -25,4 +25,6 @@ public interface BoardRepository extends MongoRepository<Board, ObjectId> {
     @Query(value = "{ '_id': ?0, '$or': [ { 'members.memberId': ?1 }, { 'owner': ?1 } ] }",
             fields = "{ 'members': 1 ,'owner': 1}")
     Optional<Board> findUserRoleInBoard(String boardId, String userId);
+
+    long countByOwner(String owner);
 }

@@ -11,19 +11,22 @@ const paymentsAPI = {
       amount,
       orderInfo,
       orderType,
-      plan
+      plan,
     });
 
     return data;
   },
 
   async validPayment(paymentInfo: any): Promise<User> {
-    const { data } = await httpRequest.get(
-      "/payments/valid-payment",
-      {
-        params: paymentInfo
-      }
-    );
+    const { data } = await httpRequest.get("/payments/valid-payment", {
+      params: paymentInfo,
+    });
+
+    return data;
+  },
+
+  async getPaymentInfo(paymentId: string): Promise<UserPlanInfo> {
+    const { data } = await httpRequest.get(`/payments/${paymentId}`);
 
     return data;
   },

@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,7 +18,12 @@ public class DrawUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("USER"));
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (user.getPlan() != null && user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+            authorities.add(new SimpleGrantedAuthority("PLAN_" + user.getPlan()));
+        }
+        return authorities;
     }
 
     @Override
@@ -30,13 +36,21 @@ public class DrawUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public String getUserId() { return user.getId(); }
+    public String getUserId() {
+        return user.getId();
+    }
 
-    public String getPhone () { return user.getPhone(); }
+    public String getPhone() {
+        return user.getPhone();
+    }
 
-    public String getFirstName () { return user.getFirstName(); }
+    public String getFirstName() {
+        return user.getFirstName();
+    }
 
-    public String getLastName () { return user.getLastName(); }
+    public String getLastName() {
+        return user.getLastName();
+    }
 
 
     @Override

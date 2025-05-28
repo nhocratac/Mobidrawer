@@ -12,6 +12,7 @@ import {
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
 import { produce } from 'immer';
+import MultiCursor from "../MultiCursor/MultiCursor";
 
 // Định nghĩa interface cho tọa độ
 interface Point {
@@ -77,10 +78,11 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   let moveUpdateTimeout: NodeJS.Timeout | null = null;
   const { canvasPaths, setCanvasPaths ,setSelectedPath,addCanvasPaths,addPointToLastPath} = useCanvasPathsStore();
   // const { canvasPaths, setCanvasPaths, updateCanvasPath ,setSelectedPath,addCanvasPaths,addPointToLastPath} = useCanvasPathsStore();
+  const [lastCursorPosition, setLastCursorPosition] = useState<Point | null>(null);
+  const cursorBroadcastInterval = useRef<NodeJS.Timeout | null>(null);
 
   // socket 
   const {client} = useStompStore()
-
 
   // Cập nhật state từ board nếu có
   useEffect(() => {
@@ -101,9 +103,25 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     y: (y - translate.y - penThickness / 2) / scale,
   });
 
+  const getTransformedCoordinatesForCursor = (x: number, y: number): Point => ({
+    x: (x - translate.x) / scale,
+    y: (y - translate.y) / scale,
+  })
   // Xử lý undo bằng phím z
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if the target is an input element (input, textarea, contenteditable)
+      const target = e.target as HTMLElement;
+      const isInputElement = target instanceof HTMLInputElement || 
+                            target instanceof HTMLTextAreaElement || 
+                            target.contentEditable === 'true' ||
+                            target.closest('input, textarea, [contenteditable="true"]');
+      
+      // Skip global keyboard handling if user is typing in an input field
+      if (isInputElement) {
+        return;
+      }
+
       if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
         if (!undoPressed) {
           e.preventDefault();
@@ -290,6 +308,30 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
     };
   }
 
+  // Cập nhật vị trí cursor độ trễ 100ms
+  useEffect(() => {
+    cursorBroadcastInterval.current = setInterval(() => {
+      if(lastCursorPosition && client && boardId) {
+        client.publish({
+          destination: `/app/board/cursor/${boardId}`,
+          body: JSON.stringify({
+            x: lastCursorPosition.x,
+            y: lastCursorPosition.y,
+            userId: "current-user-id",
+            userName: "You",
+            color: "#FF0000",
+            lastUpdated: Date.now()
+          })
+        })
+      }
+    }, 100);
+
+    return () => {
+      if(cursorBroadcastInterval.current)
+        clearInterval(cursorBroadcastInterval.current);
+    }
+  }, [lastCursorPosition, client, boardId])
+
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (mode === "drag" && e.button === 0) {
       e.preventDefault();
@@ -330,14 +372,15 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
+    const cursorCoords = getTransformedCoordinatesForCursor(e.clientX, e.clientY);
+    setLastCursorPosition(cursorCoords);
+    
     if (isPanning && mode === "drag") {
       setTranslate({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
     } else if (isDrawing && mode === "pen") {
-      const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
       addPointToLastPath(x,y)
-      // Nếu cần, gửi dữ liệu realtime qua WebSocket
     } else if (isSelecting && mode === "idle") {
-      const { x, y } = getTransformedCoordinates(e.clientX, e.clientY);
       setSelectionRect((prev) => (prev ? { ...prev, x2: x, y2: y } : null));
     } 
     else if (isMoving && mode === "idle") {
@@ -512,6 +555,7 @@ const ZoomableGrid: React.FC<ZoomableGridProps> = ({ children, onSetScale, board
       <div className="absolute top-0 bg-red-600" style={getTransformedStyle()}>
         {children}
       </div>
+      <MultiCursor scale={scale} translate={translate} boardId={boardId} />
     </div>
   );
 };

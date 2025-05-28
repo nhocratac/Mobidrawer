@@ -3,6 +3,7 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.dto.ApiTemplateResponse;
 import com.example.ie213backend.domain.dto.PaymentDto.CreatePaymentDto;
 import com.example.ie213backend.domain.dto.PaymentDto.SaveUserPlanDto;
+import com.example.ie213backend.domain.dto.PaymentDto.UserPlansDto;
 import com.example.ie213backend.domain.dto.PaymentDto.ValidPaymentDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.service.VNPayService;
@@ -36,5 +37,12 @@ public class PaymentController {
         UserDto message = vnPayService.validPayment(req);
 
         return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/{userPlanId}")
+    public ResponseEntity<UserPlansDto> getUserPlans(@PathVariable String userPlanId) {
+        UserPlansDto userPlansDto = vnPayService.getUserPlanInfo(userPlanId);
+
+        return ResponseEntity.ok(userPlansDto);
     }
 }

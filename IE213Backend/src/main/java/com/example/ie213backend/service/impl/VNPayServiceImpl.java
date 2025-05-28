@@ -3,10 +3,12 @@ package com.example.ie213backend.service.impl;
 import com.example.ie213backend.domain.Plans;
 import com.example.ie213backend.domain.dto.PaymentDto.CreatePaymentDto;
 import com.example.ie213backend.domain.dto.PaymentDto.PaymentRequest;
+import com.example.ie213backend.domain.dto.PaymentDto.UserPlansDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.domain.model.UserPlans;
 import com.example.ie213backend.mapper.UserMapper;
+import com.example.ie213backend.mapper.UserPlanMapper;
 import com.example.ie213backend.repository.UserPlansRepository;
 import com.example.ie213backend.service.UserService;
 import com.example.ie213backend.service.VNPayService;
@@ -32,6 +34,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final UserPlansRepository userPlansRepository;
     private final UserMapper userMapper;
     private final RedisTemplate<String, PaymentRequest> redisTemplate;
+    private final UserPlanMapper userPlanMapper;
 
     @Override
     public String createPaymentUrl(CreatePaymentDto createPaymentDto, HttpServletRequest req) {
@@ -106,7 +109,7 @@ public class VNPayServiceImpl implements VNPayService {
         String vnp_SecureHash = vnPayUtil.hmacSHA512(vnPayUtil.vnp_HashSecret, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
 
-        redisTemplate.opsForValue().set(req.getAttribute("userId") + "-" + vnp_TxnRef,
+        redisTemplate.opsForValue().set(req.getAttribute("userId") + "+-+" + vnp_TxnRef,
                 PaymentRequest.builder()
                         .userId(req.getAttribute("userId").toString())
                         .plan(createPaymentDto.getPlan())
@@ -120,7 +123,7 @@ public class VNPayServiceImpl implements VNPayService {
 
     @Override
     public UserDto validPayment(HttpServletRequest req) {
-        String redisKey = req.getAttribute("userId") + "-" + req.getParameter("vnp_TxnRef");
+        String redisKey = req.getAttribute("userId") + "+-+" + req.getParameter("vnp_TxnRef");
         System.out.println(redisKey);
         PaymentRequest paymentRequest = redisTemplate.opsForValue().get(redisKey);
 //        System.out.println(paymentRequest.toString());
@@ -157,12 +160,30 @@ public class VNPayServiceImpl implements VNPayService {
         }
     }
 
+    @Override
+    public UserPlansDto getUserPlanInfo(String userPlanId) {
+        UserPlans userPlans = userPlansRepository.findById(userPlanId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy plan với id: " + userPlanId));
+
+        return userPlanMapper.toDto(userPlans);
+    }
+
     private UserDto processPayment(String userId, Plans plan, Long amount, String orderCode, String payDate) {
+        User user = userService.getUserById(userId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         LocalDateTime createdDate = LocalDateTime.parse(payDate, formatter);
         LocalDateTime expireDate = createdDate.plusMonths(1);
 
-        User user = userService.getUserById(userId);
+        Optional<UserPlans> optionalUserPlans = userPlansRepository.findById(user.getUserPlansId());
+        if (optionalUserPlans.isPresent()) {
+            UserPlans userPlans = optionalUserPlans.get();
+            if (userPlans.getExpiresAt().isAfter(createdDate)) {
+                expireDate = userPlans.getExpiresAt().plusMonths(1);
+            }
+            userPlans.setActive(false);
+            userPlansRepository.save(userPlans);
+        }
+
         UserPlans userPlans = UserPlans.builder()
                 .userId(userId)
                 .plan(plan)
@@ -170,7 +191,7 @@ public class VNPayServiceImpl implements VNPayService {
                 .createdAt(createdDate)
                 .expiresAt(expireDate)
                 .orderCode(orderCode)
-                .isActive(true)
+                .active(true)
                 .build();
 
         UserPlans saveUserPlan = userPlansRepository.save(userPlans);
