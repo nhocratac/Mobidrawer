@@ -4,6 +4,7 @@ import { ChatMessage, geminiChatWithStickyNotes } from '@/api/AiApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { clearChatHistory, loadChatHistory, saveChatHistory } from '@/lib/chatHistoryStorage';
+import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { CreateStickNoteDto } from '@/lib/Zustand/type.type';
 import { Bot, Send, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -19,10 +20,10 @@ interface AIChatPopupProps {
   isOpen: boolean;
   onClose: () => void;
   boardId?: string;
-  CreateManyStickyNotes : (stickyNotes: CreateStickNoteDto []) => void
+  CreateManyStickyNotes: (stickyNotes: CreateStickNoteDto[]) => void
 }
 
-const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatPopupProps) => {
+const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes }: AIChatPopupProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -67,12 +68,12 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
 
   // Transform AiApi StickyNote to Zustand StickyNote format
   const transformStickyNotes = (
-    notes: { id: string; content: string; color: string }[], 
+    notes: { id: string; content: string; color: string }[],
     // boardId: string
   ): CreateStickNoteDto[] => {
     return notes.map(note => ({
       // Use the exact color from AI response
-      color: note.color, 
+      color: note.color,
       // Use the exact content from AI response
       text: note.content,
       size: {
@@ -134,11 +135,12 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
       if (response.hasFunctionCall && response.stickyNotes && response.stickyNotes.length > 0 && boardId) {
         // Transform the sticky notes to match the Zustand store format
         const transformedNotes = transformStickyNotes(response.stickyNotes);
-        
+
         // Add the transformed notes to the store
-        CreateManyStickyNotes(transformedNotes)
-        // setStickyNotes(transformedNotes);
-        
+        //CreateManyStickyNotes(transformedNotes)
+        useTempChangeStore.getState()
+          .setTempChanges([], transformedNotes)        // setStickyNotes(transformedNotes);
+
         // Add notification about sticky notes creation if no response text
         if (!response.responseText) {
           const notificationMessage = {
@@ -149,7 +151,7 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
           };
           setMessages((prev) => [...prev, notificationMessage]);
         }
-      } 
+      }
       // If no response text was returned (error case)
       else if (!response.responseText) {
         const fallbackMessage = {
@@ -226,11 +228,10 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] px-3 py-2 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-blue-500 text-white rounded-tr-none'
-                  : 'bg-gray-100 text-gray-800 rounded-tl-none'
-              }`}
+              className={`max-w-[80%] px-3 py-2 rounded-lg ${message.role === 'user'
+                ? 'bg-blue-500 text-white rounded-tr-none'
+                : 'bg-gray-100 text-gray-800 rounded-tl-none'
+                }`}
             >
               {message.content}
             </div>
@@ -261,8 +262,8 @@ const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes}: AIChatP
           disabled={isLoading}
           className="flex-1"
         />
-        <Button 
-          onClick={handleSendMessage} 
+        <Button
+          onClick={handleSendMessage}
           disabled={isLoading || !inputValue.trim()}
           className="bg-blue-600 hover:bg-blue-700"
         >
