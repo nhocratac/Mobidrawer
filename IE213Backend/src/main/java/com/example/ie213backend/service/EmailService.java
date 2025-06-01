@@ -7,5 +7,6 @@ public interface EmailService {
     void sendRequestPermission(String email, String firstName, String lastName,String emailUser, String boardId);
     void sendNotificationSuccessfullJoinBoard(String email, String firstName, String lastName, String userEmail, String boardId, String boardName);
     void sendRenewPlanEmail(String email, String firstName, String lastName, String expirationTime);
+    void sendExpiredPlanEmail(String email, String firstName, String lastName, String expirationTime);
     void sendConfirmPaymentEmail(String email, String orderId);
 }

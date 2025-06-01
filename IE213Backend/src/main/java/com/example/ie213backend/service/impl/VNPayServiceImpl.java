@@ -226,6 +226,7 @@ public class VNPayServiceImpl implements VNPayService {
 
                     userService.saveUser(user);
                     userPlansRepository.save(expiredUser);
+                    emailService.sendExpiredPlanEmail(user.getEmail(), user.getFirstName(), user.getLastName(), formatExpirationTime);
                 }
         );
     }

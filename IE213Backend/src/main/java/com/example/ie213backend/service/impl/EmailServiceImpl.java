@@ -201,6 +201,39 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    public void sendExpiredPlanEmail(String email, String firstName, String lastName, String expirationTime) {
+        try {
+            if (emailSender == null || templateEngine == null) {
+                logger.error("JavaMailSender or TemplateEngine is not configured properly.");
+                return;
+            }
+
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            Context context = new Context(Locale.getDefault());
+            String name = firstName + " " + lastName;
+
+            context.setVariable("name", name);
+            context.setVariable("expirationTime", expirationTime);
+            if (Objects.equals(environment, "dev"))
+                context.setVariable("pricingUrl", "http://localhost:3000/Pricing");
+            else
+                context.setVariable("pricingUrl", "https://mobidrawer.id.vn/Pricing");
+
+            String htmlContent = templateEngine.process("ExpiredPlanEmail", context);
+            helper.setText(htmlContent, true);
+
+            helper.setTo(email);
+            helper.setSubject("Plan Pro của bạn đã hết hạn");
+            emailSender.send(message);
+            logger.info("Expired email sent successfully to {}", email);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void sendConfirmPaymentEmail(String email, String orderId) {
         try {
             if (emailSender == null || templateEngine == null) {
