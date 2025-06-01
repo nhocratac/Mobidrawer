@@ -23,7 +23,7 @@ interface AIChatPopupProps {
   CreateManyStickyNotes: (stickyNotes: CreateStickNoteDto[]) => void
 }
 
-const AIChatPopup = ({ isOpen, onClose, boardId, CreateManyStickyNotes }: AIChatPopupProps) => {
+const AIChatPopup = ({ isOpen, onClose, boardId }: AIChatPopupProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -1,11 +1,11 @@
 const home = {
   title: "Mobidrawer - Công cụ vẽ real-time đơn giản & nhanh chóng",
   description:
-    "Công cụ vẽ realtime cho sinh viên UIT, dễ sử dụng và nhanh chóng. Tạo bảng vẽ riêng của bạn ngay hôm nay!",
+    "Công cụ vẽ realtime miễn phí, dễ sử dụng và nhanh chóng. Tạo bảng vẽ riêng của bạn ngay hôm nay!",
   keywords: "vẽ, mobidrawer, UIT, công cụ vẽ, bảng vẽ, realtime",
   openGraph:{
-    title: 'Mobidrawer - Công cụ vẽ realtime cho UIT',
-    description: 'Cùng Mobidrawer vẽ realtime đơn giản, tiện lợi cho sinh viên UIT.',
+    title: 'Mobidrawer - Công cụ vẽ realtime ',
+    description: 'Cùng Mobidrawer vẽ realtime đơn giản, tiện lợi và miễn phí.',
     url: 'https://mobidrawer.id.vn',
     siteName: 'Mobidrawer',
     images: [
@@ -13,7 +13,7 @@ const home = {
             url: 'https://mobidrawer.id.vn/favicon/android-chrome-512x512.png',
             width: 512,
             height: 512,
-            alt: 'Mobidrawer - Công cụ vẽ realtime UIT'
+            alt: 'Mobidrawer - Công cụ vẽ realtime'
         }
     ],
     locale: 'vi_VN',
@@ -24,8 +24,16 @@ const home = {
 const dashboard = {
   title: "Quản lý bảng vẽ sinh viên | Mobidrawer Dashboard",
   description:
-    "Quản lý và theo dõi bảng vẽ sinh viên UIT hiệu quả với Mobidrawer Dashboard.",
-  keywords: "dashboard, quản lý, UIT, mobidrawer, bảng vẽ",
+    "Quản lý và theo dõi bảng vẽ miễn phí hiệu quả với Mobidrawer Dashboard.",
+  keywords: "dashboard, quản lý, mobidrawer, bảng vẽ",
+  images: [
+    {
+        url: 'https://mobidrawer.id.vn/favicon/android-chrome-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'Mobidrawer - Công cụ vẽ realtime'
+    }
+],
 };
 
 const login = {

@@ -5,6 +5,7 @@ import UnauthorizeBoard from '@/app/user/board/[id]/unauthorize';
 import { useBoard } from '@/app/user/board/[id]/useBoard';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
 import RNDBase from "@/components/BoxResizable/RNDBase";
+import RNDImageNote from '@/components/BoxResizable/RNDImageNote';
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDStickyNoteTemp from '@/components/BoxResizable/RNDStickyNoteTemp';
 import RNDText from '@/components/BoxResizable/RNDText';
@@ -13,9 +14,13 @@ import LeftToolBar from '@/components/SideBar/LeftToolBar';
 import TopLeftBar from '@/components/SideBar/TopLeftBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
 import AIChatButton from '@/components/ui/AIChatButton';
+import { ImageNote, useImageNoteStore } from '@/lib/Zustand/ImageNoteStore';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { useEffect } from 'react';
+
+
+
 
 const PlayGroundPage = () => {
   useEffect(() => {
@@ -48,6 +53,7 @@ const PlayGroundPage = () => {
 
   const { stickyNotes } = useStickyNoteStore();
   const { stickyNotes: tempStickyNotes } = useTempChangeStore();
+  const {imageNotes} = useImageNoteStore()
   if (status == 401)
     return (
       <UnauthorizeBoard />
@@ -101,6 +107,16 @@ const PlayGroundPage = () => {
               <RNDBase key={index} parentScale={scale}  >
                 <ShapeComponent />
               </RNDBase>
+            ))}
+            {imageNotes.map(note => (
+              <RNDImageNote
+                key={note.id}
+                parentScale={scale}
+                imageNote={note}
+                onMove={() => {} }
+                onResize={() => {} }
+                onDelete={() => {} }
+              />
             ))}
           </ZoomableGrid>
           (</>)}
