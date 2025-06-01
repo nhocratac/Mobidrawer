@@ -48,6 +48,7 @@ const RNDImageNote: React.FC<RNDImageNoteProps> = memo(
                     onMove(imageNote.id, { x: d.x, y: d.y });
                 }}
                 onResizeStop={(e, dir, ref, delta, pos) => {
+                    console.log(e,dir,delta,pos)
                     const newSize = { width: ref.style.width, height: ref.style.height };
                     onResize(imageNote.id, newSize);
                 }}

@@ -14,7 +14,7 @@ import LeftToolBar from '@/components/SideBar/LeftToolBar';
 import TopLeftBar from '@/components/SideBar/TopLeftBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
 import AIChatButton from '@/components/ui/AIChatButton';
-import { ImageNote, useImageNoteStore } from '@/lib/Zustand/ImageNoteStore';
+import { useImageNoteStore } from '@/lib/Zustand/ImageNoteStore';
 import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { useEffect } from 'react';
