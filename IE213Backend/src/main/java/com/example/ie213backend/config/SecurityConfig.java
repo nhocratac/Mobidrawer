@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/check-env").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/comments/{commentId}/replies").permitAll()
+                        .requestMatchers("/api/v1/template/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()

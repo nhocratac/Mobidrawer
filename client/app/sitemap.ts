@@ -1,4 +1,6 @@
 import blogAPIs from "@/api/blogAPI";
+import templatesApi from "@/api/templatesApi";
+import { Template } from "@/lib/Zustand/templateStore";
 import { MetadataRoute } from "next";
 
 type Blog = {
@@ -26,6 +28,7 @@ const staticUrls: MetadataRoute.Sitemap = [
   { url: "https://mobidrawer.id.vn/UseCase", lastModified: now, changeFrequency: "daily", priority: 0.7 },
   { url: "https://mobidrawer.id.vn/Feature", lastModified: now, changeFrequency: "daily", priority: 0.7 },
   { url: "https://mobidrawer.id.vn/user", lastModified: now, changeFrequency: "daily", priority: 0.7 },
+  { url: "https://mobidrawer.id.vn/Store", lastModified: now, changeFrequency: "daily", priority: 0.7 },
   { url: "https://mobidrawer.id.vn/user/my-blogs/published", lastModified: now, changeFrequency: "daily", priority: 0.7 },
   { url: "https://mobidrawer.id.vn/LandingPage", lastModified: now, changeFrequency: "daily", priority: 0.7 },
   { url: "https://mobidrawer.id.vn/user/post", lastModified: now, changeFrequency: "daily", priority: 0.7 },
@@ -38,7 +41,6 @@ const staticUrls: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogs: Blog[] = await blogAPIs.getAllBlogsForSitemap();
-  console.log("blogs", blogs.length);
   const blogUrls: MetadataRoute.Sitemap = blogs.map((blog) => ({
     url: `https://mobidrawer.id.vn/Blog/${blog.slug}?id=${blog.id}`,
     lastModified:now,
@@ -46,5 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  return [...staticUrls, ...blogUrls];
+  const templatePage : Template[] = await templatesApi.getAllTemplates();
+  const templateUrls: MetadataRoute.Sitemap = templatePage.map((template) => ({
+    url: `https://mobidrawer.id.vn/Store/${template.id}`,
+    lastModified: now,
+    changeFrequency: "daily",
+  }));
+
+  return [...staticUrls, ...blogUrls, ...templateUrls];
 }

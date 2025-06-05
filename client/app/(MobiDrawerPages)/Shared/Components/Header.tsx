@@ -32,6 +32,7 @@ const resourcesDropdownItems = [
   { href: path.blog, label: "Blog" },
   { href: path.heplcenter, label: "Trung tâm trợ giúp" },
   { href: path.envent, label: "Sự kiện" },
+  {href : path.store, label: "Cửa hàng"},
 ];
 
 type MobileMenuState = "Menu" | "Products" | "Solutions" | "Resources";

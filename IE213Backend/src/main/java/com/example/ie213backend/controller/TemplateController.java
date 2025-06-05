@@ -35,6 +35,13 @@ public class TemplateController {
         return templateService.findByOwner(ownerId);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Template>> getAllTemplates () {
+        return ResponseEntity.ok(
+                templateService.findAll()
+        );
+    }
+
     // ✅ Get template by ID
     @GetMapping("/{id}")
     public ResponseEntity<Template> getTemplateById(@PathVariable String id) {

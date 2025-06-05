@@ -28,6 +28,11 @@ public class TemplateServiceImpl implements TemplateService {
     private final ImageService imageService;
 
     @Override
+    public List<Template> findAll() {
+        return templateRepository.findAll();
+    }
+
+    @Override
     public Page<Template> getTemplates(int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         if (search != null && !search.isEmpty()) {

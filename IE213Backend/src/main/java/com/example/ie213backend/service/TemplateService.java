@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface TemplateService {
 
+    List<Template> findAll();
     Page<Template> getTemplates(int page, int size, String search);
     List<Template> findByOwner(String ownerId);
     Template getTemplate(String templateId);

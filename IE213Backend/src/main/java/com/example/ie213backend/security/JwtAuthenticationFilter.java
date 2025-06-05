@@ -106,6 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         path.startsWith("/api/v1/auth/register") ||
                         path.startsWith("/api/v1/auth/verify-register") ||
                         path.startsWith("/api/v1/auth/refresh") ||
+                        path.startsWith("/api/v1/template")||
                         ("GET".equalsIgnoreCase(method) && path.matches("/api/v1/comments/[^/]+/replies")) ||
                         ("GET".equalsIgnoreCase(method) && path.matches("/api/v1/blogs/[^/]+")) || // /api/v1/blogs/{blogId}
                         ("GET".equalsIgnoreCase(method) && path.equals("/api/v1/blogs")) ||

@@ -1,0 +1,15 @@
+import Footer from "@/app/(MobiDrawerPages)/Shared/Components/Footer";
+import LandingNavbar from '@/app/(MobiDrawerPages)/Shared/Components/Header'
+export default function StorePubliclayout({
+    children,
+    }: {
+    children: React.ReactNode;
+}) {
+  return (
+    <div className='flex flex-col min-h-screen'>
+    <LandingNavbar />
+    {children}
+    <Footer />
+</div>
+  )
+}

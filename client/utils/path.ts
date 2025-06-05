@@ -37,6 +37,7 @@ const path ={
     blog:'/Blog',
     heplcenter: '/HelpCenter',
     envent:'/Events',
+    store : '/Store',
     enterprise:'Enterprise',
     useCase:'UseCase',
     team:'/Team',
