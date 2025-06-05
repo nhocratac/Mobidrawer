@@ -1,8 +1,18 @@
 import { create } from "zustand";
 
+export interface CreateImageNoteDto {
+  url: string;
+  alt: string;
+  cloudinaryId: string;
+  position: { x: number; y: number };
+  size: { width: number | string; height: number | string };
+}
+
 export interface ImageNote {
   id: string;
-  imageUrl: string;
+  url: string;
+  alt : string;
+  cloudinaryId: string;
   position: { x: number; y: number };
   size: { width: number | string; height: number | string };
   owner: string;

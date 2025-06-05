@@ -163,7 +163,7 @@ const RNDStickyNote: React.FC<RNDStickyNoteProps> = memo(({
       minHeight={200}
       className="border-2 border-black relative z-10"
       scale={parentScale}
-      enableResizing={(user?.id === stickyNote.isSelected)}
+      // enableResizing={(user?.id === stickyNote.isSelected)}
       disableDragging={isTyping && !(user?.id === stickyNote.isSelected)}
       onDrag={onDrag}
       onDragStop={onDragStop}

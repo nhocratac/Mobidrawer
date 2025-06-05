@@ -16,39 +16,40 @@ import { IoColorFillSharp, IoTriangleOutline } from "react-icons/io5";
 import { LuShapes } from "react-icons/lu";
 import { MdGrid4X4, MdOutlineRectangle } from "react-icons/md";
 import { PiHandGrabbingFill } from "react-icons/pi";
-import { RiText } from "react-icons/ri";
 import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 
 import { FaDotCircle } from "react-icons/fa";
 
 import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
+import { ImagePlus } from "lucide-react";
+import ImageTool from "./ImageTool";
 
 // Color mapping between simple names and tailwind classes
 const colorMapping = {
-  "blue": "bg-blue-500",
-  "red": "bg-red-500",
-  "green": "bg-green-500",
-  "yellow": "bg-yellow-500",
-  "purple": "bg-purple-500",
-  "pink": "bg-pink-500",
-  "teal": "bg-teal-500",
-  "indigo": "bg-indigo-500",
-  "gray": "bg-gray-500",
-  "orange": "bg-orange-500",
-  "lime": "bg-lime-500",
-  "rose": "bg-rose-500",
-  "cyan": "bg-cyan-500",
-  "emerald": "bg-emerald-500",
-  "sky": "bg-sky-500",
-  "violet": "bg-violet-500",
-  "fuchsia": "bg-fuchsia-500",
-  "zinc": "bg-zinc-500",
-  "neutral": "bg-neutral-500",
-  "slate": "bg-slate-500",
-  "stone": "bg-stone-500",
-  "amber": "bg-amber-500",
-  "black": "bg-black",
-  "white": "bg-white",
+  blue: "bg-blue-500",
+  red: "bg-red-500",
+  green: "bg-green-500",
+  yellow: "bg-yellow-500",
+  purple: "bg-purple-500",
+  pink: "bg-pink-500",
+  teal: "bg-teal-500",
+  indigo: "bg-indigo-500",
+  gray: "bg-gray-500",
+  orange: "bg-orange-500",
+  lime: "bg-lime-500",
+  rose: "bg-rose-500",
+  cyan: "bg-cyan-500",
+  emerald: "bg-emerald-500",
+  sky: "bg-sky-500",
+  violet: "bg-violet-500",
+  fuchsia: "bg-fuchsia-500",
+  zinc: "bg-zinc-500",
+  neutral: "bg-neutral-500",
+  slate: "bg-slate-500",
+  stone: "bg-stone-500",
+  amber: "bg-amber-500",
+  black: "bg-black",
+  white: "bg-white",
 };
 
 // Update sticky note colors to use simple names
@@ -131,11 +132,7 @@ const backgroundColors = [
   "bg-amber-700",
 ];
 
-const LeftToolBar = ({
-  onClickTextButton ,
-  onClickStickyNoteButton ,
-  onClickShape ,
-}) => {
+const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
   // get state from zustand store
   const ModeTool = useToolDevStore((state) => state.mode);
   const setMode = useToolDevStore((state) => state.setMode);
@@ -149,6 +146,7 @@ const LeftToolBar = ({
     useState(false);
   const [isSelectShapeVisible, setIsSelectShapeVisible] = useState(false);
   const [isSelectPenVisible, setIsSelectPenVisible] = useState(false);
+  const [visibleImageTool, setVisibleImageTool] = useState(false);
 
   const [isPenConfigPopupVisible, setIsPenConfigPopupVisible] = useState(false);
 
@@ -166,14 +164,14 @@ const LeftToolBar = ({
 
   const OnClickPiHandGrabbingFillButton = () => {
     resetSelectPopup();
-    if(ModeTool == "drag") setMode("idle");
+    if (ModeTool == "drag") setMode("idle");
     else setMode("drag");
   };
 
-  const onClickCreateTextButton = () => {
-    resetSelectPopup();
-    onClickTextButton();
-  };
+  // const onClickCreateTextButton = () => {
+  //   resetSelectPopup();
+  //   onClickTextButton();
+  // };
 
   const onClickNoteButton = () => {
     resetSelectPopup();
@@ -206,7 +204,7 @@ const LeftToolBar = ({
     setIsPenConfigPopupVisible(false);
     setMode("pen");
     setHighlightPen(1);
-  }
+  };
 
   const handleClickHighlightButton = () => {
     setIsSelectPenVisible(!isSelectPenVisible);
@@ -243,6 +241,11 @@ const LeftToolBar = ({
     onClickShape(getShapeByIndex(i));
     resetSelectPopup();
   };
+
+  const onClickImageIcon = () => {
+    resetSelectPopup();
+    setVisibleImageTool(!visibleImageTool);
+  };
   const onTogglePenConfigPopup = () => {
     setIsPenConfigPopupVisible(!isPenConfigPopupVisible);
   };
@@ -251,6 +254,7 @@ const LeftToolBar = ({
     setIsSelectNotePopupVisible(false);
     setIsSelectShapeVisible(false);
     setIsSelectPenVisible(false);
+    setVisibleImageTool(false);
     setIsSelectBackgroundVisible(false);
     setIsPenConfigPopupVisible(false);
   };
@@ -260,7 +264,7 @@ const LeftToolBar = ({
   };
 
   const onClickBackgroundColor = (color) => {
-    setBoardColor( color);
+    setBoardColor(color);
   };
 
   return (
@@ -275,12 +279,19 @@ const LeftToolBar = ({
         {/* toolbar container */}
         <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
           <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
-          <ToolBarBtn onclick={OnClickPiHandGrabbingFillButton} icon={PiHandGrabbingFill} isChoosing={ModeTool == "drag"} />
-          <ToolBarBtn onclick={onClickCreateTextButton} icon={RiText} />
+          <ToolBarBtn
+            onclick={OnClickPiHandGrabbingFillButton}
+            icon={PiHandGrabbingFill}
+            isChoosing={ModeTool == "drag"}
+          />
           <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
+          <ToolBarBtn onclick={onClickImageIcon} icon={ImagePlus} />
           <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
           <ToolBarBtn onclick={handleClickVisibleGridButton} icon={MdGrid4X4} />
-          <ToolBarBtn onclick={onClickBackgroundButton} icon={IoColorFillSharp} />
+          <ToolBarBtn
+            onclick={onClickBackgroundButton}
+            icon={IoColorFillSharp}
+          />
           <ToolBarBtn onclick={onClickPenVisibleButton} icon={FaPen} />
         </div>
 
@@ -309,7 +320,7 @@ const LeftToolBar = ({
 
         {/* select sticky note color */}
         <div
-          className={`bg-red-900 w-0 ${
+          className={` w-0 ${
             isSelectNotePopupVisible ? "h-[500px]" : "h-0"
           } transition-all duration-300`}
         >
@@ -328,9 +339,17 @@ const LeftToolBar = ({
           </div>
         </div>
 
+        <div
+          className={` w-0 ${
+            visibleImageTool ? "h-[600px]" : "h-0"
+          } transition-all duration-300`}
+        >
+          <ImageTool />
+        </div>
+
         {/* select shape */}
         <div
-          className={`bg-red-900 w-0 ${
+          className={` w-0 ${
             isSelectShapeVisible ? "h-[200px]" : "h-0"
           } transition-all duration-300`}
         >

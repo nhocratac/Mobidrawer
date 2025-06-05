@@ -115,11 +115,26 @@ const handleExportMobidrawerFile = () => {
     color: note.color,
   }));
 
+  const images = board?.images.map((imageNote) => ({
+    url: imageNote.url,
+    position: imageNote.position,
+    size: imageNote.size,
+    alt: imageNote.alt,
+    cloudinaryId: imageNote.cloudinaryId,
+  }));
+
+  console.log("Exporting data:", {
+    canvasPaths,
+    stickyNotes,
+    images,
+  });
+
   const exportData = {
     version: "1.0",
     timestamp: new Date().toISOString(),
     canvasPaths,
     stickyNotes,
+    images,
   };
 
   // 🔐 Mã hóa dữ liệu JSON thành chuỗi
@@ -158,9 +173,11 @@ const handleImportMobidrawerFile = async (
 
     const parsed = JSON.parse(decryptedData);
 
+    console.log("Parsed data:", parsed);
+
     useTempChangeStore
       .getState()
-      .setTempChanges(parsed.canvasPaths, parsed.stickyNotes);
+      .setTempChanges(parsed.canvasPaths, parsed.stickyNotes, parsed.images);
   } catch (err) {
     console.error("Lỗi giải mã file .mobidrawer:", err);
     alert("❌ File không hợp lệ hoặc sai key mã hóa.");

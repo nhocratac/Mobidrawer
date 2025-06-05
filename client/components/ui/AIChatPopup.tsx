@@ -139,7 +139,7 @@ const AIChatPopup = ({ isOpen, onClose, boardId }: AIChatPopupProps) => {
         // Add the transformed notes to the store
         //CreateManyStickyNotes(transformedNotes)
         useTempChangeStore.getState()
-          .setTempChanges([], transformedNotes)        // setStickyNotes(transformedNotes);
+          .setTempChanges([], transformedNotes,[])        // setStickyNotes(transformedNotes);
 
         // Add notification about sticky notes creation if no response text
         if (!response.responseText) {

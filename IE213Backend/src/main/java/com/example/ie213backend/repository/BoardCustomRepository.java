@@ -33,6 +33,12 @@ public class BoardCustomRepository {
                         "_id",
                         "boardId",
                         "stickyNotes"
+                ),
+                Aggregation.lookup(
+                        "Images",
+                        "_id",
+                        "boardId",
+                        "images"
                 )
         );
 

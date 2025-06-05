@@ -3,16 +3,20 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
 import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateCanvasPath;
 import com.example.ie213backend.domain.dto.CanvasPathDto.UpdateMultipleCanvasPaths;
+import com.example.ie213backend.domain.dto.ImageDto.CreateImage;
+import com.example.ie213backend.domain.dto.ImageDto.DeleteImage;
+import com.example.ie213backend.domain.dto.ImageDto.MoveImage;
+import com.example.ie213backend.domain.dto.ImageDto.ResizeImage;
 import com.example.ie213backend.domain.dto.StickyNote.*;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
+import com.example.ie213backend.domain.model.Image;
 import com.example.ie213backend.domain.model.StickyNote;
+import com.example.ie213backend.domain.model.Template;
 import com.example.ie213backend.mapper.CanvasPathMapper;
+import com.example.ie213backend.mapper.ImageMapper;
 import com.example.ie213backend.mapper.StickyNoteMapper;
-import com.example.ie213backend.service.BoardService;
-import com.example.ie213backend.service.CacheUserInBoardService;
-import com.example.ie213backend.service.CanvasPathService;
-import com.example.ie213backend.service.StickyNoteService;
+import com.example.ie213backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,6 +47,7 @@ public class BoardSocketController {
     private final CacheUserInBoardService cacheUserInBoardService;
 
     private final BoardService boardService;
+    private final ImageService imageService;
 
     @MessageMapping("/connect")
     @SendToUser("/queue/session")
@@ -311,8 +316,107 @@ public class BoardSocketController {
         String senderSessionId = headerAccessor.getSessionId();
 
         cursorData.put("lastUpdated", System.currentTimeMillis());
+        assert senderSessionId != null;
         return Map.of(
                 "cursorData", cursorData,
+                "senderSessionId", senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/image/{boardId}")
+    @SendTo("/topic/board/image/{boardId}")
+    public Map<String, Object> handleCreateImage(
+            @DestinationVariable String boardId,
+            @Payload CreateImage createImage,
+            SimpMessageHeaderAccessor headerAccessor) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        Image image = ImageMapper.INSTANCE.CreateDtoImage(createImage);
+        image.setBoardId(boardId);
+        image.setOwner(user.getId());
+        String senderSessionId = headerAccessor.getSessionId();
+        Image res =  imageService.createImage(image);
+        assert senderSessionId != null;
+
+        return Map.of("image", res,
+                "senderSessionId" , senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/images/{boardId}")
+    @SendTo("/topic/board/images/{boardId}")
+    public Map<String, Object> handleCreateImages(
+            @DestinationVariable String boardId,
+            @Payload List<CreateImage> createImages,
+            SimpMessageHeaderAccessor headerAccessor) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        List<Image>  images =  createImages.stream().map(
+                imagedto -> {
+                    Image img = ImageMapper.INSTANCE.CreateDtoImage(imagedto);
+                    img.setBoardId(boardId);
+                    img.setOwner(user.getId());
+                    return img;
+                }
+        ).toList();
+        String senderSessionId = headerAccessor.getSessionId();
+        List<Image> res =  imageService.createImages(images);
+        assert senderSessionId != null;
+
+        return Map.of("images", res,
+                "senderSessionId" , senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/moveImage/{boardId}")
+    @SendTo("/topic/board/moveImage/{boardId}")
+    public Map<String, Object> handleMoveImage(
+            @DestinationVariable String boardId,
+            @Payload MoveImage moveImage,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        String senderSessionId = headerAccessor.getSessionId();
+        assert senderSessionId != null;
+        Image image = ImageMapper.INSTANCE.MoveToDtoImage(moveImage);
+        image.setBoardId(boardId);
+        image.setOwner(user.getId());
+        return Map.of(
+                "image", imageService.updateImagePosition(image),
+                "senderSessionId" , senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/resizeImage/{boardId}")
+    @SendTo("/topic/board/resizeImage/{boardId}")
+    public Map<String, Object> handleResizeImage(
+            @DestinationVariable String boardId,
+            @Payload ResizeImage resizeImage,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        String senderSessionId = headerAccessor.getSessionId();
+        assert senderSessionId != null;
+        Image image = ImageMapper.INSTANCE.ResizeDtoImage(resizeImage);
+        image.setBoardId(boardId);
+        image.setOwner(user.getId());
+        return Map.of(
+                "image", imageService.updateImageSize(image),
+                "senderSessionId" , senderSessionId
+        );
+    }
+
+    @MessageMapping("/board/deleteImage/{boardId}")
+    @SendTo("/topic/board/deleteImage/{boardId}")
+    public Map<String, Object> handleDeleteImage(
+            @DestinationVariable String boardId,
+            @Payload DeleteImage deleteImage,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+        UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        String senderSessionId = headerAccessor.getSessionId();
+        assert senderSessionId != null;
+        imageService.deleteImage(deleteImage.getId(),boardId,user.getId());
+        return Map.of(
+                "id" , deleteImage.getId() ,
                 "senderSessionId", senderSessionId
         );
     }

@@ -52,8 +52,8 @@ interface ImageGenerationOptions {
 }
 
 interface GeneratedImage {
-  imageUrl?: string;
-  base64Data?: string;
+  imageUrl: string;
+  base64Data: string;
 }
 
 interface ImageGenerationResponse {
@@ -297,6 +297,10 @@ export async function geminiGenerateImage(
             part.inlineData &&
             part.inlineData.mimeType?.startsWith("image/")
           ) {
+            if (!part.inlineData.data) {
+              console.warn("Inline data is empty for part:", part);
+              continue; // Skip if no data
+            }
             images.push({
               base64Data: part.inlineData.data,
               imageUrl: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,

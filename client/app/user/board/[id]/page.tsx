@@ -6,6 +6,7 @@ import { useBoard } from '@/app/user/board/[id]/useBoard';
 import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
 import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDImageNote from '@/components/BoxResizable/RNDImageNote';
+import RNDImageNoteTemp from '@/components/BoxResizable/RNDImageNoteTemp';
 import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
 import RNDStickyNoteTemp from '@/components/BoxResizable/RNDStickyNoteTemp';
 import RNDText from '@/components/BoxResizable/RNDText';
@@ -37,7 +38,7 @@ const PlayGroundPage = () => {
     status,
     setScaleHandle,
     textItemCount,
-    setTextItemCount,
+    // setTextItemCount,
     onClickCreateStickyNote,
     shapeList,
     onClickAddShape,
@@ -48,12 +49,16 @@ const PlayGroundPage = () => {
     handleUnLockStickyNote,
     handleChangeRole,
     handleDeleteStickyNote,
-    CreateManyStickyNotes
+    CreateManyStickyNotes,
+    handleMoveImageNote,
+    handleResizeImageNote,
+    handleDeleteImageNote,
+    handleAddImageNotes
   } = useBoard();
 
   const { stickyNotes } = useStickyNoteStore();
-  const { stickyNotes: tempStickyNotes } = useTempChangeStore();
-  const {imageNotes} = useImageNoteStore()
+  const { stickyNotes: tempStickyNotes, imageNotes: tempImageNotes } = useTempChangeStore();
+  const { imageNotes } = useImageNoteStore()
   if (status == 401)
     return (
       <UnauthorizeBoard />
@@ -76,11 +81,11 @@ const PlayGroundPage = () => {
               }}
               onSave={() => {
                 CreateManyStickyNotes(tempStickyNotes)
+                handleAddImageNotes(tempImageNotes)
                 useTempChangeStore.getState().clearTempChanges()
               }} />}
           <TopRightBar handleChangeRole={handleChangeRole} />
           <LeftToolBar
-            onClickTextButton={() => setTextItemCount(textItemCount + 1)}
             onClickStickyNoteButton={onClickCreateStickyNote}
             onClickShape={onClickAddShape}
           />
@@ -113,9 +118,16 @@ const PlayGroundPage = () => {
                 key={note.id}
                 parentScale={scale}
                 imageNote={note}
-                onMove={() => {} }
-                onResize={() => {} }
-                onDelete={() => {} }
+                onMove={handleMoveImageNote}
+                onResize={handleResizeImageNote}
+                onDelete={handleDeleteImageNote}
+              />
+            ))}
+            {tempImageNotes.map((imageNote, index) => (
+              <RNDImageNoteTemp
+                parentScale={scale}
+                key={`temp-${index}`}
+                imageNote={imageNote}
               />
             ))}
           </ZoomableGrid>

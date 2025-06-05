@@ -40,6 +40,7 @@ public class Template {
 
     private List<CanvasPath> canvasPaths;
     private List<StickyNote> stickyNotes;
+    private List<Image> images;
 
 
     @LastModifiedDate
@@ -92,4 +93,34 @@ public class Template {
             private int y;
         }
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Image {
+        private String alt;
+        private Position position;
+        private Size size;
+        private String url;
+        private String cloudinaryId;
+
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Size {
+            private int width;
+            private int height;
+        }
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Position {
+            private int x;
+            private int y;
+        }
+    }
+
+
 }

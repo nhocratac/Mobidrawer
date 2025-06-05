@@ -1,3 +1,5 @@
+import { ImageNote } from "@/lib/Zustand/ImageNoteStore";
+
 export enum ModeType {
   drag = "drag",
   idle = "idle",
@@ -79,7 +81,8 @@ export interface Board {
   updateAt: string,
   members: Member[],
   canvasPaths : canvasPath[],
-  stickyNotes : StickyNote[]
+  stickyNotes : StickyNote[],
+  images: ImageNote[]; // Danh sách hình ảnh
 }
 
 export interface BoardStore {

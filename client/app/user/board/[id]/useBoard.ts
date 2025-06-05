@@ -1,5 +1,6 @@
 import BoardAPI from "@/api/BoardAPI";
 import boardTemplateConfig from "@/config/boardTemplates";
+import { CreateImageNoteDto, useImageNoteStore } from "@/lib/Zustand/ImageNoteStore";
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
@@ -29,6 +30,7 @@ export function useBoard() {
       .then((res) => {
         setBoard(res);
         setStickyNotes(res.stickyNotes ? res.stickyNotes : []);
+        useImageNoteStore.getState().setImageNotes(res.images ? res.images : []);
 
         // Check if this is a newly created board with a template index
         const templateIndex = localStorage.getItem("boardTemplateIndex");
@@ -45,7 +47,6 @@ export function useBoard() {
         BoardAPI.getDetailMemberInBoard(id.toString())
           .then((res) => {
             setUsers(res);
-            console.log("users in board", res);
           })
           .catch(() => {
             console.log("get board by id error:");
@@ -210,7 +211,6 @@ export function useBoard() {
         console.error("STOMP client chưa kết nối!");
         return;
       }
-      console.log(stickyNoteId);
       client.publish({
         destination: `/app/board/deleteStickyNote/${id}`,
         body: JSON.stringify({
@@ -221,6 +221,115 @@ export function useBoard() {
     [id]
   );
 
+  const handleAddImageNote = useCallback(
+    ({
+      alt,
+      url,
+      cloudinaryId,
+      size,
+      position,
+    }: {
+      alt: string;
+      url: string;
+      cloudinaryId?: string;
+      size: {
+        width: number | string;
+        height: number | string;
+      };
+      position: {
+        x: number;
+        y: number;
+      };
+    }) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+  
+      client.publish({
+        destination: `/app/board/image/${id}`,
+        body: JSON.stringify({
+          alt,
+          url,
+          cloudinaryId,
+          size,
+          position,
+        }),
+      });
+    },
+    [client, id]
+  );
+
+  const handleAddImageNotes = useCallback(
+    (imageNotes : CreateImageNoteDto []) => {
+    if (!client || !client.connected) {
+      console.error("STOMP client chưa kết nối!");
+      return;
+    }
+    client.publish({
+      destination: `/app/board/images/${id}`,
+      body: JSON.stringify(imageNotes),
+    });
+    },[client, id])
+
+  const handleMoveImageNote = useCallback(
+    (_id: string, position: { x: number; y: number }) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+      client.publish({
+        destination: `/app/board/moveImage/${id}`,
+        body: JSON.stringify({ id: _id, position }),
+      });
+    },
+    [client, id]
+  );
+
+  const handleResizeImageNote = useCallback(
+    (_id: string, size: { width: number | string; height: number | string }) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+
+      // Chuẩn hóa width
+      let width =
+        typeof size.width === "string"
+          ? parseInt(size.width.replace("px", ""), 10)
+          : size.width;
+
+      // Chuẩn hóa height
+      let height =
+        typeof size.height === "string"
+          ? parseInt(size.height.replace("px", ""), 10)
+          : size.height;
+
+      // Đảm bảo width và height là số hợp lệ
+      width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
+      height = isNaN(height) ? 0 : height;
+
+      client.publish({
+        destination: `/app/board/resizeImage/${id}`,
+        body: JSON.stringify({ id: _id, size: { width, height } }),
+      });
+    },
+    [client]
+  );
+  
+  const handleDeleteImageNote = useCallback(
+    (_id: string) => {
+      if (!client || !client.connected) {
+        console.error("STOMP client chưa kết nối!");
+        return;
+      }
+      client.publish({
+        destination: `/app/board/deleteImage/${id}`,
+        body: JSON.stringify({ id: _id }),
+      });
+    },
+    [client, id]
+  );
   const onClickAddShape = useCallback(
     (shape: ShapeComponent) => {
       setShapeList((prevShapes) => [...prevShapes, shape]);
@@ -268,6 +377,11 @@ export function useBoard() {
     handleUnLockStickyNote,
     handleChangeRole,
     handleDeleteStickyNote,
-    CreateManyStickyNotes
+    CreateManyStickyNotes,
+    handleAddImageNote,
+    handleAddImageNotes,
+    handleMoveImageNote,
+    handleResizeImageNote,
+    handleDeleteImageNote,
   };
 }
