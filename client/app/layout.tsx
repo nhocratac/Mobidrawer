@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react"
 import "./globals.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: home.title,
@@ -33,6 +34,18 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
         <meta name="google-site-verification" content="STneKsRDm2QioYuvfDcauR_bdyT8tFlOwkyC3gYM3NI" />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-62EH8T9BVV"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-script" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-62EH8T9BVV');
+          `}
+        </Script>
       </head>
       <body className={`${roboto.className} antialiased`} suppressHydrationWarning={true}>
         <main>{children}</main>
