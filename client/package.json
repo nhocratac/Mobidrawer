@@ -47,7 +47,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.441.0",
-    "next": "14.2.8",
+    "next": "14.2.35",
     "next-cloudinary": "^6.16.0",
     "node-fetch": "^3.3.2",
     "react": "^18",
