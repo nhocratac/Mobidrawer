@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vnggames.com/schemas/sprint_contract.schema.json",
+  "title": "Sprint Contract (enveloped)",
+  "description": "Pre-code negotiation document locking the Definition of Done for one harness sprint. Wrapped in the 6-block envelope (§4.3 of the harness guide): metadata / context / payload / verification / handoff / audit.",
+  "type": "object",
+  "required": ["metadata", "context", "payload", "verification", "handoff", "audit"],
+  "additionalProperties": false,
+  "$defs": {
+    "sprintBaseId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+-\\d{4}-\\d{2}-\\d{2}(-[A-Z][A-Z0-9]*)?-\\d{2,3}$",
+      "description": "Base sprint id: <DOMAIN>-<FEATURE>-<YYYY-MM-DD>-[<TEAM>-]<SEQ>."
+    },
+    "artifactRef": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Reference to any artifact id (contract id, eval report id with -vN, ADR id, etc.). Looser than sprintBaseId — used in upstream_artifacts."
+    }
+  },
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["id", "type", "version", "created_at", "created_by"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/sprintBaseId" },
+        "type": { "const": "sprint_contract" },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Envelope-schema version. Bump on breaking changes to the envelope itself."
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "created_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Agent id that produced this artifact (e.g., planner-primary)."
+        },
+        "parent": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifactRef" },
+            { "type": "null" }
+          ],
+          "description": "Parent artifact — e.g., the aborted sprint id when this is a restart (§4.6 abort-and-restart)."
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["upstream_artifacts", "assumptions", "constraints"],
+      "additionalProperties": false,
+      "description": "Preconditions — the file reads standalone, no transcript needed.",
+      "properties": {
+        "upstream_artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifactRef" },
+          "description": "Other artifact ids this contract depends on (prior sprints that built shared infra, ADRs, etc.)."
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 3 },
+          "description": "Stated facts the contract depends on (Order entity exists, Kafka topic provisioned, etc.)."
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 3 },
+          "description": "Hard limits (latency budget, GDPR rules, must-not-break-X)."
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "sprint_id",
+        "feature",
+        "evaluator_pin",
+        "scope",
+        "acceptance_criteria",
+        "quality_gates",
+        "done_definition"
+      ],
+      "additionalProperties": false,
+      "description": "The sprint contract body — what used to be the entire flat schema.",
+      "properties": {
+        "sprint_id": { "$ref": "#/$defs/sprintBaseId" },
+        "feature": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "owner_agents": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "dependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "evaluator_pin": {
+          "type": "object",
+          "required": ["tag", "hash_expected"],
+          "additionalProperties": false,
+          "properties": {
+            "tag": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+            "hash_expected": { "type": "string", "pattern": "^[a-f0-9]{16}$" }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "required": ["included", "excluded"],
+          "additionalProperties": false,
+          "properties": {
+            "included": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1
+            },
+            "excluded": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1
+            }
+          }
+        },
+        "deliverables": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files_created": { "type": "array", "items": { "type": "string" } },
+            "files_modified": {
+              "oneOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "string", "const": "none" }
+              ]
+            }
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "verification"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^AC-\\d+$" },
+              "description": { "type": "string", "minLength": 10 },
+              "verification": { "type": "string", "minLength": 10 }
+            }
+          }
+        },
+        "quality_gates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["gate", "command", "expected_exit"],
+            "additionalProperties": false,
+            "properties": {
+              "gate": { "type": "string", "minLength": 1 },
+              "command": { "type": "string", "minLength": 1 },
+              "expected_exit": { "type": "integer" },
+              "expected_output_contains": { "type": "string" }
+            }
+          }
+        },
+        "non_functional": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["check", "bound"],
+            "additionalProperties": false,
+            "properties": {
+              "check": { "type": "string", "minLength": 1 },
+              "bound": { "type": ["number", "boolean"] },
+              "count_rule": { "type": "string" }
+            }
+          }
+        },
+        "done_definition": { "type": "string", "minLength": 20 }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["self_checks", "gates"],
+      "additionalProperties": false,
+      "description": "Planner's own quality attestation on this contract — distinct from Evaluator gates.",
+      "properties": {
+        "self_checks": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 5 },
+          "description": "Free-form. Examples: 'All ACs passed 6-question checklist', 'scope.excluded is non-empty', 'No soft language'."
+        },
+        "gates": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 5 },
+          "description": "Machine checks the Planner ran before emitting. Examples: 'Validates against sprint_contract.schema.json'."
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "required": ["next_agent", "next_action"],
+      "additionalProperties": false,
+      "properties": {
+        "next_agent": {
+          "type": "string",
+          "enum": ["planner", "generator", "evaluator", "human"]
+        },
+        "next_action": { "type": "string", "minLength": 5 },
+        "blocked_on": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": ["token_cost", "duration_seconds", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "token_cost": {
+          "type": "object",
+          "required": ["input", "output", "total_usd"],
+          "additionalProperties": false,
+          "properties": {
+            "input": { "type": "integer", "minimum": 0 },
+            "output": { "type": "integer", "minimum": 0 },
+            "total_usd": { "type": "number", "minimum": 0 }
+          }
+        },
+        "duration_seconds": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

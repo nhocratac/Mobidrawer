@@ -1,0 +1,68 @@
+# Canary-PASS contract — wrapped in the 6-block envelope (§4.3 guide).
+# The Evaluator run against this contract + fixtures/pass/ MUST always emit summary.verdict == PASS.
+# Recompute payload.evaluator_pin.hash_expected after /harness-init copies this into your repo.
+
+metadata:
+  id: CANARY-PASS-2026-01-01-01
+  type: sprint_contract
+  version: 1
+  created_at: "2026-01-01T00:00:00Z"
+  created_by: canary-fixture
+  parent: null
+
+context:
+  upstream_artifacts: []
+  assumptions:
+    - "fixtures/pass/ contains minimal code that satisfies every AC below"
+  constraints:
+    - "Keep fixture minimal — must compile + test in < 5 seconds"
+
+payload:
+  sprint_id: CANARY-PASS-2026-01-01-01
+  feature: "Canary fixture — must always PASS"
+  owner_agents: [evaluator-primary]
+  dependencies: []
+  evaluator_pin:
+    tag: "1.0"
+    hash_expected: "0000000000000000"     # recompute via sha256 formula after /harness-init
+  scope:
+    included:
+      - trivial function with a correct implementation
+    excluded:
+      - anything else
+  deliverables:
+    files_created: []
+    files_modified: none
+  acceptance_criteria:
+    - id: AC-1
+      description: "Function add(a, b) returns a + b for positive integers"
+      verification: "Run the test: expected behavior — 2+3 returns 5"
+  quality_gates:
+    - gate: compile
+      command: "echo 'fixture compiles'"   # placeholder — replace with real compile command
+      expected_exit: 0
+  non_functional:
+    - check: max_lines_added
+      bound: 100
+    - check: max_new_dependencies
+      bound: 0
+  done_definition: |
+    Canary is PASSING. Any FAIL or BLOCKED verdict on this contract indicates
+    Evaluator drift — block the pipeline and investigate prompts/tools/model.
+
+verification:
+  self_checks:
+    - "All ACs have observable verification commands"
+    - "scope.excluded is non-empty"
+  gates:
+    - "Validates against sprint_contract.schema.json Draft 2020-12"
+
+handoff:
+  next_agent: evaluator
+  next_action: "Score fixtures/pass/ — verdict must be PASS"
+  blocked_on: []
+
+audit:
+  token_cost: {input: 0, output: 0, total_usd: 0.0}   # canary is hand-written, not agent-generated
+  duration_seconds: 0
+  model: "n/a"

@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vnggames.com/schemas/eval_report.schema.json",
+  "title": "Evaluator Report (enveloped)",
+  "description": "Output of one Evaluator run against a sprint. Wrapped in the 6-block envelope (§4.3 of the harness guide): metadata / context / payload / verification / handoff / audit.",
+  "type": "object",
+  "required": ["metadata", "context", "payload", "verification", "handoff", "audit"],
+  "additionalProperties": false,
+  "$defs": {
+    "sprintBaseId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+-\\d{4}-\\d{2}-\\d{2}(-[A-Z][A-Z0-9]*)?-\\d{2,3}$"
+    },
+    "evalArtifactId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+-\\d{4}-\\d{2}-\\d{2}(-[A-Z][A-Z0-9]*)?-\\d{2,3}-v\\d+$",
+      "description": "Eval report id = sprint_id + '-v' + iteration number."
+    },
+    "artifactRef": {
+      "type": "string",
+      "minLength": 3
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "BLOCKED"]
+    },
+    "summaryVerdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "INCONCLUSIVE", "pin_mismatch"]
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["command", "exit_code"],
+      "additionalProperties": false,
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "exit_code": { "type": "integer" },
+        "excerpt": { "type": "string" }
+      }
+    },
+    "rootCause": {
+      "type": "object",
+      "required": ["file", "observation", "suggested_fix"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "line": { "type": "integer", "minimum": 1 },
+        "observation": { "type": "string", "minLength": 5 },
+        "suggested_fix": { "type": "string", "minLength": 5 }
+      }
+    }
+  },
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["id", "type", "version", "created_at", "created_by", "parent"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/evalArtifactId" },
+        "type": { "const": "eval_report" },
+        "version": { "type": "integer", "minimum": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "created_by": { "type": "string", "minLength": 1 },
+        "parent": {
+          "$ref": "#/$defs/artifactRef",
+          "description": "The contract id (for v1) or the previous eval report id (for v2+) — builds the chain so tooling can walk the fix history."
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["upstream_artifacts", "assumptions", "constraints"],
+      "additionalProperties": false,
+      "properties": {
+        "upstream_artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifactRef" },
+          "description": "Must reference at minimum the contract id. May also reference the Generator output diff."
+        },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "constraints": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "sprint_id",
+        "evaluator_version_tag",
+        "evaluator_version_hash_actual",
+        "evaluator_version_hash_expected",
+        "evaluator_version_inputs",
+        "started_at",
+        "duration_seconds",
+        "summary",
+        "acceptance_criteria",
+        "quality_gates",
+        "non_functional"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sprint_id": { "$ref": "#/$defs/sprintBaseId" },
+        "evaluator_version_tag": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+        "evaluator_version_hash_actual": { "type": "string", "pattern": "^[a-f0-9]{16}$" },
+        "evaluator_version_hash_expected": { "type": "string", "pattern": "^[a-f0-9]{16}$" },
+        "evaluator_version_inputs": {
+          "type": "object",
+          "required": ["model_id", "prompt_sha", "tools", "bash_allowlist"],
+          "additionalProperties": false,
+          "properties": {
+            "model_id": { "type": "string", "minLength": 1 },
+            "prompt_sha": { "type": "string", "minLength": 8 },
+            "tools": { "type": "array", "items": { "type": "string" } },
+            "bash_allowlist": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "started_at": { "type": "string", "format": "date-time" },
+        "duration_seconds": { "type": "integer", "minimum": 0 },
+        "summary": {
+          "type": "object",
+          "required": ["verdict", "passed", "failed", "blocked", "total"],
+          "additionalProperties": false,
+          "properties": {
+            "verdict": { "$ref": "#/$defs/summaryVerdict" },
+            "passed": { "type": "integer", "minimum": 0 },
+            "failed": { "type": "integer", "minimum": 0 },
+            "blocked": { "type": "integer", "minimum": 0 },
+            "total": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "verdict", "evidence"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^AC-\\d+$" },
+              "verdict": { "$ref": "#/$defs/verdict" },
+              "evidence": { "$ref": "#/$defs/evidence" },
+              "root_cause": { "$ref": "#/$defs/rootCause" }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "verdict": { "const": "FAIL" } } },
+                "then": { "required": ["root_cause"] }
+              }
+            ]
+          }
+        },
+        "quality_gates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["gate", "verdict", "exit_code"],
+            "additionalProperties": false,
+            "properties": {
+              "gate": { "type": "string", "minLength": 1 },
+              "verdict": { "$ref": "#/$defs/verdict" },
+              "exit_code": { "type": "integer" },
+              "excerpt": { "type": "string" }
+            }
+          }
+        },
+        "non_functional": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["check", "bound", "actual", "verdict"],
+            "additionalProperties": false,
+            "properties": {
+              "check": { "type": "string", "minLength": 1 },
+              "bound": { "type": ["number", "boolean"] },
+              "actual": { "type": ["number", "boolean"] },
+              "verdict": { "$ref": "#/$defs/verdict" },
+              "violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["file", "reason"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "file": { "type": "string" },
+                    "method": { "type": "string" },
+                    "lines": { "type": "integer", "minimum": 0 },
+                    "reason": { "type": "string", "minLength": 5 }
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "verdict": { "const": "FAIL" } } },
+                "then": { "required": ["violations"] }
+              }
+            ]
+          }
+        },
+        "observations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "recommendations_to_generator": {
+          "type": "object",
+          "required": ["priority_order"],
+          "additionalProperties": false,
+          "properties": {
+            "priority_order": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(AC-\\d+|NFR-[a-z_]+|gate-[a-z_]+)$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["self_checks", "gates"],
+      "additionalProperties": false,
+      "properties": {
+        "self_checks": { "type": "array", "items": { "type": "string", "minLength": 5 } },
+        "gates": { "type": "array", "items": { "type": "string", "minLength": 5 } }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "required": ["next_agent", "next_action"],
+      "additionalProperties": false,
+      "properties": {
+        "next_agent": { "type": "string", "enum": ["planner", "generator", "evaluator", "human"] },
+        "next_action": { "type": "string", "minLength": 5 },
+        "blocked_on": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": ["token_cost", "duration_seconds", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "token_cost": {
+          "type": "object",
+          "required": ["input", "output", "total_usd"],
+          "additionalProperties": false,
+          "properties": {
+            "input": { "type": "integer", "minimum": 0 },
+            "output": { "type": "integer", "minimum": 0 },
+            "total_usd": { "type": "number", "minimum": 0 }
+          }
+        },
+        "duration_seconds": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
