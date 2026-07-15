@@ -7,7 +7,9 @@ const nextConfig = {
       use: ["@svgr/webpack"], // Allows importing SVGs as React components
     });
     if (isServer) {
-      config.externals.push({ canvas: "canvas" });
+      // konva's node entry requires the native "canvas" package; alias it away
+      // so the server bundle never tries to load it (dev SSR included).
+      config.resolve.alias = { ...config.resolve.alias, canvas: false };
     }
     return config;
   },
