@@ -1,14 +1,16 @@
 // useSelection: rubber-band select, bounding box of selected paths, move
-// selected paths (throttled /app/board/move-paths/ during drag + debounced
-// /app/board/update-paths/ on move completion), and keyboard Delete/Backspace
-// removal — all parity-ported from the prior render layer.
-import { useCallback, useEffect, useRef, useState } from "react";
+// selected paths (throttled move-destination publish during drag + debounced
+// update-destination publish on move completion), and keyboard Delete/
+// Backspace removal — all parity-ported from the prior render layer. The
+// actual STOMP publishes (and their throttle/debounce timing) now live in
+// usePathSync (Sprint 2); this hook only computes the next state and calls
+// the injected publish callbacks.
+import { useCallback, useEffect, useState } from "react";
 import { produce } from "immer";
 import {
   CanvasPath,
   useCanvasPathsStore,
 } from "@/lib/Zustand/canvasPathsStore";
-import { useStompStore } from "@/lib/Zustand/socketStore";
 
 interface Point {
   x: number;
@@ -30,8 +32,11 @@ interface BoundingBox {
 }
 
 interface UseSelectionOptions {
-  boardId: string;
   screenToStage: (clientX: number, clientY: number, offset?: number) => Point;
+  publishMovePaths: (paths: CanvasPath[]) => void;
+  resetMoveThrottle: () => void;
+  publishUpdatePaths: (getSelectedPaths: () => CanvasPath[]) => void;
+  publishDeletePaths: (ids: string[]) => void;
 }
 
 const isPathInSelection = (path: Point[], rect: SelectionRect): boolean =>
@@ -61,10 +66,15 @@ const calculateBoundingBox = (paths: CanvasPath[]): BoundingBox | null => {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 };
 
-export function useSelection({ boardId, screenToStage }: UseSelectionOptions) {
+export function useSelection({
+  screenToStage,
+  publishMovePaths,
+  resetMoveThrottle,
+  publishUpdatePaths,
+  publishDeletePaths,
+}: UseSelectionOptions) {
   const { canvasPaths, setCanvasPaths, setSelectedPath } =
     useCanvasPathsStore();
-  const { client } = useStompStore();
 
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(
@@ -74,10 +84,6 @@ export function useSelection({ boardId, screenToStage }: UseSelectionOptions) {
   const [moveStart, setMoveStart] = useState<Point>({ x: 0, y: 0 });
   const [selectionBoundingBox, setSelectionBoundingBox] =
     useState<BoundingBox | null>(null);
-
-  const isFirstMove = useRef(true);
-  const lastUpdateTimeRef = useRef(0);
-  const moveUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const selected = canvasPaths.filter((p) => p.isSelected);
@@ -105,12 +111,9 @@ export function useSelection({ boardId, screenToStage }: UseSelectionOptions) {
         const pathIds = canvasPaths
           .filter((path) => path.isSelected)
           .map((path) => path.id)
-          .filter(Boolean);
+          .filter(Boolean) as string[];
 
-        client?.publish({
-          destination: `/app/board/delete-paths/${boardId}`,
-          body: JSON.stringify(pathIds),
-        });
+        publishDeletePaths(pathIds);
 
         // Id-agnostic local removal (parity with the prior render layer's
       // setCanvasPaths(canvasPaths.filter(p => !p.isSelected))): id-less
@@ -120,7 +123,7 @@ export function useSelection({ boardId, screenToStage }: UseSelectionOptions) {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [canvasPaths, boardId, client, setCanvasPaths]);
+  }, [canvasPaths, publishDeletePaths, setCanvasPaths]);
 
   const startSelection = useCallback(
     (clientX: number, clientY: number) => {
@@ -191,53 +194,24 @@ export function useSelection({ boardId, screenToStage }: UseSelectionOptions) {
       setCanvasPaths(updatedPaths);
       setMoveStart({ x, y });
 
-      const now = Date.now();
-      if (isFirstMove.current) {
-        lastUpdateTimeRef.current = now;
-        isFirstMove.current = false;
-        return;
-      }
-      if (now - lastUpdateTimeRef.current >= 500) {
-        client?.publish({
-          destination: `/app/board/move-paths/${boardId}`,
-          body: JSON.stringify(updatedPaths),
-        });
-        lastUpdateTimeRef.current = now;
-      }
+      publishMovePaths(updatedPaths);
     },
-    [isMoving, moveStart, canvasPaths, setCanvasPaths, client, boardId]
+    [isMoving, moveStart, canvasPaths, setCanvasPaths, publishMovePaths]
   );
 
   const endMove = useCallback(() => {
     if (!isMoving) return;
     setIsMoving(false);
-    isFirstMove.current = true;
+    resetMoveThrottle();
 
-    if (moveUpdateTimeoutRef.current) clearTimeout(moveUpdateTimeoutRef.current);
     // Debounced move-completion publish, distinct from the during-drag
     // move-paths publish above.
-    moveUpdateTimeoutRef.current = setTimeout(() => {
-      const selected = useCanvasPathsStore
-        .getState()
-        .canvasPaths.filter((p) => p.isSelected);
-      if (selected.length > 0 && client) {
-        const pathsToUpdate = selected.map((p) => ({ ...p, boardId }));
-        pathsToUpdate.forEach((p) => delete (p as { isSelected?: boolean }).isSelected);
-        client.publish({
-          destination: `/app/board/update-paths/${boardId}`,
-          body: JSON.stringify({ paths: pathsToUpdate }),
-        });
-      }
-    }, 500);
-  }, [isMoving, client, boardId]);
+    publishUpdatePaths(() =>
+      useCanvasPathsStore.getState().canvasPaths.filter((p) => p.isSelected)
+    );
+  }, [isMoving, resetMoveThrottle, publishUpdatePaths]);
 
   const clearSelection = useCallback(() => setSelectedPath([]), [setSelectedPath]);
-
-  useEffect(() => {
-    return () => {
-      if (moveUpdateTimeoutRef.current) clearTimeout(moveUpdateTimeoutRef.current);
-    };
-  }, []);
 
   return {
     canvasPaths,

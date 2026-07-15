@@ -12,6 +12,8 @@ import MultiCursor from "../MultiCursor/MultiCursor";
 import { useStageViewport, drawGridScene } from "./hooks/useStageViewport";
 import { useDrawing } from "./hooks/useDrawing";
 import { useSelection } from "./hooks/useSelection";
+import { usePathSync } from "./hooks/usePathSync";
+import { useCursorBroadcast } from "./hooks/useCursorBroadcast";
 
 interface Point { x: number; y: number; }
 interface BoardCanvasProps { children: React.ReactNode; onSetScale?: (scale: number) => void; boardId: string; }
@@ -23,7 +25,7 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
   const penColor = useToolDevStore((s) => s.pencil?.color) || "black";
   const penThickness = useToolDevStore((s) => s.pencil?.thickness) || 1;
   const penOpacity = useToolDevStore((s) => s.pencil?.opacity) || 1;
-  const { client } = useStompStore();
+  const isConnected = useStompStore((s) => s.isConnected);
 
   const [backgroundColor, setBackgroundColor] = useState<string | undefined>(undefined);
   const [gridVisible, setGridVisible] = useState<boolean>(true);
@@ -31,9 +33,17 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
   const [menuPosition, setMenuPosition] = useState<Point>({ x: 0, y: 0 });
   const [cursorPos, setCursorPos] = useState<Point | null>(null);
   const { scale, translate, stageSize, isPanning, handleWheel, startPan, updatePan, stopPan, screenToStage } = useStageViewport({ onSetScale });
-  const { canvasPaths, startStroke, continueStroke, endStroke } = useDrawing({ boardId, screenToStage });
-  const selection = useSelection({ boardId, screenToStage });
+  const pathSync = usePathSync({ boardId });
+  const { canvasPaths, startStroke, continueStroke, endStroke } = useDrawing({ screenToStage, queueDraw: pathSync.queueDraw });
+  const selection = useSelection({
+    screenToStage,
+    publishMovePaths: pathSync.publishMovePaths,
+    resetMoveThrottle: pathSync.resetMoveThrottle,
+    publishUpdatePaths: pathSync.publishUpdatePaths,
+    publishDeletePaths: pathSync.publishDeletePaths,
+  });
   const { isSelecting, selectionRect, isMoving, selectionBoundingBox } = selection;
+  useCursorBroadcast({ boardId, cursorPos });
 
   useEffect(() => {
     if (board?.canvasPaths) {
@@ -42,19 +52,6 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
       setGridVisible(board?.option?.grid);
     }
   }, [board, setCanvasPaths]);
-
-  // Cursor position publish to /app/board/cursor/{boardId}, 100ms interval (parity with the prior render layer).
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (cursorPos && client && boardId) {
-        client.publish({
-          destination: `/app/board/cursor/${boardId}`,
-          body: JSON.stringify({ ...cursorPos, userId: "current-user-id", userName: "You", color: "#FF0000", lastUpdated: Date.now() }),
-        });
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [cursorPos, client, boardId]);
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     const evt = e.evt;
@@ -115,10 +112,21 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
         <Layer listening={false}>
           <Shape sceneFunc={(ctx) => drawGridScene(ctx, scale, translate, stageSize, gridVisible)} />
         </Layer>
-        {/* Paths layer: one Konva Line per CanvasPath */}
+        {/* Paths layer: one Konva Line per CanvasPath. Unsynced (queued-but-
+            not-yet-acked) strokes render with a dash pattern and lower
+            opacity so pending sync state is visible. */}
         <Layer>
           {canvasPaths.map((path, index) => (
-            <Line key={path.id ?? index} points={path.paths.flatMap((p) => [p.x, p.y])} stroke={path.color} strokeWidth={path.thickness} opacity={path.opacity} lineCap="round" lineJoin="round" />
+            <Line
+              key={path.id ?? path.localId ?? index}
+              points={path.paths.flatMap((p) => [p.x, p.y])}
+              stroke={path.color}
+              strokeWidth={path.thickness}
+              opacity={path.unsynced ? path.opacity * 0.5 : path.opacity}
+              dash={path.unsynced ? [8, 4] : undefined}
+              lineCap="round"
+              lineJoin="round"
+            />
           ))}
         </Layer>
         {/* Selection layer: rubber-band rect + bounding box of selected paths */}
@@ -143,6 +151,14 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
         {children}
       </div>
       <MultiCursor scale={scale} translate={translate} boardId={boardId} />
+      {!isConnected && (
+        <div
+          data-testid="reconnecting-indicator"
+          className="absolute top-2 right-2 z-10 rounded bg-yellow-500/90 px-3 py-1 text-sm text-black shadow"
+        >
+          Reconnecting...
+        </div>
+      )}
     </div>
   );
 };
