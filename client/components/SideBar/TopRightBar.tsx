@@ -243,7 +243,7 @@ function TopRightBar({
               <div className="relative inline-block">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={`https://ui-avatars.com/api/?name=${myuser.firstName}+${myuser.lastName}`} />
-                  <AvatarFallback>{myuser.firstName[0]}</AvatarFallback>
+                  <AvatarFallback>{myuser.firstName?.[0] ?? "?"}</AvatarFallback>
                 </Avatar>
                 {myuser.isOnline && (
                   <>
