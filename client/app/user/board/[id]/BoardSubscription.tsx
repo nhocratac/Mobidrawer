@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client, sessionId } = useStompStore();
-  const { addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
+  const { deletePaths, updatePaths } = useCanvasPathsStore()
   const { addStickyNote, addStickyNotes, moveStickyNote, resizeStickyNote, changTextStickNote, selectStickyNote, deselectStickyNote, deleteStickyNote } = useStickyNoteStore()
   const { markOnlineUsers } = useUserInBoardStore()
   useEffect(() => {
@@ -20,11 +20,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       console.log("Received message:", message.body);
       const payload = JSON.parse(message.body);
       markOnlineUsers(payload)
-    });
-
-    const drawSubcription = client.subscribe(`/topic/draw/board/${boardId}`, (message) => {
-      const pathCreated = JSON.parse(message.body)
-      addCanvasPath(pathCreated)
     });
 
     const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, (message) => {
@@ -155,7 +150,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
         destination: `/app/board/leave/${boardId}`
       });
       subscription.unsubscribe();
-      drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()
       movePathsSubscription.unsubscribe()

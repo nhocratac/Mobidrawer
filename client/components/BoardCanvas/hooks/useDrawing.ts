@@ -1,39 +1,27 @@
-// useDrawing: pen-mode pointer handling appending to canvasPathsStore,
-// publishing /app/board/draw/{boardId} as the prior render layer did
-// (batched, flushed at 10 strokes or after a 1s timeout).
-import { useCallback, useRef } from "react";
+// useDrawing: pen-mode pointer handling appending to canvasPathsStore. The
+// actual draw-destination publish (batching, own-echo mapping, reconnect
+// retry) now lives entirely in usePathSync (Sprint 2); this hook only stamps
+// local strokes and hands finished strokes to the shared pathSync queue via
+// the injected queueDraw callback.
+import { useCallback } from "react";
 import {
   CanvasPath,
   useCanvasPathsStore,
 } from "@/lib/Zustand/canvasPathsStore";
-import { useStompStore } from "@/lib/Zustand/socketStore";
+import useTokenStore from "@/lib/Zustand/tokenStore";
 
 interface UseDrawingOptions {
-  boardId: string;
   screenToStage: (clientX: number, clientY: number, offset?: number) => {
     x: number;
     y: number;
   };
+  queueDraw: (path: CanvasPath) => void;
 }
 
-const BATCH_INTERVAL = 1000;
-
-export function useDrawing({ boardId, screenToStage }: UseDrawingOptions) {
+export function useDrawing({ screenToStage, queueDraw }: UseDrawingOptions) {
   const { canvasPaths, addCanvasPaths, addPointToLastPath } =
     useCanvasPathsStore();
-  const { client } = useStompStore();
-  const batchRef = useRef<CanvasPath[]>([]);
-
-  const sendBatch = useCallback(() => {
-    if (batchRef.current.length === 0) return;
-    batchRef.current.forEach((path) => {
-      client?.publish({
-        destination: `/app/board/draw/${boardId}`,
-        body: JSON.stringify({ ...path, boardId }),
-      });
-    });
-    batchRef.current = [];
-  }, [client, boardId]);
+  const user = useTokenStore((s) => s.user);
 
   const startStroke = useCallback(
     (
@@ -44,9 +32,9 @@ export function useDrawing({ boardId, screenToStage }: UseDrawingOptions) {
       penOpacity: number
     ) => {
       const { x, y } = screenToStage(clientX, clientY, penThickness / 2);
-      addCanvasPaths(x, y, penColor, penThickness, penOpacity);
+      addCanvasPaths(x, y, penColor, penThickness, penOpacity, user?.id);
     },
-    [screenToStage, addCanvasPaths]
+    [screenToStage, addCanvasPaths, user]
   );
 
   const continueStroke = useCallback(
@@ -61,13 +49,8 @@ export function useDrawing({ boardId, screenToStage }: UseDrawingOptions) {
     const lastPath =
       useCanvasPathsStore.getState().canvasPaths.slice(-1)[0];
     if (!lastPath) return;
-    batchRef.current.push(lastPath);
-    if (batchRef.current.length >= 10) {
-      sendBatch();
-    } else {
-      setTimeout(sendBatch, BATCH_INTERVAL);
-    }
-  }, [sendBatch]);
+    queueDraw(lastPath);
+  }, [queueDraw]);
 
   return { canvasPaths, startStroke, continueStroke, endStroke };
 }
