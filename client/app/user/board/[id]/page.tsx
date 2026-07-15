@@ -3,7 +3,7 @@ import BoardSubscription from '@/app/user/board/[id]/BoardSubscription';
 import NotFoundBoard from '@/app/user/board/[id]/notfound';
 import UnauthorizeBoard from '@/app/user/board/[id]/unauthorize';
 import { useBoard } from '@/app/user/board/[id]/useBoard';
-import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
+import BoardCanvas from '@/components/BoardCanvas/BoardCanvas';
 import RNDBase from "@/components/BoxResizable/RNDBase";
 import RNDImageNote from '@/components/BoxResizable/RNDImageNote';
 import RNDImageNoteTemp from '@/components/BoxResizable/RNDImageNoteTemp';
@@ -90,7 +90,7 @@ const PlayGroundPage = () => {
             onClickShape={onClickAddShape}
           />
           <AIChatButton boardId={id.toString()} CreateManyStickyNotes={CreateManyStickyNotes} />
-          <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
+          <BoardCanvas onSetScale={setScaleHandle} boardId={id.toString()} >
             {Array.from({ length: textItemCount }).map((_, index) => (
               <RNDText key={index} parentScale={scale} />
             ))}
@@ -130,7 +130,7 @@ const PlayGroundPage = () => {
                 imageNote={imageNote}
               />
             ))}
-          </ZoomableGrid>
+          </BoardCanvas>
           (</>)}
     </div>
   );

@@ -12,36 +12,29 @@ harness:
 
 agents:
   planner:
-    model: claude-opus-4-7                # strong model for design discipline
+    model: claude-fable-5                 # strong model for design discipline
     prompt: prompts/planner.md            # hash this file for evaluator_pin
     max_tokens: 8192
     tools: [Read, Grep]                   # read-only, no edits
 
   generator:
-    model: claude-sonnet-4-6              # cheaper than Planner/Evaluator
+    model: claude-sonnet-5                # cheaper than Planner/Evaluator
     prompt: prompts/generator.md
     tools: [Read, Write, Edit, Bash]
     bash_allowlist:                        # [TUNE] — scope to your build tooling
       - git
+      - npm
       - python3
-      # Examples:
-      # - ./mvnw           (JVM projects)
-      # - npm              (JS projects)
-      # - cargo            (Rust)
-      # - pytest           (Python tests)
 
   evaluator:
-    model: claude-opus-4-7                # strong model for skepticism
+    model: claude-opus-4-8                # strong model for skepticism
     prompt: prompts/evaluator.md
     tools: [Read, Grep, Bash]             # NO Write/Edit — enforced in /harness-eval
     bash_allowlist:                        # [TUNE] — MUST be sorted alphabetically
       - curl
       - git                                #  (deterministic hashing depends on sort order)
+      - npm
       - python3
-      # Examples:
-      # - ./mvnw
-      # - npm
-      # - psql
     isolation: subagent                    # context reset mandatory
 
 orchestration:
