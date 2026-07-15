@@ -16,9 +16,16 @@ interface UseDrawingOptions {
     y: number;
   };
   queueDraw: (path: CanvasPath) => void;
+  // Sprint 3 undo/redo: records the finished stroke (by id-else-localId)
+  // as an add-path entry. Called exactly once, from endStroke below.
+  recordAdd: (path: CanvasPath) => void;
 }
 
-export function useDrawing({ screenToStage, queueDraw }: UseDrawingOptions) {
+export function useDrawing({
+  screenToStage,
+  queueDraw,
+  recordAdd,
+}: UseDrawingOptions) {
   const { canvasPaths, addCanvasPaths, addPointToLastPath } =
     useCanvasPathsStore();
   const user = useTokenStore((s) => s.user);
@@ -49,8 +56,9 @@ export function useDrawing({ screenToStage, queueDraw }: UseDrawingOptions) {
     const lastPath =
       useCanvasPathsStore.getState().canvasPaths.slice(-1)[0];
     if (!lastPath) return;
+    recordAdd(lastPath);
     queueDraw(lastPath);
-  }, [queueDraw]);
+  }, [queueDraw, recordAdd]);
 
   return { canvasPaths, startStroke, continueStroke, endStroke };
 }

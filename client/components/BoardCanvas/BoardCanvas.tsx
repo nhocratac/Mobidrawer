@@ -7,6 +7,7 @@ import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
 import { ModeType } from "@/lib/Zustand/type.type";
 import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
 import { useStompStore } from "@/lib/Zustand/socketStore";
+import useTokenStore from "@/lib/Zustand/tokenStore";
 import BoardGridContext from "../BoardGrid/BoardGridContext";
 import MultiCursor from "../MultiCursor/MultiCursor";
 import { useStageViewport, drawGridScene } from "./hooks/useStageViewport";
@@ -14,6 +15,7 @@ import { useDrawing } from "./hooks/useDrawing";
 import { useSelection } from "./hooks/useSelection";
 import { usePathSync } from "./hooks/usePathSync";
 import { useCursorBroadcast } from "./hooks/useCursorBroadcast";
+import { useUndoRedo } from "./hooks/useUndoRedo";
 
 interface Point { x: number; y: number; }
 interface BoardCanvasProps { children: React.ReactNode; onSetScale?: (scale: number) => void; boardId: string; }
@@ -26,6 +28,7 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
   const penThickness = useToolDevStore((s) => s.pencil?.thickness) || 1;
   const penOpacity = useToolDevStore((s) => s.pencil?.opacity) || 1;
   const isConnected = useStompStore((s) => s.isConnected);
+  const user = useTokenStore((s) => s.user);
 
   const [backgroundColor, setBackgroundColor] = useState<string | undefined>(undefined);
   const [gridVisible, setGridVisible] = useState<boolean>(true);
@@ -34,13 +37,20 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
   const [cursorPos, setCursorPos] = useState<Point | null>(null);
   const { scale, translate, stageSize, isPanning, handleWheel, startPan, updatePan, stopPan, screenToStage } = useStageViewport({ onSetScale });
   const pathSync = usePathSync({ boardId });
-  const { canvasPaths, startStroke, continueStroke, endStroke } = useDrawing({ screenToStage, queueDraw: pathSync.queueDraw });
+  const undoRedo = useUndoRedo({ pathSync, ownerId: user?.id });
+  const { canvasPaths, startStroke, continueStroke, endStroke } = useDrawing({
+    screenToStage,
+    queueDraw: pathSync.queueDraw,
+    recordAdd: undoRedo.recordAdd,
+  });
   const selection = useSelection({
     screenToStage,
     publishMovePaths: pathSync.publishMovePaths,
     resetMoveThrottle: pathSync.resetMoveThrottle,
     publishUpdatePaths: pathSync.publishUpdatePaths,
     publishDeletePaths: pathSync.publishDeletePaths,
+    recordDelete: undoRedo.recordDelete,
+    recordMove: undoRedo.recordMove,
   });
   const { isSelecting, selectionRect, isMoving, selectionBoundingBox } = selection;
   useCursorBroadcast({ boardId, cursorPos });
