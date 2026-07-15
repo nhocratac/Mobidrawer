@@ -1,0 +1,26 @@
+# Dev-only infrastructure: MongoDB + Redis for running the backend locally.
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# The backend itself runs on the host (faster dev loop):
+#   cd IE213Backend && set -a && source .env && set +a && bash ./mvnw spring-boot:run
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mobidrawer-mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis is intentionally NOT defined here: the production docker-compose.yml
+  # already runs a `redis` container publishing 6379 (restart: always).
+  # If it is ever stopped: docker compose up -d redis
+
+volumes:
+  mongodb_data:
+    driver: local
