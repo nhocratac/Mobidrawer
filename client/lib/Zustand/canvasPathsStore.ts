@@ -49,6 +49,20 @@ interface CanvasPathsState {
   // a batch of queued-but-not-yet-acked strokes identified by localId.
   assignServerId: (localId: string, serverId: string) => void;
   setPathsUnsynced: (localIds: string[], unsynced: boolean) => void;
+  // Sprint 3 undo/redo actions (additive only; no existing action's
+  // signature or behavior changes). readdPath re-adds a path removed by a
+  // prior delete, STRIPPING its stale (pre-delete) server id and stamping a
+  // fresh localId (reusing generateLocalId) + ownerId, and returns the
+  // newly stamped object so the caller can pass it straight to
+  // usePathSync's queueDraw (keeping the pending-echo FIFO in sync).
+  // removePathsByIdentity / restorePathPoints resolve by id first, falling
+  // back to localId (identity-based, unlike deletePaths/updatePaths which
+  // are id-only).
+  readdPath: (path: CanvasPath, ownerId?: string) => CanvasPath;
+  removePathsByIdentity: (refs: string[]) => void;
+  restorePathPoints: (
+    updates: { ref: string; points: Point[] }[]
+  ) => void;
 }
 
 export const useCanvasPathsStore = create<CanvasPathsState>((set) => ({
@@ -133,4 +147,35 @@ export const useCanvasPathsStore = create<CanvasPathsState>((set) => ({
             : path
         ),
       })),
+    readdPath: (path, ownerId) => {
+      const { id, localId, unsynced, ...rest } = path;
+      void id;
+      void localId;
+      void unsynced;
+      const newPath: CanvasPath = {
+        ...rest,
+        localId: generateLocalId(),
+        ownerId,
+      };
+      set((state) => ({ canvasPaths: [...state.canvasPaths, newPath] }));
+      return newPath;
+    },
+    removePathsByIdentity: (refs) =>
+      set((state) => ({
+        canvasPaths: state.canvasPaths.filter((path) => {
+          const ref = path.id ?? path.localId;
+          return !(ref && refs.includes(ref));
+        }),
+      })),
+    restorePathPoints: (updates) =>
+      set((state) => {
+        const byRef = new Map(updates.map((u) => [u.ref, u.points]));
+        return {
+          canvasPaths: state.canvasPaths.map((path) => {
+            const ref = path.id ?? path.localId;
+            const points = ref ? byRef.get(ref) : undefined;
+            return points ? { ...path, paths: points } : path;
+          }),
+        };
+      }),
 }));

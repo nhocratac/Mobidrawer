@@ -5,7 +5,7 @@
 // actual STOMP publishes (and their throttle/debounce timing) now live in
 // usePathSync (Sprint 2); this hook only computes the next state and calls
 // the injected publish callbacks.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { produce } from "immer";
 import {
   CanvasPath,
@@ -37,6 +37,14 @@ interface UseSelectionOptions {
   resetMoveThrottle: () => void;
   publishUpdatePaths: (getSelectedPaths: () => CanvasPath[]) => void;
   publishDeletePaths: (ids: string[]) => void;
+  // Sprint 3 undo/redo: recordDelete carries the FULL CanvasPath data of
+  // every locally removed path, captured from pre-removal state (called
+  // from the Delete/Backspace handler below). recordMove carries per-path
+  // id-else-localId plus the full pre-move points array, snapshotted at
+  // move begin — before the first moveSelected store mutation (called from
+  // endMove below).
+  recordDelete: (paths: CanvasPath[]) => void;
+  recordMove: (items: { ref: string; points: Point[] }[]) => void;
 }
 
 const isPathInSelection = (path: Point[], rect: SelectionRect): boolean =>
@@ -72,6 +80,8 @@ export function useSelection({
   resetMoveThrottle,
   publishUpdatePaths,
   publishDeletePaths,
+  recordDelete,
+  recordMove,
 }: UseSelectionOptions) {
   const { canvasPaths, setCanvasPaths, setSelectedPath } =
     useCanvasPathsStore();
@@ -113,6 +123,11 @@ export function useSelection({
           .map((path) => path.id)
           .filter(Boolean) as string[];
 
+        // Sprint 3 undo/redo: record the FULL pre-removal data of every
+        // removed path (id-less ones included) before it is removed.
+        const removedPaths = canvasPaths.filter((path) => path.isSelected);
+        recordDelete(removedPaths);
+
         publishDeletePaths(pathIds);
 
         // Id-agnostic local removal (parity with the prior render layer's
@@ -123,7 +138,7 @@ export function useSelection({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [canvasPaths, publishDeletePaths, setCanvasPaths]);
+  }, [canvasPaths, publishDeletePaths, setCanvasPaths, recordDelete]);
 
   const startSelection = useCallback(
     (clientX: number, clientY: number) => {
@@ -163,13 +178,23 @@ export function useSelection({
     [selectionBoundingBox]
   );
 
+  // Sprint 3 undo/redo: pre-move snapshot, captured at move begin — BEFORE
+  // the first moveSelected store mutation. A read at endMove time would see
+  // post-move coordinates (moveSelected mutates the store live during the
+  // drag), so the snapshot must be taken here.
+  const moveSnapshotRef = useRef<{ ref: string; points: Point[] }[]>([]);
+
   const startMove = useCallback(
     (clientX: number, clientY: number) => {
       const { x, y } = screenToStage(clientX, clientY);
       setIsMoving(true);
       setMoveStart({ x, y });
+      moveSnapshotRef.current = canvasPaths
+        .filter((p) => p.isSelected)
+        .map((p) => ({ ref: (p.id ?? p.localId) as string, points: p.paths }))
+        .filter((item) => Boolean(item.ref));
     },
-    [screenToStage]
+    [screenToStage, canvasPaths]
   );
 
   const moveSelected = useCallback(
@@ -204,12 +229,19 @@ export function useSelection({
     setIsMoving(false);
     resetMoveThrottle();
 
+    // Record the move using the pre-move snapshot taken in startMove (NOT
+    // a store read here, which would already reflect post-move points).
+    if (moveSnapshotRef.current.length > 0) {
+      recordMove(moveSnapshotRef.current);
+    }
+    moveSnapshotRef.current = [];
+
     // Debounced move-completion publish, distinct from the during-drag
     // move-paths publish above.
     publishUpdatePaths(() =>
       useCanvasPathsStore.getState().canvasPaths.filter((p) => p.isSelected)
     );
-  }, [isMoving, resetMoveThrottle, publishUpdatePaths]);
+  }, [isMoving, resetMoveThrottle, publishUpdatePaths, recordMove]);
 
   const clearSelection = useCallback(() => setSelectedPath([]), [setSelectedPath]);
 
