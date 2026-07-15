@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-  webpack(config) {
+  webpack(config, { isServer }) {
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"], // Allows importing SVGs as React components
     });
+    if (isServer) {
+      config.externals.push({ canvas: "canvas" });
+    }
     return config;
   },
   images: {
