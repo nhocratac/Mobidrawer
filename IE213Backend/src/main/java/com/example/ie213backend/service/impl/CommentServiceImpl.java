@@ -8,6 +8,8 @@ import com.example.ie213backend.domain.dto.CommentDto.UpdateCommentDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Comment;
 import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.configstore.ConfigKeys;
+import com.example.ie213backend.configstore.ConfigService;
 import com.example.ie213backend.mapper.CommentMapper;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.repository.CommentRepository;
@@ -33,9 +35,11 @@ public class CommentServiceImpl implements CommentService {
     private final UserMapper userMapper;
     private final CommentReactionService commentReactionService;
     private final NotificationService notificationService;
+    private final ConfigService configService;
 
-    private static final int defaultSubCommentsSize = 3;
-    private static final Pageable defaultSubCommentPageable = PageRequest.of(0, defaultSubCommentsSize, Sort.by("createdAt").descending());
+    private Pageable subCommentPageable() {
+        return PageRequest.of(0, configService.getInt(ConfigKeys.COMMENT_SUBCOMMENT_PAGE_SIZE), Sort.by("createdAt").descending());
+    }
 
     private CommentDto convertToDto(Comment comment, String currUserId, Pageable pageable) {
         Optional<String> currentUserId = Optional.ofNullable(currUserId);
@@ -76,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
 
         }
 
-        return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), defaultSubCommentPageable);
+        return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), subCommentPageable());
     }
 
     @Override
@@ -88,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(updateCommentDto.getContent());
         comment.setEdited(true);
 
-        return convertToDto(commentRepository.save(comment), updateCommentDto.getCurrentUserId(), defaultSubCommentPageable);
+        return convertToDto(commentRepository.save(comment), updateCommentDto.getCurrentUserId(), subCommentPageable());
     }
 
     @Override
@@ -110,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Page<CommentDto> getCommentsByBlogId(String blogId, String currUserId, Pageable pageable) {
         return commentRepository.findByBlogIdAndParentComment(blogId, true, pageable)
-                .map(n -> convertToDto(n, currUserId, defaultSubCommentPageable));
+                .map(n -> convertToDto(n, currUserId, subCommentPageable()));
     }
 
     @Override
@@ -118,7 +122,7 @@ public class CommentServiceImpl implements CommentService {
         getCommentById(commentId);
 
         return commentRepository.findByRepliedId(commentId, pageable)
-                .map(n -> convertToDto(n, currUserId, defaultSubCommentPageable));
+                .map(n -> convertToDto(n, currUserId, subCommentPageable()));
     }
 
     @Override

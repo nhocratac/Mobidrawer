@@ -1,2 +1,4 @@
 .harness-run/
 IE213Backend/.env
+test-reports/
+.playwright-mcp/

@@ -8,6 +8,8 @@ import com.example.ie213backend.domain.dto.BoardDto.MemberDetailDTO;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.configstore.ConfigKeys;
+import com.example.ie213backend.configstore.ConfigService;
 import com.example.ie213backend.mapper.BoardMapper;
 import com.example.ie213backend.repository.BoardCustomRepository;
 import com.example.ie213backend.repository.BoardRepository;
@@ -40,6 +42,7 @@ public class BoardServiceImpl implements BoardService {
 
     private final MongoTemplate mongoTemplate;
     private final NotificationService notificationService;
+    private final ConfigService configService;
 
     @Override
     public BoardFullDetailResponse getBoard(String id, String userId) {
@@ -104,8 +107,8 @@ public class BoardServiceImpl implements BoardService {
             throw new RuntimeException("You are not the owner of this board: " + boardId);
         }
 
-        // Kiểm tra xem nếu user đang là plan free và số lượng member vượt quá cho phép là 3 hay chưa
-        if (board.getMembers().size() >= 3 && (owner.getPlan() == null || owner.getPlan() == Plans.FREE)) {
+        // Kiểm tra xem nếu user đang là plan free và số lượng member vượt quá cho phép hay chưa
+        if (board.getMembers().size() >= configService.getInt(ConfigKeys.BOARD_FREE_MAX_MEMBERS) && (owner.getPlan() == null || owner.getPlan() == Plans.FREE)) {
             throw new IllegalArgumentException("Bạn đã vượt mức member tối đa cho phép ở board này!");
         }
 
