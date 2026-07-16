@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
     private final NotificationService notificationService;
     private final ConfigService configService;
 
-    private Pageable defaultSubCommentPageable() {
+    private Pageable subCommentPageable() {
         return PageRequest.of(0, configService.getInt(ConfigKeys.COMMENT_SUBCOMMENT_PAGE_SIZE), Sort.by("createdAt").descending());
     }
 
@@ -80,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
 
         }
 
-        return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), defaultSubCommentPageable());
+        return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), subCommentPageable());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(updateCommentDto.getContent());
         comment.setEdited(true);
 
-        return convertToDto(commentRepository.save(comment), updateCommentDto.getCurrentUserId(), defaultSubCommentPageable());
+        return convertToDto(commentRepository.save(comment), updateCommentDto.getCurrentUserId(), subCommentPageable());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Page<CommentDto> getCommentsByBlogId(String blogId, String currUserId, Pageable pageable) {
         return commentRepository.findByBlogIdAndParentComment(blogId, true, pageable)
-                .map(n -> convertToDto(n, currUserId, defaultSubCommentPageable()));
+                .map(n -> convertToDto(n, currUserId, subCommentPageable()));
     }
 
     @Override
@@ -122,7 +122,7 @@ public class CommentServiceImpl implements CommentService {
         getCommentById(commentId);
 
         return commentRepository.findByRepliedId(commentId, pageable)
-                .map(n -> convertToDto(n, currUserId, defaultSubCommentPageable()));
+                .map(n -> convertToDto(n, currUserId, subCommentPageable()));
     }
 
     @Override
