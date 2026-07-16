@@ -4,6 +4,8 @@ import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
 import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
 import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.configstore.ConfigKeys;
+import com.example.ie213backend.configstore.ConfigService;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.security.DrawUserDetails;
 import com.example.ie213backend.service.AuthService;
@@ -41,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final RedisTemplate<String, RegistrationRequest> redisTemplate;
     private final EmailService emailService;
+    private final ConfigService configService;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -124,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
         String code = generateCode(); // Tạo mã xác thực
 
 
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5); // Hết hạn sau 5 phút
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES)); // Hết hạn theo cấu hình
 
         RegistrationRequest request = new RegistrationRequest(email,code,password,firstName,lastName,phone, expiredAt);
 
@@ -175,8 +178,8 @@ public class AuthServiceImpl implements AuthService {
         // Tạo mã xác thực (OTP)
         String code = generateCode();
 
-        // Lưu mã xác thực vào Redis với thời gian hết hạn (ví dụ: 5 phút)
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+        // Lưu mã xác thực vào Redis với thời gian hết hạn theo cấu hình
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES));
         redisTemplate.opsForValue().set(email, new RegistrationRequest(email, code, null, null, null, null, expiredAt), 5, TimeUnit.MINUTES);
 
         // Gửi mã xác thực đến email

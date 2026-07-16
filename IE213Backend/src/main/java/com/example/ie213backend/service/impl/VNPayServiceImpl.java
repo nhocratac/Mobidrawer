@@ -7,6 +7,8 @@ import com.example.ie213backend.domain.dto.PaymentDto.UserPlansDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.domain.model.UserPlans;
+import com.example.ie213backend.configstore.ConfigKeys;
+import com.example.ie213backend.configstore.ConfigService;
 import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.mapper.UserPlanMapper;
 import com.example.ie213backend.repository.UserPlansRepository;
@@ -40,6 +42,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final UserService userService;
     private final EmailService emailService;
     private final NotificationService notificationService;
+    private final ConfigService configService;
 
     @Override
     public String createPaymentUrl(CreatePaymentDto createPaymentDto, HttpServletRequest req) {
@@ -235,14 +238,14 @@ public class VNPayServiceImpl implements VNPayService {
         User user = userService.getUserById(userId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         LocalDateTime createdDate = LocalDateTime.parse(payDate, formatter);
-        LocalDateTime expireDate = createdDate.plusMinutes(2); // For testing
+        LocalDateTime expireDate = createdDate.plusDays(configService.getInt(ConfigKeys.PAYMENT_PLAN_DURATION_DAYS));
 
         if (user.getUserPlansId() != null) {
             Optional<UserPlans> optionalUserPlans = userPlansRepository.findById(user.getUserPlansId());
             if (optionalUserPlans.isPresent()) {
                 UserPlans userPlans = optionalUserPlans.get();
                 if (userPlans.getExpiresAt().isAfter(createdDate)) {
-                    expireDate = userPlans.getExpiresAt().plusMinutes(2); // For testing
+                    expireDate = userPlans.getExpiresAt().plusDays(configService.getInt(ConfigKeys.PAYMENT_PLAN_DURATION_DAYS));
                 }
                 userPlans.setActive(false);
                 userPlansRepository.save(userPlans);
