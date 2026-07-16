@@ -5,6 +5,7 @@ import com.example.ie213backend.security.DrawUserDetailsService;
 import com.example.ie213backend.security.JwtAuthenticationFilter;
 import com.example.ie213backend.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -32,6 +34,9 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${admin.cors.allowed-origin:}")
+    private String adminCorsAllowedOrigin;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, CorsConfigurationSource corsConfigurationSource) throws Exception {
@@ -51,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/internal/config/reload").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -63,12 +69,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000", 
-            "https://localhost:3000", 
+        List<String> allowedOrigins = new ArrayList<>(List.of(
+            "http://localhost:3000",
+            "https://localhost:3000",
             "https://mobidrawer.id.vn",
             "https://api.mobidrawer.id.vn"
         )); // Allow both HTTP and HTTPS origins
+        if (adminCorsAllowedOrigin != null && !adminCorsAllowedOrigin.isBlank()) {
+            allowedOrigins.add(adminCorsAllowedOrigin);
+        }
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // For cookies/token
