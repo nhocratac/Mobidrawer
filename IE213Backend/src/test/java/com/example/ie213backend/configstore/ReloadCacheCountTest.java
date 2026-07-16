@@ -101,114 +101,28 @@ class ReloadCacheCountTest {
             return items.stream().filter(i -> i.getKey().equals(key)).findFirst();
         }
 
-        @Override
-        public <S extends ConfigItem> S save(S entity) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> List<S> saveAll(Iterable<S> entities) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<ConfigItem> findById(String id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean existsById(String id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<ConfigItem> findAllById(Iterable<String> ids) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public long count() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void deleteById(String id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void delete(ConfigItem entity) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void deleteAllById(Iterable<? extends String> ids) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void deleteAll(Iterable<? extends ConfigItem> entities) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void deleteAll() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<ConfigItem> findAll(Sort sort) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Page<ConfigItem> findAll(Pageable pageable) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> Optional<S> findOne(Example<S> example) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> List<S> findAll(Example<S> example) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> List<S> findAll(Example<S> example, Sort sort) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> Page<S> findAll(Example<S> example, Pageable pageable) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> long count(Example<S> example) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> boolean exists(Example<S> example) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> S insert(S entity) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends ConfigItem> List<S> insert(Iterable<S> entities) {
-            throw new UnsupportedOperationException();
-        }
+        // Unused by ConfigCache — throw loudly rather than silently no-op.
+        @Override public <S extends ConfigItem> S save(S entity) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> List<S> saveAll(Iterable<S> entities) { throw new UnsupportedOperationException(); }
+        @Override public Optional<ConfigItem> findById(String id) { throw new UnsupportedOperationException(); }
+        @Override public boolean existsById(String id) { throw new UnsupportedOperationException(); }
+        @Override public List<ConfigItem> findAllById(Iterable<String> ids) { throw new UnsupportedOperationException(); }
+        @Override public long count() { throw new UnsupportedOperationException(); }
+        @Override public void deleteById(String id) { throw new UnsupportedOperationException(); }
+        @Override public void delete(ConfigItem entity) { throw new UnsupportedOperationException(); }
+        @Override public void deleteAllById(Iterable<? extends String> ids) { throw new UnsupportedOperationException(); }
+        @Override public void deleteAll(Iterable<? extends ConfigItem> entities) { throw new UnsupportedOperationException(); }
+        @Override public void deleteAll() { throw new UnsupportedOperationException(); }
+        @Override public List<ConfigItem> findAll(Sort sort) { throw new UnsupportedOperationException(); }
+        @Override public Page<ConfigItem> findAll(Pageable pageable) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> Optional<S> findOne(Example<S> example) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> List<S> findAll(Example<S> example) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> List<S> findAll(Example<S> example, Sort sort) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> Page<S> findAll(Example<S> example, Pageable pageable) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> long count(Example<S> example) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> boolean exists(Example<S> example) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> S insert(S entity) { throw new UnsupportedOperationException(); }
+        @Override public <S extends ConfigItem> List<S> insert(Iterable<S> entities) { throw new UnsupportedOperationException(); }
     }
 }

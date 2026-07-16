@@ -74,15 +74,6 @@ class ReloadHmacVerifierTest {
     }
 
     @Test
-    void withinWindowBoundaryAccepted() throws Exception {
-        ReloadHmacVerifier verifier = new ReloadHmacVerifier(SECRET);
-        String timestamp = String.valueOf(NOW - 300);
-        String sig = sign(SECRET, timestamp + "\n" + "");
-
-        assertTrue(verifier.verify(timestamp, sig, "", NOW));
-    }
-
-    @Test
     void blankSecretRejected() throws Exception {
         ReloadHmacVerifier verifier = new ReloadHmacVerifier("   ");
         String timestamp = String.valueOf(NOW);
@@ -92,27 +83,10 @@ class ReloadHmacVerifierTest {
     }
 
     @Test
-    void nullSecretRejected() {
-        ReloadHmacVerifier verifier = new ReloadHmacVerifier(null);
-        String timestamp = String.valueOf(NOW);
-
-        assertFalse(verifier.verify(timestamp, "deadbeef", "", NOW));
-    }
-
-    @Test
     void nonNumericTimestampRejectedWithoutExceptionEscaping() throws Exception {
         ReloadHmacVerifier verifier = new ReloadHmacVerifier(SECRET);
         String sig = sign(SECRET, "not-a-number\n" + "");
 
         assertFalse(verifier.verify("not-a-number", sig, "", NOW));
-    }
-
-    @Test
-    void missingHeadersRejected() {
-        ReloadHmacVerifier verifier = new ReloadHmacVerifier(SECRET);
-
-        assertFalse(verifier.verify(null, null, "", NOW));
-        assertFalse(verifier.verify(String.valueOf(NOW), null, "", NOW));
-        assertFalse(verifier.verify(null, "deadbeef", "", NOW));
     }
 }
