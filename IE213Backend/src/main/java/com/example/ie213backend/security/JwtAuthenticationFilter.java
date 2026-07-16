@@ -113,7 +113,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         ("GET".equalsIgnoreCase(method) && path.equals("/api/v1/check-env")) ||
                         ("GET".equalsIgnoreCase(method) && path.equals("/api/v1/comments")) ||
                         path.startsWith("/ws/") ||
-                        ("OPTIONS".equalsIgnoreCase(method))
+                        ("OPTIONS".equalsIgnoreCase(method)) ||
+                        ("POST".equalsIgnoreCase(method) && path.equals("/internal/config/reload"))
         );
     }
 
