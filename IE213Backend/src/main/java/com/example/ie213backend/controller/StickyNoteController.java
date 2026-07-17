@@ -5,6 +5,7 @@ import com.example.ie213backend.domain.dto.StickyNote.StickyNoteDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.StickyNote;
 import com.example.ie213backend.mapper.StickyNoteMapper;
+import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.StickyNoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StickyNoteController {
     private final StickyNoteService stickyNoteService;
+    private final BoardAccessService boardAccessService;
 
     @PostMapping("/{boardId}")
     ResponseEntity<StickyNoteDto> saveNote(
@@ -23,6 +25,7 @@ public class StickyNoteController {
             @RequestBody @Valid CreateStickyNote createStickyNote,
             @PathVariable String boardId
     ) {
+        boardAccessService.assertCanWrite(boardId, userDto.getId());
         StickyNote create = StickyNoteMapper.INSTANCE.createToEntity(createStickyNote);
         create.setOwner(userDto.getId());
         create.setBoardId(boardId);

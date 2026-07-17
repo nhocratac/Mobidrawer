@@ -6,6 +6,7 @@ import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.mapper.BoardMapper;
+import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final BoardAccessService boardAccessService;
 
 
     @GetMapping("/{id}")
@@ -42,8 +44,10 @@ public class BoardController {
     @PostMapping("/addPath/{id}")
     ResponseEntity<CanvasPath> addPathToBoard(
             @PathVariable String id,
-            @RequestBody CanvasPath canvasPath
+            @RequestBody CanvasPath canvasPath,
+            @RequestAttribute("user") UserDto userDto
     ) {
+        boardAccessService.assertCanWrite(id, userDto.getId());
         return ResponseEntity.ok(boardService.addCanvasPath(id,canvasPath));
     }
 
@@ -80,6 +84,7 @@ public class BoardController {
             @RequestBody UpdateThumbnail updateThumbnail,
             @PathVariable String id
     ) {
+        boardAccessService.assertCanWrite(id, userDto.getId());
         return ResponseEntity.ok(boardService.updateThumbnail(id,userDto.getId(),updateThumbnail.getThumbnail()));
     }
 
