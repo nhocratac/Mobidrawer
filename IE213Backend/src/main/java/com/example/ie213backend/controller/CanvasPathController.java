@@ -4,6 +4,7 @@ import com.example.ie213backend.domain.dto.CanvasPathDto.CreateCanvasPath;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.mapper.CanvasPathMapper;
+import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.CanvasPathService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CanvasPathController {
     private final CanvasPathService canvasPathService;
+    private final BoardAccessService boardAccessService;
 
     @PostMapping("/")
     public ResponseEntity<CanvasPath> createCanvasPath(
@@ -23,7 +25,10 @@ public class CanvasPathController {
             @RequestBody @Valid CreateCanvasPath canvasPath
 
     ) {
-        return ResponseEntity.ok(canvasPathService.createCanvas(CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath)));
+        boardAccessService.assertCanWrite(canvasPath.getBoardId(), userDto.getId());
+        CanvasPath entity = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath);
+        entity.setOwner(userDto.getId());
+        return ResponseEntity.ok(canvasPathService.createCanvas(entity));
     }
 
     @DeleteMapping("/{id}")
@@ -32,6 +37,7 @@ public class CanvasPathController {
             @Payload String boardId,
             @PathVariable String id
     ) {
+        boardAccessService.assertCanWriteToCanvasPath(id, userDto.getId());
         canvasPathService.deleteCanvas(id, boardId, userDto.getId());
         return ResponseEntity.noContent().build();
     }
