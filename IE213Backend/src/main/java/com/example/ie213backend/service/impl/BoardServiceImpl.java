@@ -17,6 +17,7 @@ import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
 import com.example.ie213backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,6 +34,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
@@ -104,7 +106,7 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerID));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
-            throw new RuntimeException("You are not the owner of this board: " + boardId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this board: " + boardId);
         }
 
         // Kiểm tra xem nếu user đang là plan free và số lượng member vượt quá cho phép hay chưa
@@ -120,12 +122,17 @@ public class BoardServiceImpl implements BoardService {
                 .anyMatch(member -> member.getMemberId().equals(user.getId()));
 
         if (isMember || ownerID.equals(user.getId())) {
-            throw new RuntimeException("User has already joined this board: " + boardId);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User has already joined this board: " + boardId);
         }
         // Thêm user vào board
         board.getMembers().add(new Board.Member(user.getId(), role));
-        notificationService.joinBoardSuccessful(ownerID, board, user);
-        return boardRepository.save(board);
+        Board savedBoard = boardRepository.save(board);
+        try {
+            notificationService.joinBoardSuccessful(ownerID, savedBoard, user);
+        } catch (Exception e) {
+            log.warn("Failed to send join-board notification for boardId={}, userId={}", boardId, user.getId(), e);
+        }
+        return savedBoard;
     }
 
     @Override
@@ -134,7 +141,7 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
-            throw new RuntimeException("You are not the owner of this board: " + boardId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this board: " + boardId);
         }
 
         board.getMembers().forEach(member -> {

@@ -3,6 +3,7 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.dto.ApiErrorResponse;
 import com.mongodb.MongoWriteException;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +71,17 @@ public class ErrorController {
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<ApiErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
         log.warn("Expired JWT: {}", ex.getMessage());
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleJwtException(JwtException ex) {
+        log.warn("Invalid JWT: {}", ex.getMessage());
         ApiErrorResponse error = ApiErrorResponse.builder()
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .message(ex.getMessage())
