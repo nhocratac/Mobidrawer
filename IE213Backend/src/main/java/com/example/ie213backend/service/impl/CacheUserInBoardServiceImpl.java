@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,11 +16,13 @@ import java.util.stream.Collectors;
 public class CacheUserInBoardServiceImpl implements CacheUserInBoardService {
     private final RedisTemplate<String, UserDto> redisTemplate;
     private static final String BOARD_PREFIX = "board:";
+    private static final Duration PRESENCE_TTL = Duration.ofMinutes(30);
 
     @Override
     public Set<UserDto> addUserToBoard(String boardId, UserDto user) {
         String key = BOARD_PREFIX + boardId;
         redisTemplate.opsForSet().add(key, user);
+        redisTemplate.expire(key, PRESENCE_TTL);
         return Objects.requireNonNull(redisTemplate.opsForSet().members(key))
                 .stream().map(obj -> (UserDto) obj)
                 .collect(Collectors.toSet());
@@ -44,6 +47,7 @@ public class CacheUserInBoardServiceImpl implements CacheUserInBoardService {
 
         // Cập nhật lại danh sách user còn lại
         users.forEach(user -> redisTemplate.opsForSet().add(key, user));
+        redisTemplate.expire(key, PRESENCE_TTL);
     }
 }
 
