@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Pure-JVM unit test (no @SpringBootTest, no live Mongo, no Mockito) proving
+ * Pure-JVM unit test (no Spring Boot test context, no live Mongo, no mocking framework) proving
  * the SEC-5b conversion in BlogServiceImpl: getBlogById(missing) (former L35)
  * now throws ResponseStatusException(NOT_FOUND) instead of
  * IllegalArgumentException. BlogRepository.findById is stubbed via a

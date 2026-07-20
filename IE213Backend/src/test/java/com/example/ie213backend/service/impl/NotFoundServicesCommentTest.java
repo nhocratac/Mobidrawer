@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Pure-JVM unit tests (no @SpringBootTest, no live Mongo, no Mockito) proving
+ * Pure-JVM unit tests (no Spring Boot test context, no live Mongo, no mocking framework) proving
  * the SEC-5b conversion AND preservation in CommentServiceImpl:
  *
  * (a) deleteComment(missing) (former L101, MIXED not-found/permission site

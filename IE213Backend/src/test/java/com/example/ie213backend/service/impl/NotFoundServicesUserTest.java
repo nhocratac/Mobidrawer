@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Pure-JVM unit test (no @SpringBootTest, no live Mongo, no Mockito) proving
+ * Pure-JVM unit test (no Spring Boot test context, no live Mongo, no mocking framework) proving
  * the SEC-5b conversion in UserServiceImpl: getUserById(missing) now throws
  * ResponseStatusException(NOT_FOUND) instead of IllegalArgumentException.
  * UserRepository.findById is stubbed via a hand-rolled JDK-Proxy fake
