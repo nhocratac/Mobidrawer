@@ -30,11 +30,7 @@ public class BoardAccessService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
 
-        boolean isOwner = Objects.equals(userId, board.getOwner());
-        boolean isMember = board.getMembers().stream()
-                .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
-
-        if (!isOwner && !isMember) {
+        if (!isOwnerOrMember(board, userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa board này");
         }
     }
@@ -44,5 +40,33 @@ public class BoardAccessService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Canvas path not found"));
 
         assertCanWrite(canvasPath.getBoardId(), userId);
+    }
+
+    /**
+     * Fail-closed boolean form of the owner-or-member predicate, for callers
+     * (e.g. STOMP SUBSCRIBE/SEND authorization) that need an allow/decision
+     * without exception-for-control-flow. Never throws for a deny: returns
+     * false on a null user, a null/blank boardId, an absent board, or a
+     * non-member/non-owner userId; true otherwise.
+     */
+    public boolean canAccess(String boardId, String userId) {
+        if (userId == null || boardId == null || boardId.isBlank()) {
+            return false;
+        }
+        return boardRepository.findById(boardId)
+                .map(board -> isOwnerOrMember(board, userId))
+                .orElse(false);
+    }
+
+    /**
+     * Single shared owner-or-member decision core, used by both assertCanWrite
+     * (which throws) and canAccess (which returns false). Keeping exactly one
+     * copy of this comparison avoids divergent membership predicates.
+     */
+    private boolean isOwnerOrMember(Board board, String userId) {
+        boolean isOwner = Objects.equals(userId, board.getOwner());
+        boolean isMember = board.getMembers().stream()
+                .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
+        return isOwner || isMember;
     }
 }
