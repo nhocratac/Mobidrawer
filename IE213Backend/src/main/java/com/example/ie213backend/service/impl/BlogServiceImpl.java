@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public BlogDto getBlogById(String blogId) {
         return blogMapper.toDto(blogRepository.findById(blogId)
-                .orElseThrow(() -> new IllegalArgumentException("Blog not found with id: " + blogId)));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found with id: " + blogId)));
     }
 
     @Override
@@ -46,7 +48,7 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public BlogDto updateBlog(UpdateBlogDto updateBlogDto, String blogId) {
         Blog targetBlog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy blog có id: " + blogId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy blog có id: " + blogId));
 
         Optional.ofNullable(updateBlogDto.getTitle()).ifPresent(targetBlog::setTitle);
         Optional.ofNullable(updateBlogDto.getDescription()).ifPresent(targetBlog::setDescription);
@@ -62,7 +64,7 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public void deleteBlog(String blogId) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy blog có id: " + blogId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy blog có id: " + blogId));
 
         blogRepository.delete(blog);
     }
