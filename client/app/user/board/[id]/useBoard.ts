@@ -348,7 +348,7 @@ export function useBoard() {
     async (memberId: string, role: "EDITOR" | "VIEWER") => {
       try {
         const res = await BoardAPI.changeRoleMember(
-          id!.toString(),
+          id.toString(),
           memberId,
           role
         );

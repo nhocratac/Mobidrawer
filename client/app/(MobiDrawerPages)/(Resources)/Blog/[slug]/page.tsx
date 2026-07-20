@@ -21,7 +21,7 @@ export async function generateMetadata({
   }
 
   // Lấy thông tin từ headers
-  const headersList = await headers();
+  const headersList = headers();
   const domain = headersList.get("host") || "";
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const url = `${protocol}://${domain}/${slug}?id=${id}`;
@@ -53,7 +53,7 @@ export async function generateMetadata({
 
 const page = async (props: Props<{ slug: string }>) => {
   const id = (await props.searchParams).id;
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = cookies().get("accessToken")?.value;
   let isOwner = false;
   const blog = await fetchBlogById(id as string);
 
