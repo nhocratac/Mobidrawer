@@ -8,7 +8,7 @@ import { useParams } from "next/navigation"
 export default function SendRequestJoin() {
     const {id} = useParams()
     const handleSendquestJoin = ( ) => {
-        BoardAPI.sendRequestJoin(id!.toString()).then((res)=> {
+        BoardAPI.sendRequestJoin(id.toString()).then((res)=> {
             console.log(res)
         })
     }

@@ -12,7 +12,7 @@ export default function StorePublicPage() {
     const [template, setTemplate] = useState<Template | null>(null);
 
     useEffect(() => {
-        templatesApi.getTemplateById(id!.toString())
+        templatesApi.getTemplateById(id.toString())
             .then((res) => {
                 setTemplate(res);
             })
