@@ -1,9 +1,12 @@
 package com.example.ie213backend.config.socket;
 
+import com.example.ie213backend.security.BoardAccessService;
+import com.example.ie213backend.security.BoardTopicAuthorizationInterceptor;
 import com.example.ie213backend.service.AuthService;
 import com.example.ie213backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -16,9 +19,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
     private final AuthService authService;
+    private final BoardAccessService boardAccessService;
 
-    public WebSocketConfig(AuthService authService) {
+    public WebSocketConfig(AuthService authService, BoardAccessService boardAccessService) {
         this.authService = authService;
+        this.boardAccessService = boardAccessService;
     }
 
     @Override
@@ -43,5 +48,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.setMessageSizeLimit(128 * 1024); // 128KB
         registration.setSendBufferSizeLimit(512 * 1024); // 512KB
         registration.setSendTimeLimit(10 * 1000); // 10s timeout
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(new BoardTopicAuthorizationInterceptor(boardAccessService));
     }
 }
