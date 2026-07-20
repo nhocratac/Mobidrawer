@@ -141,14 +141,18 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     });
 
 
-    client.publish({
-      destination: `/app/board/join/${boardId}`
-    });
+    if (client.connected) {
+      client.publish({
+        destination: `/app/board/join/${boardId}`
+      });
+    }
 
     return () => {
-      client.publish({
-        destination: `/app/board/leave/${boardId}`
-      });
+      if (client.connected) {
+        client.publish({
+          destination: `/app/board/leave/${boardId}`
+        });
+      }
       subscription.unsubscribe();
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()

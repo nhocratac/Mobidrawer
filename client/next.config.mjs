@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  transpilePackages: ["react-konva"],
   webpack(config, { isServer }) {
     config.module.rules.push({
       test: /\.svg$/,

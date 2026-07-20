@@ -72,14 +72,18 @@ export function useStageViewport({ onSetScale }: UseStageViewportOptions = {}) {
     (deltaY: number) => {
       const delta = -deltaY;
       const zoomFactor = delta > 0 ? 1.1 : 0.9;
-      setScale((prevScale) => {
-        const newScale = Math.min(Math.max(0.5, prevScale * zoomFactor), 5);
-        if (onSetScale) onSetScale(newScale);
-        return newScale;
-      });
+      setScale((prevScale) =>
+        Math.min(Math.max(0.5, prevScale * zoomFactor), 5)
+      );
     },
-    [onSetScale]
+    []
   );
+
+  // Propagate scale to the parent AFTER commit (never inside the setScale
+  // updater — that would setState-during-render, which React 19 rejects).
+  useEffect(() => {
+    if (onSetScale) onSetScale(scale);
+  }, [scale, onSetScale]);
 
   const startPan = useCallback(
     (clientX: number, clientY: number) => {
