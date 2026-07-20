@@ -20,8 +20,10 @@ import com.example.ie213backend.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -171,7 +173,7 @@ public class VNPayServiceImpl implements VNPayService {
     @Override
     public UserPlansDto getUserPlanInfo(String userPlanId) {
         UserPlans userPlans = userPlansRepository.findById(userPlanId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy plan với id: " + userPlanId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy plan với id: " + userPlanId));
 
         return userPlanMapper.toDto(userPlans);
     }
