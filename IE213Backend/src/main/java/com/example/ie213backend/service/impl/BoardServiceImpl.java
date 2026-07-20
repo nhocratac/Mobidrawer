@@ -60,7 +60,7 @@ public class BoardServiceImpl implements BoardService {
                 .anyMatch(member -> Objects.equals(member.getMemberId(), userId));
 
         if (!isOwner && !isMember) {
-            throw new RuntimeException("You are not allowed to access this board");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access this board");
         }
 
         return foundBoard;
@@ -69,7 +69,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board createBoard(Board board, String ownerId) {
         User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy user với id: " + ownerId));
 
         if (boardRepository.countByOwner(ownerId) >= 1 && (user.getPlan() == null || user.getPlan() == Plans.FREE)) {
             System.out.println(boardRepository.countByOwner(ownerId));
@@ -101,9 +101,9 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board addMemberToBoard(String boardId, String email, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found with boardId: " + boardId));
         User owner = userRepository.findById(ownerID)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id: " + ownerID));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy user với id: " + ownerID));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this board: " + boardId);
@@ -115,7 +115,7 @@ public class BoardServiceImpl implements BoardService {
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + email));
 
         // Kiểm tra xem user đã là member hay chưa
         boolean isMember = board.getMembers().stream()
@@ -138,7 +138,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board changeRoleOfMember(String boardId, String userId, Board.ROLE role, String ownerID) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("Board not found with boardId: " + boardId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found with boardId: " + boardId));
 
         if (!Objects.equals(board.getOwner(), ownerID)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this board: " + boardId);
@@ -190,7 +190,7 @@ public class BoardServiceImpl implements BoardService {
         String role = getRoleOfMember(boardId, userId);
         if (Objects.equals(role, "OWNER")) {
             Board board = boardRepository.findById(boardId)
-                    .orElseThrow(() -> new IllegalArgumentException("Board not found with boardId: " + boardId));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found with boardId: " + boardId));
             board.setThumbnail(newThumbnail);
             return boardRepository.save(board);
         } else
