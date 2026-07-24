@@ -79,7 +79,14 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
     const evt = e.evt;
     setCursorPos(screenToStage(evt.clientX, evt.clientY));
     if (isPanning && mode === ModeType.drag) updatePan(evt.clientX, evt.clientY);
-    else if (mode === ModeType.pen) continueStroke(evt.clientX, evt.clientY, penThickness);
+    // evt.buttons === 1 => primary button currently held. If the button was
+    // released off-canvas (a common Mac-trackpad case where mouseup never
+    // reaches the Stage), the next move finalizes the stroke instead of
+    // extending it. continueStroke is itself gated by an active-stroke flag.
+    else if (mode === ModeType.pen) {
+      if (evt.buttons === 1) continueStroke(evt.clientX, evt.clientY, penThickness);
+      else endStroke();
+    }
     else if (isSelecting && mode === ModeType.idle) selection.updateSelectionRect(evt.clientX, evt.clientY);
     else if (isMoving && mode === ModeType.idle) selection.moveSelected(evt.clientX, evt.clientY);
   };
@@ -114,7 +121,7 @@ const BoardCanvas: React.FC<BoardCanvasProps> = ({ children, onSetScale, boardId
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={stopPan}
+        onMouseLeave={() => { stopPan(); endStroke(); }}
         onContextMenu={handleContextMenu}
         onClick={() => setIsVisibleContextMenu(false)}
       >
