@@ -40,7 +40,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setPreserveReceiveOrder(true);
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("http://localhost:3000", "https://localhost:3000", "https://mobidrawer.id.vn")
-                .addInterceptors(new WebSocketAuthInterceptor(authService))
                 .withSockJS()
                 .setSuppressCors(true);
     }
@@ -55,6 +54,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new BoardTopicAuthorizationInterceptor(boardAccessService));
+        // Order matters: authenticate (sets session "user") before board authorization reads it.
+        registration.interceptors(
+                new StompAuthChannelInterceptor(authService),
+                new BoardTopicAuthorizationInterceptor(boardAccessService));
     }
 }
