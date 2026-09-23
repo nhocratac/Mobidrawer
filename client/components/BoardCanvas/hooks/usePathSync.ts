@@ -9,7 +9,6 @@ import {
   useCanvasPathsStore,
 } from "@/lib/Zustand/canvasPathsStore";
 import { useStompStore } from "@/lib/Zustand/socketStore";
-import useTokenStore from "@/lib/Zustand/tokenStore";
 
 interface UsePathSyncOptions {
   boardId: string;
@@ -37,7 +36,6 @@ function stripClientOnlyFields<
 export function usePathSync({ boardId }: UsePathSyncOptions) {
   const client = useStompStore((s) => s.client);
   const isConnected = useStompStore((s) => s.isConnected);
-  const user = useTokenStore((s) => s.user);
   const assignServerId = useCanvasPathsStore((s) => s.assignServerId);
   const setPathsUnsynced = useCanvasPathsStore((s) => s.setPathsUnsynced);
   const addCanvasPath = useCanvasPathsStore((s) => s.addCanvasPath);
@@ -45,10 +43,13 @@ export function usePathSync({ boardId }: UsePathSyncOptions) {
   // --- draw batching -------------------------------------------------
   const drawQueueRef = useRef<CanvasPath[]>([]);
   const drawTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // FIFO of localIds awaiting a server-assigned id. Entries are pushed ONLY
-  // from the successful-publish branch of flushDraw; a failed flush never
-  // enqueues here (see contract context.assumptions on FIFO lifecycle).
-  const pendingEchoRef = useRef<string[]>([]);
+  // localIds published by THIS tab and awaiting their echo. Each stroke is
+  // sent with clientId = localId and the server echoes clientId back, so an
+  // echo is matched by id (not FIFO order): a lost/rejected echo or a stroke
+  // drawn by the same user in another tab/device can no longer be paired
+  // with the wrong local stroke. Entries are added ONLY from the
+  // successful-publish branch of flushDraw.
+  const pendingEchoRef = useRef<Set<string>>(new Set());
 
   const clearDrawTimer = useCallback(() => {
     if (drawTimerRef.current) {
@@ -79,10 +80,10 @@ export function usePathSync({ boardId }: UsePathSyncOptions) {
       const body = stripClientOnlyFields(path);
       client.publish({
         destination: `/app/board/draw/${boardId}`,
-        body: JSON.stringify({ ...body, boardId }),
+        body: JSON.stringify({ ...body, boardId, clientId: path.localId }),
       });
       if (path.localId) {
-        pendingEchoRef.current.push(path.localId);
+        pendingEchoRef.current.add(path.localId);
       }
     });
   }, [client, boardId, clearDrawTimer, setPathsUnsynced]);
@@ -127,19 +128,22 @@ export function usePathSync({ boardId }: UsePathSyncOptions) {
     const subscription = client.subscribe(
       `/topic/draw/board/${boardId}`,
       (message) => {
-        const echoed = JSON.parse(message.body);
-        if (user && echoed.owner === user.id) {
-          const localId = pendingEchoRef.current.shift();
-          if (localId) {
-            assignServerId(localId, echoed.id);
-          }
+        const { clientId, ...echoed } = JSON.parse(message.body);
+        // Own echo from this tab: attach the server id to the local stroke.
+        if (clientId && pendingEchoRef.current.delete(clientId)) {
+          assignServerId(clientId, echoed.id);
           return;
         }
-        addCanvasPath(echoed);
+        // Anyone else's stroke (incl. this user's other tabs/devices). Skip
+        // if a path with this id is already present.
+        const exists = useCanvasPathsStore
+          .getState()
+          .canvasPaths.some((p) => p.id && p.id === echoed.id);
+        if (!exists) addCanvasPath(echoed);
       }
     );
     return () => subscription.unsubscribe();
-  }, [client, isConnected, boardId, user, assignServerId, addCanvasPath]);
+  }, [client, isConnected, boardId, assignServerId, addCanvasPath]);
 
   // --- move-paths (throttled during drag) -----------------------------
   const moveLastPublishRef = useRef(0);

@@ -25,6 +25,11 @@ public class CreateCanvasPath {
 
     @NotBlank( message = "vui lòng cung cấp boardId") String boardId;
 
+    // Client-generated correlation id (the stroke's localId). Not persisted;
+    // echoed back on /topic/draw/board/{boardId} so the drawing tab can
+    // reconcile its optimistic stroke with the saved one.
+    private String clientId;
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

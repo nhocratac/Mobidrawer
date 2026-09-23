@@ -84,7 +84,12 @@ export const useCanvasPathsStore = create<CanvasPathsState>((set) => ({
     set((prev) => ({
         canvasPaths: prev.canvasPaths.map((paths) => ({
           ...paths,
-          isSelected: selectedPaths.some((selected) => selected.id === paths.id),
+          // Match by id-else-localId: pending strokes have no id yet, and
+          // comparing undefined === undefined would select all of them.
+          isSelected: selectedPaths.some((selected) => {
+            const ref = selected.id ?? selected.localId;
+            return ref !== undefined && ref === (paths.id ?? paths.localId);
+          }),
           })),
     })),
   // Hàm mới để thêm điểm vào đường vẽ cuối cùng hoặc tạo đường vẽ mới nếu cần

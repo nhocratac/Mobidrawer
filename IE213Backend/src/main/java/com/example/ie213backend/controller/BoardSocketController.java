@@ -94,7 +94,9 @@ public class BoardSocketController {
         CanvasPath canvasPath = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(createCanvasPath);
         canvasPath.setBoardId(boardId);
         canvasPath.setOwner(userDto.getId());
-        return canvasPathService.createCanvas(canvasPath);
+        CanvasPath saved = canvasPathService.createCanvas(canvasPath);
+        saved.setClientId(createCanvasPath.getClientId());
+        return saved;
     }
 
     @MessageMapping("/board/delete-paths/{boardId}")
