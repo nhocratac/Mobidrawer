@@ -22,7 +22,7 @@ export default function WebSocketProvider() {
       }
 
       console.log("✅ Kết nối WebSocket với token hợp lệ!");
-      useStompStore.getState().connect(token); // Truyền token khi kết nối WebSocket
+      useStompStore.getState().connect(); // Token được gửi qua header CONNECT trong socketStore
     };
 
     connectSocket(); // Gọi hàm kiểm tra token trước khi kết nối

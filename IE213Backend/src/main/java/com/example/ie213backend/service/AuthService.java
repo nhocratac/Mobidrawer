@@ -4,10 +4,13 @@ import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Date;
+
 public interface AuthService {
     UserDetails authenticate(String email, String password);
     String generateToken(UserDetails userDetails, TokenType tokenType);
     UserDetails validateToken(String token,TokenType tokenType);
+    Date extractExpiration(String token, TokenType tokenType);
     String createRegistrationRequest(String email, String password,String firstName, String lastName,String phone);
     RegistrationRequest getRegistrationRequest(String email);
     boolean verifyCode(String email, String code);

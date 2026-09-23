@@ -94,7 +94,16 @@ public class AuthServiceImpl implements AuthService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    @Override
+    public Date extractExpiration(String token, TokenType tokenType) {
+        return extractClaims(token, tokenType).getExpiration();
+    }
+
     private String extractUsername(String token, TokenType tokenType) {
+        return extractClaims(token, tokenType).getSubject();
+    }
+
+    private Claims extractClaims(String token, TokenType tokenType) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -107,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
             throw new JwtException("Wrong type of token!");
         }
 
-        return claims.getSubject();
+        return claims;
     }
 
     @Override
