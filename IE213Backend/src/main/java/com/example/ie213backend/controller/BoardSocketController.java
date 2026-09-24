@@ -8,6 +8,8 @@ import com.example.ie213backend.domain.dto.ImageDto.DeleteImage;
 import com.example.ie213backend.domain.dto.ImageDto.MoveImage;
 import com.example.ie213backend.domain.dto.ImageDto.ResizeImage;
 import com.example.ie213backend.domain.dto.StickyNote.*;
+import com.example.ie213backend.config.socket.PresenceSessionListener;
+import com.example.ie213backend.domain.dto.UserDto.PresenceSnapshot;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.Image;
@@ -34,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -62,23 +63,30 @@ public class BoardSocketController {
 
     @MessageMapping("/board/join/{boardId}")
     @SendTo("/topic/board/{boardId}")
-    public Set<UserDto> handleUserJoin(
+    public PresenceSnapshot handleUserJoin(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
     )  {
-        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        return cacheUserInBoardService.addUserToBoard(boardId, userDto);
+        Map<String, Object> sessionAttributes = Objects.requireNonNull(headerAccessor.getSessionAttributes());
+        UserDto userDto = (UserDto) sessionAttributes.get("user");
+        String sessionId = Objects.requireNonNull(headerAccessor.getSessionId());
+        PresenceSnapshot snapshot = cacheUserInBoardService.join(boardId, sessionId, userDto);
+        // The session may have ended while this join was queued: the disconnect listener
+        // already ran removeSession, so undo our own entry instead of leaving a ghost.
+        if (Boolean.TRUE.equals(sessionAttributes.get(PresenceSessionListener.PRESENCE_CLOSED_ATTR))) {
+            return cacheUserInBoardService.leave(boardId, sessionId);
+        }
+        return snapshot;
     }
 
     @MessageMapping("/board/leave/{boardId}")
     @SendTo("/topic/board/{boardId}")
-    public Set<UserDto> handleUserLeave(
+    public PresenceSnapshot handleUserLeave(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
     ) {
-        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        cacheUserInBoardService.removeUserFromBoard(boardId, userDto.getId());
-        return cacheUserInBoardService.getUsersInBoard(boardId);
+        String sessionId = Objects.requireNonNull(headerAccessor.getSessionId());
+        return cacheUserInBoardService.leave(boardId, sessionId);
     }
 
 

@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client, sessionId, connectCount } = useStompStore();
   const { addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
-  const { markOnlineUsers } = useUserInBoardStore()
+  const { applyPresence, clearPresence } = useUserInBoardStore()
 
   // Kết nối lại: các message bị lỡ khi offline không được gửi lại, nên tải lại board
   useEffect(() => {
@@ -21,9 +21,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     }
     // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
-      console.log("Received message:", message.body);
       const payload = JSON.parse(message.body);
-      markOnlineUsers(payload)
+      applyPresence(boardId, payload)
     });
 
     const drawSubcription = client.subscribe(`/topic/draw/board/${boardId}`, (message) => {
@@ -72,6 +71,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
           destination: `/app/board/leave/${boardId}`
         });
       }
+      // Reset presence (and its seq) so the next session/board starts clean.
+      clearPresence();
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()
