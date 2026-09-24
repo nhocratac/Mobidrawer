@@ -38,7 +38,7 @@ function TopRightBar({
   const [isVisible, setIsVisible] = useState(false);
   const [isVisibleUsers, setIsVisibleUsers] = useState(false);
   const [isVisibleAddUser, setIsVisibleAddUser] = useState(false);
-  const { users } = useUserInBoardStore()
+  const { users, presence } = useUserInBoardStore()
   const { user } = useTokenStore()
   const { toast } = useToast()
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -115,6 +115,13 @@ function TopRightBar({
 
   if (!board) return;
 
+  // Presence is only trusted for the board it was received on.
+  const onlineUsers = presence.boardId === board.id ? presence.users : [];
+  const onlineIds = new Set(onlineUsers.map((u) => u.id));
+  const memberIds = new Set(users.map((u) => u.userId));
+  // Online users not (yet) in the member list, e.g. added during this session.
+  const extraOnlineUsers = onlineUsers.filter((u) => !memberIds.has(u.id));
+
   return (
     <div className="w-full relative">
 
@@ -132,6 +139,9 @@ function TopRightBar({
             <Button size="icon" variant="outline" onClick={handleToggleUsers}>
               <Users />
             </Button>
+            <span className="self-center text-sm text-gray-600 whitespace-nowrap">
+              {onlineIds.size} online
+            </span>
             <Popover open={showQR} onOpenChange={setShowQR}>
               <PopoverTrigger asChild>
               <Button 
@@ -238,14 +248,14 @@ function TopRightBar({
         <div className={`flex flex-col space-y-2 overflow-hidden  transform 
           ${isVisibleUsers ? "  opacity-100 translate-y-0 visible " : "opacity-0 max-h-0  -translate-y-full invisible"}
           transition-transform duration-300 ease-in-out`}>
-          {users.map((myuser, index) => (
-            <div key={index} className="flex items-center space-x-2 p-2 bg-gray-100 rounded-md">
+          {users.map((myuser) => (
+            <div key={myuser.userId} className="flex items-center space-x-2 p-2 bg-gray-100 rounded-md">
               <div className="relative inline-block">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={`https://ui-avatars.com/api/?name=${myuser.firstName}+${myuser.lastName}`} />
                   <AvatarFallback>{myuser.firstName?.[0] ?? "?"}</AvatarFallback>
                 </Avatar>
-                {myuser.isOnline && (
+                {onlineIds.has(myuser.userId) && (
                   <>
                     <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white" />
                     <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full animate-ping" />
@@ -276,6 +286,19 @@ function TopRightBar({
                   </div>
                 )}
               </div>
+            </div>
+          ))}
+          {extraOnlineUsers.map((onlineUser) => (
+            <div key={onlineUser.id} className="flex items-center space-x-2 p-2 bg-gray-100 rounded-md">
+              <div className="relative inline-block">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={onlineUser.avatarUrl || `https://ui-avatars.com/api/?name=${onlineUser.firstName ?? ""}+${onlineUser.lastName ?? ""}`} />
+                  <AvatarFallback>{onlineUser.firstName?.[0] ?? "?"}</AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white" />
+                <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full animate-ping" />
+              </div>
+              <div className="text-2xl font-medium">{onlineUser.firstName} {onlineUser.lastName}</div>
             </div>
           ))}
         </div>

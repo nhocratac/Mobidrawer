@@ -10,16 +10,15 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client, sessionId } = useStompStore();
   const { deletePaths, updatePaths } = useCanvasPathsStore()
   const { addStickyNote, addStickyNotes, moveStickyNote, resizeStickyNote, changTextStickNote, selectStickyNote, deselectStickyNote, deleteStickyNote } = useStickyNoteStore()
-  const { markOnlineUsers } = useUserInBoardStore()
+  const { applyPresence, clearPresence } = useUserInBoardStore()
   useEffect(() => {
     if (!client || !client.connected || !boardId || !sessionId) {
       return;
     }
     // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
-      console.log("Received message:", message.body);
       const payload = JSON.parse(message.body);
-      markOnlineUsers(payload)
+      applyPresence(boardId, payload)
     });
 
     const deletePathsSubscription = client.subscribe(`/topic/board/delete-paths/${boardId}`, (message) => {
@@ -153,6 +152,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
           destination: `/app/board/leave/${boardId}`
         });
       }
+      // Reset presence (and its seq) so the next session/board starts clean.
+      clearPresence();
       subscription.unsubscribe();
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()
