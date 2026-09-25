@@ -36,25 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             if (shouldSkipFilter(request)) {
+                authenticateOptionally(request);
                 filterChain.doFilter(request, response);
                 return; // 🚀 Bỏ qua kiểm tra token
             }
 
             String token = extractToken(request);
             if (token != null) {
-                UserDetails userDetails = authService.validateToken(token, TokenType.ACCESS);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                if (userDetails instanceof DrawUserDetails) {
-                    request.setAttribute("userId", ((DrawUserDetails) userDetails).getId());
-                    request.setAttribute("user", UserMapper.INSTANCE.toDto(((DrawUserDetails) userDetails).getUser()));
-                }
+                authenticate(request, token);
 
                 filterChain.doFilter(request, response);
             } else {
@@ -66,6 +55,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             responseJsonError(response, "Access token expired", TokenErrorType.EXPIRED);
         } catch (JwtException e) {
             responseJsonError(response, e.getMessage(), TokenErrorType.INVALID);
+        }
+    }
+
+    private void authenticate(HttpServletRequest request, String token) {
+        UserDetails userDetails = authService.validateToken(token, TokenType.ACCESS);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        if (userDetails instanceof DrawUserDetails) {
+            request.setAttribute("userId", ((DrawUserDetails) userDetails).getId());
+            request.setAttribute("user", UserMapper.INSTANCE.toDto(((DrawUserDetails) userDetails).getUser()));
+        }
+    }
+
+    /**
+     * Public GET endpoints stay reachable without a token, but when a valid
+     * token IS sent the caller is identified, so owner/ADMIN-only content
+     * (unpublished blogs, private templates) can be served to them. A bad or
+     * expired token here just means "anonymous" — never a 401.
+     */
+    private void authenticateOptionally(HttpServletRequest request) {
+        if (!"GET".equalsIgnoreCase(request.getMethod()) || request.getServletPath().startsWith("/ws/")) {
+            return;
+        }
+        String token = extractToken(request);
+        if (token == null) {
+            return;
+        }
+        try {
+            authenticate(request, token);
+        } catch (RuntimeException e) {
+            SecurityContextHolder.clearContext();
+            request.removeAttribute("userId");
+            request.removeAttribute("user");
         }
     }
 

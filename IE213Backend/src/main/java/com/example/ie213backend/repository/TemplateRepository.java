@@ -13,6 +13,7 @@ import java.util.List;
 public interface TemplateRepository extends MongoRepository<Template, String> {
 //    List<Template> findByOwner(String ownerId);
     Page<Template> findByIsPublicTrue(Pageable pageable);
+    List<Template> findByIsPublicTrue();
     List<Template> findByOwnerAndIsPublicTrue(String owner);
     Page<Template> findByTitleContainingIgnoreCaseAndIsPublicTrue(String title, Pageable pageable);
 }

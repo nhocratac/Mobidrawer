@@ -1,5 +1,7 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.UserRoles;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.*;
 import com.example.ie213backend.repository.TemplateRepository;
 import com.example.ie213backend.service.*;
@@ -29,7 +31,7 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public List<Template> findAll() {
-        return templateRepository.findAll();
+        return templateRepository.findByIsPublicTrue();
     }
 
     @Override
@@ -49,13 +51,15 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public Template createTemplate(Template template) {
+        // Never let the client pick the document id (would upsert over someone else's template).
+        template.setId(null);
         return templateRepository.save(template);
     }
 
     @Override
-    public Template updateTemplate(Template template) {
-        Template oldTemplate = templateRepository.findById(template.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại"));
+    public Template updateTemplate(String templateId, Template template, UserDto actor) {
+        Template oldTemplate = getTemplate(templateId);
+        assertOwnerOrAdmin(oldTemplate, actor);
 
         // Cập nhật các trường bạn muốn (chỉ ví dụ, bạn có thể điều chỉnh logic cập nhật)
         oldTemplate.setTitle(template.getTitle());
@@ -74,11 +78,38 @@ public class TemplateServiceImpl implements TemplateService {
         return templateRepository.findById(templateId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Template không tồn tại"));
     }
 
+    /**
+     * A private template is only visible to its owner or an ADMIN; everyone
+     * else gets the same 404 as a missing template.
+     */
     @Override
-    public void deleteTemplate(String templateId) {
-        Template template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại"));
+    public Template getVisibleTemplate(String templateId, UserDto viewer) {
+        Template template = getTemplate(templateId);
+        if (!template.isPublic() && !isOwnerOrAdmin(template, viewer)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại");
+        }
+        return template;
+    }
+
+    @Override
+    public void deleteTemplate(String templateId, UserDto actor) {
+        Template template = getTemplate(templateId);
+        assertOwnerOrAdmin(template, actor);
         templateRepository.delete(template);
+    }
+
+    private boolean isOwnerOrAdmin(Template template, UserDto user) {
+        if (user == null) {
+            return false;
+        }
+        return user.getRole() == UserRoles.ADMIN
+                || (user.getId() != null && user.getId().equals(template.getOwner()));
+    }
+
+    private void assertOwnerOrAdmin(Template template, UserDto actor) {
+        if (!isOwnerOrAdmin(template, actor)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa template này");
+        }
     }
 
     private Board buildBoardFromTemplate(Template template) {

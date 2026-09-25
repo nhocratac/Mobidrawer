@@ -1,6 +1,6 @@
 package com.example.ie213backend.domain.dto.NotificationDto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
+// The reader is taken from the JWT, never from the body; a legacy "userId" field is ignored.
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MarkNotificationAsReadDto {
-    @NotBlank
-    private String userId;
-
     @NotNull
     private List<String> notificationIds;
 }

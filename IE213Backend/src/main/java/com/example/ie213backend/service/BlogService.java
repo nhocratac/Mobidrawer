@@ -4,6 +4,7 @@ import com.example.ie213backend.domain.dto.BlogDto.BlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.CreateBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.InteractionBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.UpdateBlogDto;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,11 +12,12 @@ import java.util.List;
 
 public interface BlogService {
     BlogDto getBlogById(String blogId);
+    BlogDto getBlogById(String blogId, UserDto viewer);
     BlogDto createBlog(CreateBlogDto createBlogDto);
     BlogDto updateBlog(UpdateBlogDto updateBlogDto, String blogId);
     void deleteBlog(String blogId);
     Page<BlogDto> listBlogByUserId(String userId, boolean isPublished, Pageable pageable);
-    BlogDto createOrRemoveInteraction(InteractionBlogDto interactionBlogDto);
+    BlogDto createOrRemoveInteraction(InteractionBlogDto interactionBlogDto, UserDto actor);
     Page<BlogDto> getAllBlogs(Pageable pageable);
     List<BlogDto> getAllBlogsID();
 }

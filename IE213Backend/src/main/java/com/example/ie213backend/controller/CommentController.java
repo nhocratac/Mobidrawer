@@ -3,6 +3,7 @@ package com.example.ie213backend.controller;
 import com.example.ie213backend.domain.dto.CommentDto.CommentDto;
 import com.example.ie213backend.domain.dto.CommentDto.CreateCommentDto;
 import com.example.ie213backend.domain.dto.CommentDto.UpdateCommentDto;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,9 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<CommentDto> createComment(@RequestBody @Valid CreateCommentDto createCommentDto) {
-        CommentDto commentRes = commentService.createComment(createCommentDto);
+    public ResponseEntity<CommentDto> createComment(@RequestBody @Valid CreateCommentDto createCommentDto,
+                                                    @RequestAttribute("user") UserDto userDto) {
+        CommentDto commentRes = commentService.createComment(createCommentDto, userDto);
 
         return ResponseEntity.ok(commentRes);
     }
@@ -30,24 +32,26 @@ public class CommentController {
     public ResponseEntity<Page<CommentDto>> getCommentsByBlogId(@RequestParam String blogId,
                                                                 @RequestParam(required = false) String currUserId,
                                                                 @RequestParam int page,
-                                                                @RequestParam(defaultValue = "5") int size) {
+                                                                @RequestParam(defaultValue = "5") int size,
+                                                                @RequestAttribute(value = "user", required = false) UserDto userDto) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<CommentDto> res = commentService.getCommentsByBlogId(blogId, currUserId, pageable);
+        Page<CommentDto> res = commentService.getCommentsByBlogId(blogId, currUserId, userDto, pageable);
 
         return ResponseEntity.ok(res);
     }
 
     @PatchMapping
-    public ResponseEntity<CommentDto> updateComment(@RequestBody @Valid UpdateCommentDto updateCommentDto) {
-        CommentDto commentRes = commentService.updateComment(updateCommentDto);
+    public ResponseEntity<CommentDto> updateComment(@RequestBody @Valid UpdateCommentDto updateCommentDto,
+                                                    @RequestAttribute("user") UserDto userDto) {
+        CommentDto commentRes = commentService.updateComment(updateCommentDto, userDto.getId());
 
         return ResponseEntity.ok(commentRes);
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable String commentId,
-                                              @RequestParam String userId) {
-        commentService.deleteComment(commentId, userId);
+                                              @RequestAttribute("user") UserDto userDto) {
+        commentService.deleteComment(commentId, userDto.getId());
         return ResponseEntity.noContent().build(); // HTTP 204
     }
 

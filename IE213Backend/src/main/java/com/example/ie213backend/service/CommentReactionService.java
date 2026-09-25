@@ -7,6 +7,6 @@ import com.example.ie213backend.domain.dto.CommentDto.CreateCommentReactionDto;
 
 public interface CommentReactionService {
     CommentReactInfoDto getCommentReactInfo(String commentId, String userId);
-    ApiTemplateResponse<CommentReactionDto> interactComment(CreateCommentReactionDto commentReactionDto);
+    ApiTemplateResponse<CommentReactionDto> interactComment(CreateCommentReactionDto commentReactionDto, String userId);
     void deleteReactionByCommentId(String commentId);
 }

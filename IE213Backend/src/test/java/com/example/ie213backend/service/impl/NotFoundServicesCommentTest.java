@@ -66,12 +66,11 @@ class NotFoundServicesCommentTest {
 
         UpdateCommentDto dto = UpdateCommentDto.builder()
                 .commentId("comment-1")
-                .currentUserId("stranger-1")
                 .content("edited")
                 .build();
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> service.updateComment(dto));
+                () -> service.updateComment(dto, "stranger-1"));
 
         assertEquals("You are not allowed to update this comment", ex.getMessage());
     }

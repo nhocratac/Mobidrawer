@@ -26,11 +26,9 @@ export const getNotifications = async (): Promise<Notification[]> => {
 };
 
 export const markNotificationAsRead = async (
-  userId: string,
   notificationIds: string[]
 ): Promise<Notification[]> => {
   const response = await httpRequest.post("/notification/mark-as-read", {
-    userId,
     notificationIds,
   });
   return response.data;

@@ -69,7 +69,6 @@ const CommentsBlock = ({ blogId, blogOwnerId }: { blogId: string, blogOwnerId: s
       const commentInfo = await commentAPI.createComment({
         content: commentInput,
         parentComment: true,
-        userId: user?.id,
         blogId,
       });
 

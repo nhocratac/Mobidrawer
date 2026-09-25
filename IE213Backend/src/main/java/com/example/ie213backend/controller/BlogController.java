@@ -4,6 +4,7 @@ import com.example.ie213backend.domain.dto.BlogDto.BlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.CreateBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.InteractionBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.UpdateBlogDto;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.service.BlogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +48,9 @@ public class BlogController {
     }
 
     @GetMapping("/{blogId}")
-    public ResponseEntity<BlogDto> getBlogById(@PathVariable String blogId) {
-        BlogDto blog = blogService.getBlogById(blogId);
+    public ResponseEntity<BlogDto> getBlogById(@PathVariable String blogId,
+                                               @RequestAttribute(value = "user", required = false) UserDto userDto) {
+        BlogDto blog = blogService.getBlogById(blogId, userDto);
 
         return ResponseEntity.ok(blog);
     }
@@ -81,9 +83,10 @@ public class BlogController {
 
     @PostMapping("/{blogId}/interaction")
     public ResponseEntity<BlogDto> createOrRemoveInteraction(@PathVariable String blogId,
-                                                             @RequestBody @Valid InteractionBlogDto interactionBlogDto) {
+                                                             @RequestBody @Valid InteractionBlogDto interactionBlogDto,
+                                                             @RequestAttribute("user") UserDto userDto) {
         interactionBlogDto.setBlogId(blogId);
-        BlogDto blog = blogService.createOrRemoveInteraction(interactionBlogDto);
+        BlogDto blog = blogService.createOrRemoveInteraction(interactionBlogDto, userDto);
 
         return ResponseEntity.ok(blog);
     }

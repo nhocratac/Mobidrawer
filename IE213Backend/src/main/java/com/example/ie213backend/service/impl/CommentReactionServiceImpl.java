@@ -37,9 +37,9 @@ public class CommentReactionServiceImpl implements CommentReactionService {
     }
 
     @Override
-    public ApiTemplateResponse<CommentReactionDto> interactComment(CreateCommentReactionDto commentReactionDto) {
+    public ApiTemplateResponse<CommentReactionDto> interactComment(CreateCommentReactionDto commentReactionDto, String userId) {
         Optional<CommentReaction> commentReactionOptional = commentReactionRepository
-                .findByUserIdAndCommentId(commentReactionDto.getUserId(), commentReactionDto.getCommentId());
+                .findByUserIdAndCommentId(userId, commentReactionDto.getCommentId());
 
         CommentReaction commentReaction = null;
         String message;
@@ -68,7 +68,7 @@ public class CommentReactionServiceImpl implements CommentReactionService {
                 commentReaction = commentReactionRepository.save(
                         CommentReaction.builder()
                                 .commentId(commentReactionDto.getCommentId())
-                                .userId(commentReactionDto.getUserId())
+                                .userId(userId)
                                 .type(commentReactionDto.getType())
                                 .build());
                 message = "Create comment reaction successfully";

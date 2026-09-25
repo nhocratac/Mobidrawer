@@ -35,8 +35,9 @@ public class NotificationController {
     }
 
     @PostMapping("/mark-as-read")
-    public ResponseEntity<List<Notification>> markAsRead(@Valid @RequestBody MarkNotificationAsReadDto asReadDto) {
-        List<Notification> notifications = notificationService.markNotificationAsRead(asReadDto.getUserId(), asReadDto.getNotificationIds());
+    public ResponseEntity<List<Notification>> markAsRead(@Valid @RequestBody MarkNotificationAsReadDto asReadDto,
+                                                         @RequestAttribute("user") UserDto userDto) {
+        List<Notification> notifications = notificationService.markNotificationAsRead(userDto.getId(), asReadDto.getNotificationIds());
 
         return ResponseEntity.ok(notifications);
     }
