@@ -2,11 +2,12 @@ package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.TokenType;
 import com.example.ie213backend.domain.dto.AuthDto.RegistrationRequest;
-import com.example.ie213backend.domain.dto.UserDto.CreateUserDto;
+import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.configstore.ConfigKeys;
 import com.example.ie213backend.configstore.ConfigService;
 import com.example.ie213backend.mapper.UserMapper;
+import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.security.DrawUserDetails;
 import com.example.ie213backend.service.AuthService;
 import com.example.ie213backend.service.EmailService;
@@ -20,18 +21,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -44,6 +51,16 @@ public class AuthServiceImpl implements AuthService {
     private final RedisTemplate<String, RegistrationRequest> redisTemplate;
     private final EmailService emailService;
     private final ConfigService configService;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    static final String OTP_PURPOSE_REGISTER = "register";
+    static final String OTP_PURPOSE_RESET = "reset";
+    static final int MAX_FAILED_ATTEMPTS = 5;
+    static final long OTP_REQUEST_COOLDOWN_SECONDS = 60;
+    static final int OTP_MAX_REQUESTS_PER_HOUR = 5;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -122,62 +139,87 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String createRegistrationRequest(String email, String password,String firstName, String lastName,String phone) {
 
+        // Giới hạn tần suất gửi OTP theo email (429 nếu vượt)
+        enforceOtpRequestRateLimit(OTP_PURPOSE_REGISTER, email);
+
         // kiểm tra người dùng có trong repository chưa
         User isExist = userService.getUserByEmail(email);
         if (isExist != null) {
             throw new RuntimeException("tài khoản đã tồn tại");// BÁO LỖI VÌ ĐÃ ĐĂNG KÍ TÀI KHOẢN
         }
         // KIỂM TRA CÓ Đang xác thực hay không
-        RegistrationRequest existingRequest = (RegistrationRequest) redisTemplate.opsForValue().get(email);
+        RegistrationRequest existingRequest = redisTemplate.opsForValue().get(registerKey(email));
         if (existingRequest != null) {
             throw new RuntimeException("Vui lòng xác thực tài khoản");
         }
 
         String code = generateCode(); // Tạo mã xác thực
 
+        int expiryMinutes = configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES);
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(expiryMinutes); // Hết hạn theo cấu hình
 
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES)); // Hết hạn theo cấu hình
+        // Lưu mật khẩu đã hash (BCrypt) - không lưu plaintext trong Redis
+        RegistrationRequest request = new RegistrationRequest(email,code,passwordEncoder.encode(password),firstName,lastName,phone, expiredAt);
 
-        RegistrationRequest request = new RegistrationRequest(email,code,password,firstName,lastName,phone, expiredAt);
+        stringRedisTemplate.delete(attemptsKey(OTP_PURPOSE_REGISTER, email));
+        redisTemplate.opsForValue().set(registerKey(email), request, expiryMinutes, TimeUnit.MINUTES);
 
-        redisTemplate.opsForValue().set(email, request, 5, TimeUnit.MINUTES);
-
-        // Gửi mã xác thực đến email (giả lập)
+        // Gửi mã xác thực đến email
         emailService.sendVerificationEmail(email,code);
         return email;
     }
 
     @Override
     public RegistrationRequest getRegistrationRequest(String email) {
-        return redisTemplate.opsForValue().get(email);
+        return redisTemplate.opsForValue().get(registerKey(email));
     }
 
     // Xóa yêu cầu đăng ký khỏi Redis
     public void deleteRegistrationRequest(String email) {
-        redisTemplate.delete(email);
+        redisTemplate.delete(registerKey(email));
+        stringRedisTemplate.delete(attemptsKey(OTP_PURPOSE_REGISTER, email));
     }
 
     @Override
     public boolean verifyCode(String email, String code) {
-        RegistrationRequest request = redisTemplate.opsForValue().get(email);
-        if (request != null && request.getCode().equals(code)) {
-            deleteRegistrationRequest(email); // Xóa yêu cầu sau khi xác thực thành công
-            // tạo User lưu vào database
-            CreateUserDto newUser = new CreateUserDto();
-            newUser.setEmail(email);
-            newUser.setPhone(request.getPhone());
-            newUser.setPassword(request.getPassword());
-            newUser.setFirstName(request.getFirstName());
-            newUser.setLastName(request.getLastName());
-
-            userService.createUser(newUser);
-            return true;
+        String key = registerKey(email);
+        // Đếm lượt thử TRƯỚC khi so mã (INCR là atomic) để request song song không vượt giới hạn
+        long attempt = countAttempt(OTP_PURPOSE_REGISTER, email, key);
+        if (attempt > MAX_FAILED_ATTEMPTS) {
+            return false;
         }
-        return false;
+        RegistrationRequest request = redisTemplate.opsForValue().get(key);
+        if (request == null) {
+            return false;
+        }
+        if (!codeMatches(request.getCode(), code)) {
+            invalidateIfLimitReached(attempt, OTP_PURPOSE_REGISTER, key);
+            return false;
+        }
+        // Chỉ request nào xóa được key mới tạo user (tránh tạo trùng khi verify song song)
+        if (!Boolean.TRUE.equals(redisTemplate.delete(key))) {
+            return false;
+        }
+        stringRedisTemplate.delete(attemptsKey(OTP_PURPOSE_REGISTER, email));
+
+        // tạo User lưu vào database. Password trong Redis đã là BCrypt hash nên lưu thẳng,
+        // không đi qua userService.createUser (hàm đó sẽ hash thêm lần nữa).
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setRole(UserRoles.USER);
+        newUser.setPassword(request.getPassword());
+        newUser.setFirstName(request.getFirstName());
+        newUser.setLastName(request.getLastName());
+        newUser.setPhone(request.getPhone());
+        userRepository.save(newUser);
+        return true;
     }
 
     @Override
     public String forgetPassword(String email) {
+        // Giới hạn tần suất gửi OTP theo email (429 nếu vượt)
+        enforceOtpRequestRateLimit(OTP_PURPOSE_RESET, email);
+
         // Kiểm tra xem email có tồn tại trong hệ thống không
         User finderUser = userService.getUserByEmail(email);
         if (finderUser == null) {
@@ -188,8 +230,10 @@ public class AuthServiceImpl implements AuthService {
         String code = generateCode();
 
         // Lưu mã xác thực vào Redis với thời gian hết hạn theo cấu hình
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES));
-        redisTemplate.opsForValue().set(email, new RegistrationRequest(email, code, null, null, null, null, expiredAt), 5, TimeUnit.MINUTES);
+        int expiryMinutes = configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES);
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(expiryMinutes);
+        stringRedisTemplate.delete(attemptsKey(OTP_PURPOSE_RESET, email));
+        redisTemplate.opsForValue().set(resetKey(email), new RegistrationRequest(email, code, null, null, null, null, expiredAt), expiryMinutes, TimeUnit.MINUTES);
 
         // Gửi mã xác thực đến email
         emailService.sendVerificationEmail(email, code);
@@ -200,8 +244,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String resetPassword(String email, String code, String newPassword) {
         // Lấy yêu cầu đặt lại mật khẩu từ Redis
-        RegistrationRequest request = redisTemplate.opsForValue().get(email);
-        if (request == null || !request.getCode().equals(code)) {
+        String key = resetKey(email);
+        // Đếm lượt thử TRƯỚC khi so mã (INCR là atomic) để request song song không vượt giới hạn
+        long attempt = countAttempt(OTP_PURPOSE_RESET, email, key);
+        if (attempt > MAX_FAILED_ATTEMPTS) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Bạn đã nhập sai quá nhiều lần, vui lòng yêu cầu mã mới");
+        }
+        RegistrationRequest request = redisTemplate.opsForValue().get(key);
+        if (request == null) {
+            throw new RuntimeException("Mã xác thực không hợp lệ hoặc đã hết hạn");
+        }
+        if (!codeMatches(request.getCode(), code)) {
+            invalidateIfLimitReached(attempt, OTP_PURPOSE_RESET, key);
             throw new RuntimeException("Mã xác thực không hợp lệ hoặc đã hết hạn");
         }
 
@@ -216,19 +270,92 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Người dùng không tồn tại");
         }
 
-        // Mã hóa mật khẩu mới trước khi lưu vào database
+        // Chỉ request nào xóa được key mới được đổi mật khẩu (OTP dùng một lần)
+        if (!Boolean.TRUE.equals(redisTemplate.delete(key))) {
+            throw new RuntimeException("Mã xác thực không hợp lệ hoặc đã hết hạn");
+        }
+        stringRedisTemplate.delete(attemptsKey(OTP_PURPOSE_RESET, email));
+
+        // changePassword sẽ mã hóa mật khẩu mới trước khi lưu vào database
         user.setPassword(newPassword);
         userService.changePassword(user);
-
-        // Xóa yêu cầu đặt lại mật khẩu khỏi Redis
-        redisTemplate.delete(email);
 
         return "Mật khẩu đã được đặt lại thành công";
     }
 
     public String generateCode() {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000); // Tạo số từ 100000 đến 999999
+        int code = 100000 + SECURE_RANDOM.nextInt(900000); // Tạo số từ 100000 đến 999999
         return String.valueOf(code);
+    }
+
+    static String registerKey(String email) {
+        return "otp:register:" + email;
+    }
+
+    static String resetKey(String email) {
+        return "otp:reset:" + email;
+    }
+
+    static String attemptsKey(String purpose, String email) {
+        return "otp:attempts:" + purpose + ":" + email;
+    }
+
+    static String cooldownKey(String purpose, String email) {
+        return "otp:ratelimit:cooldown:" + purpose + ":" + email;
+    }
+
+    static String hourlyKey(String purpose, String email) {
+        return "otp:ratelimit:hourly:" + purpose + ":" + email;
+    }
+
+    private static boolean codeMatches(String expected, String provided) {
+        if (expected == null || provided == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), provided.getBytes(StandardCharsets.UTF_8));
+    }
+
+    // Tăng bộ đếm lượt thử (atomic) và trả về số thứ tự của lượt này. Lượt vượt
+    // MAX_FAILED_ATTEMPTS bị từ chối mà không so mã; bộ đếm chỉ reset khi yêu cầu OTP mới
+    // hoặc xác thực thành công. Fail-closed nếu Redis không trả về giá trị.
+    private long countAttempt(String purpose, String email, String otpKey) {
+        String key = attemptsKey(purpose, email);
+        Long attempt = stringRedisTemplate.opsForValue().increment(key);
+        if (attempt == null) {
+            return Long.MAX_VALUE;
+        }
+        if (attempt == 1L) {
+            stringRedisTemplate.expire(key, configService.getInt(ConfigKeys.AUTH_OTP_EXPIRY_MINUTES), TimeUnit.MINUTES);
+        }
+        if (attempt > MAX_FAILED_ATTEMPTS) {
+            redisTemplate.delete(otpKey);
+        }
+        return attempt;
+    }
+
+    // Lượt sai thứ MAX_FAILED_ATTEMPTS thì hủy OTP, buộc phải yêu cầu mã mới
+    private void invalidateIfLimitReached(long attempt, String purpose, String otpKey) {
+        if (attempt >= MAX_FAILED_ATTEMPTS) {
+            log.warn("OTP invalidated after {} failed attempts (purpose={})", attempt, purpose);
+            redisTemplate.delete(otpKey);
+        }
+    }
+
+    // 1 yêu cầu / OTP_REQUEST_COOLDOWN_SECONDS và tối đa OTP_MAX_REQUESTS_PER_HOUR yêu cầu / giờ cho mỗi email
+    private void enforceOtpRequestRateLimit(String purpose, String email) {
+        Boolean firstInWindow = stringRedisTemplate.opsForValue()
+                .setIfAbsent(cooldownKey(purpose, email), "1", OTP_REQUEST_COOLDOWN_SECONDS, TimeUnit.SECONDS);
+        if (!Boolean.TRUE.equals(firstInWindow)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Vui lòng đợi trước khi yêu cầu mã mới");
+        }
+
+        String hourly = hourlyKey(purpose, email);
+        Long count = stringRedisTemplate.opsForValue().increment(hourly);
+        if (count != null && count == 1L) {
+            stringRedisTemplate.expire(hourly, 1, TimeUnit.HOURS);
+        }
+        if (count != null && count > OTP_MAX_REQUESTS_PER_HOUR) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Bạn đã yêu cầu quá nhiều mã, vui lòng thử lại sau");
+        }
     }
 }
