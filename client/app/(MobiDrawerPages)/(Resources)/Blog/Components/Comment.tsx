@@ -52,7 +52,6 @@ const Comment = ({
       const commentRes = await commentAPI.createComment({
         content: commentInput,
         parentComment: false,
-        userId: user.id,
         blogId,
         repliedId: comment.id,
       });
@@ -100,7 +99,7 @@ const Comment = ({
         });
         return;
       }
-      await commentAPI.deleteComment(comment.id, user.id);
+      await commentAPI.deleteComment(comment.id);
 
       onDeleteComment(comment.id);
 
@@ -137,7 +136,6 @@ const Comment = ({
 
       const newComment = await commentAPI.updateComment(
         comment.id,
-        user.id,
         commentInput
       );
       // console.log("newComment", newComment);
@@ -155,7 +153,7 @@ const Comment = ({
     if (!user) return;
 
     commentAPI
-      .reactComment(comment.id, user.id, reactionDebounce)
+      .reactComment(comment.id, reactionDebounce)
       // .then(res => {
       //   console.log("res", res);
       // })

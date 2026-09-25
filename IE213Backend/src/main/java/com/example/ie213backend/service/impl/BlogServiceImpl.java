@@ -3,7 +3,9 @@ package com.example.ie213backend.service.impl;
 import com.example.ie213backend.domain.dto.BlogDto.BlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.CreateBlogDto;
 import com.example.ie213backend.domain.dto.BlogDto.InteractionBlogDto;
+import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.dto.BlogDto.UpdateBlogDto;
+import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Blog;
 import com.example.ie213backend.domain.model.Interaction;
 import com.example.ie213backend.mapper.BlogMapper;
@@ -35,6 +37,30 @@ public class BlogServiceImpl implements BlogService {
     public BlogDto getBlogById(String blogId) {
         return blogMapper.toDto(blogRepository.findById(blogId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found with id: " + blogId)));
+    }
+
+    /**
+     * Public read: an unpublished blog is only visible to its owner or an ADMIN.
+     * Everyone else gets the same 404 as a missing blog, so drafts are not enumerable.
+     */
+    @Override
+    public BlogDto getBlogById(String blogId, UserDto viewer) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found with id: " + blogId));
+
+        if (!Boolean.TRUE.equals(blog.getIsPublished()) && !isOwnerOrAdmin(blog, viewer)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found with id: " + blogId);
+        }
+
+        return blogMapper.toDto(blog);
+    }
+
+    private boolean isOwnerOrAdmin(Blog blog, UserDto viewer) {
+        if (viewer == null) {
+            return false;
+        }
+        return viewer.getRole() == UserRoles.ADMIN
+                || (viewer.getId() != null && viewer.getId().equals(blog.getOwner()));
     }
 
     @Override
@@ -77,9 +103,10 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public BlogDto createOrRemoveInteraction(InteractionBlogDto interactionBlogDto) {
-        Blog blog = blogMapper.toEntity(getBlogById(interactionBlogDto.getBlogId()));
-        Interaction interaction = new Interaction(interactionBlogDto.getOwner(), interactionBlogDto.getAction());
+    public BlogDto createOrRemoveInteraction(InteractionBlogDto interactionBlogDto, UserDto actor) {
+        // Cùng quy tắc hiển thị với GET /blogs/{id}: blog chưa publish -> 404 với người ngoài
+        Blog blog = blogMapper.toEntity(getBlogById(interactionBlogDto.getBlogId(), actor));
+        Interaction interaction = new Interaction(actor.getId(), interactionBlogDto.getAction());
         List<Interaction> interactions = new ArrayList<>(Optional.ofNullable(blog.getInteractions())
                 .orElse(new ArrayList<>()));
 
@@ -102,7 +129,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public List<BlogDto> getAllBlogsID() {    return blogRepository.findAll()
+    public List<BlogDto> getAllBlogsID() {    return blogRepository.findByIsPublished(true)
             .stream() // Chuyển List<Blog> thành Stream<Blog>
             .map(blogMapper::toDto) // Ánh xạ Blog sang BlogDto
             .collect(Collectors.toList()); // Thu lại thành List<BlogDto>
