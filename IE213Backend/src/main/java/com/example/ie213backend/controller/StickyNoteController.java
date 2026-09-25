@@ -25,7 +25,7 @@ public class StickyNoteController {
             @RequestBody @Valid CreateStickyNote createStickyNote,
             @PathVariable String boardId
     ) {
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote create = StickyNoteMapper.INSTANCE.createToEntity(createStickyNote);
         create.setOwner(userDto.getId());
         create.setBoardId(boardId);

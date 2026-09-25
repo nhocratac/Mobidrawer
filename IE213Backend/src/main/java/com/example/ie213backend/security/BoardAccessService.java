@@ -35,11 +35,33 @@ public class BoardAccessService {
         }
     }
 
+    /**
+     * Role-aware guard for board-content mutations: only the board owner or an
+     * EDITOR member may edit. A VIEWER member (who still passes
+     * {@link #assertCanWrite}/{@link #canAccess}) is denied 403.
+     */
+    public void assertCanEdit(String boardId, String userId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa board này");
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+
+        boolean isOwner = Objects.equals(userId, board.getOwner());
+        boolean isEditor = board.getMembers().stream()
+                .anyMatch(member -> Objects.equals(member.getMemberId(), userId)
+                        && member.getRole() == Board.ROLE.EDITOR);
+        if (!isOwner && !isEditor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa board này");
+        }
+    }
+
     public void assertCanWriteToCanvasPath(String canvasPathId, String userId) {
         CanvasPath canvasPath = canvaPathRepository.findById(canvasPathId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Canvas path not found"));
 
-        assertCanWrite(canvasPath.getBoardId(), userId);
+        assertCanEdit(canvasPath.getBoardId(), userId);
     }
 
     /**

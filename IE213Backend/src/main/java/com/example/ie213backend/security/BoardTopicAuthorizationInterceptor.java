@@ -31,8 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * exactly one real {@code canAccess} fallback check and populates the cache on
  * allow (empty cache never fail-opens). Every other SEND destination and every
  * non-SUBSCRIBE/SEND command (CONNECT, DISCONNECT, UNSUBSCRIBE, ACK/NACK,
- * heartbeats) passes through unchanged — the 17 SEC-1 in-handler
- * {@code assertCanWrite} guards remain the enforcement point for mutations.
+ * heartbeats) passes through unchanged — SEND outside {@code /app/} is already
+ * denied by {@link com.example.ie213backend.config.socket.StompAuthChannelInterceptor},
+ * and the 17 in-handler {@code assertCanEdit} (owner or EDITOR) guards remain
+ * the enforcement point for mutations.
  *
  * <p>Deny = throw {@link MessagingException} (ERROR frame + session close).
  * Accepted residuals: no mid-session cache eviction on revocation; the inbound
@@ -96,7 +98,7 @@ public class BoardTopicAuthorizationInterceptor implements ChannelInterceptor {
 
         String[] segments = destination.split("/", -1);
         if (!isGuardedSendPrefix(segments)) {
-            return; // not join/leave/cursor -> pass through (SEC-1 in-handler guards apply)
+            return; // not join/leave/cursor -> pass through (in-handler assertCanEdit applies)
         }
 
         String boardId = (segments.length == 5) ? segments[4] : "";

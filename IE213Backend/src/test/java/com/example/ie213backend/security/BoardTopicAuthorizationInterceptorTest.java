@@ -334,6 +334,8 @@ class BoardTopicAuthorizationInterceptorTest {
         @Override public <S extends CanvasPath> S save(S entity) { store.put(entity.getId(), entity); return entity; }
         @Override public <S extends CanvasPath> List<S> saveAll(Iterable<S> entities) { throw new UnsupportedOperationException(); }
         @Override public Optional<CanvasPath> findById(String id) { return Optional.ofNullable(store.get(id)); }
+        @Override public Optional<CanvasPath> findByIdAndBoardId(String id, String boardId) { throw new UnsupportedOperationException(); }
+        @Override public long deleteByIdAndBoardId(String id, String boardId) { throw new UnsupportedOperationException(); }
         @Override public boolean existsById(String s) { return store.containsKey(s); }
         @Override public List<CanvasPath> findAll() { return new ArrayList<>(store.values()); }
         @Override public List<CanvasPath> findAllById(Iterable<String> strings) { throw new UnsupportedOperationException(); }

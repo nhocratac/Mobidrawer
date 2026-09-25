@@ -47,28 +47,40 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Image updateImagePosition(Image image) {
-        Query query = new Query(Criteria.where("_id").is(image.getId()));
+        Query query = byIdAndBoard(image.getId(), image.getBoardId());
         Update update = new Update()
                 .set("position", image.getPosition());
-        return mongoTemplate.findAndModify(query, update,
-                FindAndModifyOptions.options().returnNew(true), Image.class);
+        return requireFound(mongoTemplate.findAndModify(query, update,
+                FindAndModifyOptions.options().returnNew(true), Image.class));
     }
 
     @Override
     public Image updateImageSize(Image image) {
-        Query query = new Query(Criteria.where("_id").is(image.getId()));
+        Query query = byIdAndBoard(image.getId(), image.getBoardId());
         Update update = new Update()
                 .set("size", image.getSize());
 
-        return mongoTemplate.findAndModify(query, update,
-                FindAndModifyOptions.options().returnNew(true), Image.class);
+        return requireFound(mongoTemplate.findAndModify(query, update,
+                FindAndModifyOptions.options().returnNew(true), Image.class));
+    }
+
+    // Every mutation is scoped by _id AND boardId so an id from another board matches nothing.
+    private static Query byIdAndBoard(String id, String boardId) {
+        return new Query(Criteria.where("_id").is(id).and("boardId").is(boardId));
+    }
+
+    private static Image requireFound(Image image) {
+        if (image == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ảnh trên bảng này");
+        }
+        return image;
     }
 
     @Override
     public void deleteImage(String id, String boardId, String owner) {
         String role = boardService.getRoleOfMember(boardId, owner);
         if (Objects.equals(role, "EDITOR") || Objects.equals(role, "OWNER")) {
-            imageRepository.deleteById(id);
+            imageRepository.deleteByIdAndBoardId(id, boardId);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa ảnh này");
         }

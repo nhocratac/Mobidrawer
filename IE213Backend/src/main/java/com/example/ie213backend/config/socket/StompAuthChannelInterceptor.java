@@ -32,6 +32,9 @@ import java.util.Map;
  * <p>Every other client command except DISCONNECT and null-command heartbeats
  * is fail-closed: denied without a session user, or once the token has expired.
  * SUBSCRIBE to raw {@code /queue/**} is denied (use {@code /user/queue/...}).
+ * SEND is allowed only to {@code /app/**} (application handlers); a SEND to any
+ * other destination (e.g. {@code /topic/**}, {@code /user/**}) is denied so it
+ * can never reach the broker directly.
  *
  * <p>Deny = throw {@link MessagingException} (ERROR frame + session close).
  * Header values are never logged or echoed.
@@ -41,6 +44,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
     static final String USER_ATTR = "user";
     static final String TOKEN_EXP_ATTR = "wsTokenExp";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String APP_PREFIX = "/app/";
 
     private final AuthService authService;
 
@@ -80,6 +84,14 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             String destination = accessor.getDestination();
             if (destination != null && destination.startsWith("/queue/")) {
                 deny("SUBSCRIBE denied: raw /queue destinations are not allowed");
+            }
+        }
+        if (command == StompCommand.SEND) {
+            // Clients may only SEND to @MessageMapping handlers; a SEND to /topic/**,
+            // /queue/** or /user/** would reach the broker and bypass handler guards.
+            String destination = accessor.getDestination();
+            if (destination == null || !destination.startsWith(APP_PREFIX)) {
+                deny("SEND denied: only /app destinations are allowed");
             }
         }
         return message;

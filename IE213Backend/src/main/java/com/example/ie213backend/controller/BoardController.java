@@ -10,8 +10,10 @@ import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class BoardController {
             @RequestBody CanvasPath canvasPath,
             @RequestAttribute("user") UserDto userDto
     ) {
-        boardAccessService.assertCanWrite(id, userDto.getId());
+        boardAccessService.assertCanEdit(id, userDto.getId());
         return ResponseEntity.ok(boardService.addCanvasPath(id,canvasPath));
     }
 
@@ -90,8 +92,12 @@ public class BoardController {
 
     @GetMapping("/getMembersDetail/{id}")
     ResponseEntity<List<MemberDetailDTO>> getMembersDetail(
-            @PathVariable String id // boardId
+            @PathVariable String id, // boardId
+            @RequestAttribute("user") UserDto userDto
     ) {
+        if (!boardAccessService.canAccess(id, userDto.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập board này");
+        }
         return ResponseEntity.ok(boardService.getMembersDetail(id));
     }
 
