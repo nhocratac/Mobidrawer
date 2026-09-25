@@ -25,7 +25,7 @@ public class CanvasPathController {
             @RequestBody @Valid CreateCanvasPath canvasPath
 
     ) {
-        boardAccessService.assertCanWrite(canvasPath.getBoardId(), userDto.getId());
+        boardAccessService.assertCanEdit(canvasPath.getBoardId(), userDto.getId());
         CanvasPath entity = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(canvasPath);
         entity.setOwner(userDto.getId());
         return ResponseEntity.ok(canvasPathService.createCanvas(entity));

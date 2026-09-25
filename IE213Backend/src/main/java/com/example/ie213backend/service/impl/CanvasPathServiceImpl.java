@@ -53,7 +53,7 @@ public class CanvasPathServiceImpl implements CanvasPathService {
     public void deleteCanvas(String id, String boardId, String userId) {
         String role  = boardService.getRoleOfMember(boardId, userId);
         if(Objects.equals(role, "EDITOR") | Objects.equals(role,"OWNER"))
-            canvasPathRepository.deleteById(id);
+            canvasPathRepository.deleteByIdAndBoardId(id, boardId);
         else
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa canvas này");
     }
@@ -65,7 +65,7 @@ public class CanvasPathServiceImpl implements CanvasPathService {
         }
         return updatePaths.getPaths().stream()
                 .map(path -> {
-                    CanvasPath existingPath = canvasPathRepository.findById(path.getId())
+                    CanvasPath existingPath = canvasPathRepository.findByIdAndBoardId(path.getId(), boardId)
                             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đường vẽ"));
                     existingPath.setColor(path.getColor());
                     existingPath.setThickness(path.getThickness());

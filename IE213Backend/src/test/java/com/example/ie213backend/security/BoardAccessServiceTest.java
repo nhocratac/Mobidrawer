@@ -126,6 +126,59 @@ class BoardAccessServiceTest {
         assertEquals(403, ex.getStatusCode().value());
     }
 
+    @Test
+    void canvasPathResolverDeniesViewer() {
+        // DELETE /canvas/{id} is a mutation: a VIEWER of the canvas's board is denied 403.
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> guard.assertCanWriteToCanvasPath(CANVAS_ID, VIEWER_ID));
+        assertEquals(403, ex.getStatusCode().value());
+    }
+
+    // ---- assertCanEdit: owner or EDITOR only ----
+    @Test
+    void canEdit_allowOwner() {
+        assertDoesNotThrowAllow(() -> guard.assertCanEdit(BOARD_ID, OWNER_ID));
+    }
+
+    @Test
+    void canEdit_allowEditor() {
+        assertDoesNotThrowAllow(() -> guard.assertCanEdit(BOARD_ID, EDITOR_ID));
+    }
+
+    @Test
+    void canEdit_denyViewer403() {
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> guard.assertCanEdit(BOARD_ID, VIEWER_ID));
+        assertEquals(403, ex.getStatusCode().value());
+    }
+
+    @Test
+    void canEdit_denyNonMember403() {
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> guard.assertCanEdit(BOARD_ID, STRANGER_ID));
+        assertEquals(403, ex.getStatusCode().value());
+    }
+
+    @Test
+    void canEdit_denyNullUserIdEvenWithOwnerlessBoard() {
+        Board ownerless = new Board();
+        ownerless.setId("board-ownerless");
+        ownerless.setOwner(null);
+        ownerless.setMembers(new ArrayList<>());
+        boardRepository.seed(ownerless);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> guard.assertCanEdit("board-ownerless", null));
+        assertEquals(403, ex.getStatusCode().value());
+    }
+
+    @Test
+    void canEdit_boardMissing404() {
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> guard.assertCanEdit("no-such-board", OWNER_ID));
+        assertEquals(404, ex.getStatusCode().value());
+    }
+
     private void assertDoesNotThrowAllow(Runnable action) {
         try {
             action.run();
@@ -213,6 +266,16 @@ class BoardAccessServiceTest {
         }
 
         // --- Unused MongoRepository plumbing (not exercised by these tests) ---
+
+        @Override
+        public Optional<CanvasPath> findByIdAndBoardId(String id, String boardId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long deleteByIdAndBoardId(String id, String boardId) {
+            throw new UnsupportedOperationException();
+        }
         @Override public <S extends CanvasPath> S save(S entity) { store.put(entity.getId(), entity); return entity; }
         @Override public <S extends CanvasPath> List<S> saveAll(Iterable<S> entities) { throw new UnsupportedOperationException(); }
         @Override public boolean existsById(String s) { return store.containsKey(s); }

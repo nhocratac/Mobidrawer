@@ -45,46 +45,58 @@ public class StickyNoteServiceImpl implements StickyNoteService {
 
 
     public StickyNote updateStickyNotePosition(String id,String boardId,String owner, int x, int y) {
-        Query query = new Query(Criteria.where("_id").is(id));
+        Query query = byIdAndBoard(id, boardId);
         Update update = new Update()
                 .set("position.x", x)
                 .set("position.y", y);
-        return mongoTemplate.findAndModify(
+        return requireFound(mongoTemplate.findAndModify(
                 query,
                 update,
                 FindAndModifyOptions.options().returnNew(true),  // Trả về object đã cập nhật
                 StickyNote.class
-        );
+        ));
     }
 
     public StickyNote updateStickyNoteSize(StickyNote stickyNote) {
-        Query query = new Query(Criteria.where("_id").is(stickyNote.getId()));
+        Query query = byIdAndBoard(stickyNote.getId(), stickyNote.getBoardId());
         Update update = new Update()
                 .set("size", stickyNote.getSize());
-        return mongoTemplate.findAndModify(
+        return requireFound(mongoTemplate.findAndModify(
                 query,
                 update,
                 FindAndModifyOptions.options().returnNew(true),
                 StickyNote.class
-        );
+        ));
     }
 
     public StickyNote chaneTextStickyNote(StickyNote stickyNote) {
-        Query query = new Query(Criteria.where("_id").is(stickyNote.getId()));
+        Query query = byIdAndBoard(stickyNote.getId(), stickyNote.getBoardId());
         Update update = new Update()
                 .set("text", stickyNote.getText());
-        return mongoTemplate.findAndModify(
+        return requireFound(mongoTemplate.findAndModify(
                 query,
                 update,
                 FindAndModifyOptions.options().returnNew(true),
                 StickyNote.class
-        );
+        ));
+    }
+
+    // Every mutation is scoped by _id AND boardId so an id from another board matches nothing.
+    private static Query byIdAndBoard(String id, String boardId) {
+        return new Query(Criteria.where("_id").is(id).and("boardId").is(boardId));
+    }
+
+    private static StickyNote requireFound(StickyNote stickyNote) {
+        if (stickyNote == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sticky note trên bảng này");
+        }
+        return stickyNote;
     }
 
     public void deleteStickyNote(String id, String boardId, String userId) {
         String role  = boardService.getRoleOfMember(boardId, userId);
         if(Objects.equals(role, "EDITOR") | Objects.equals(role,"OWNER"))
-            stickyNoteRepository.deleteById(id);
+            stickyNoteRepository.deleteByIdAndBoardId(id, boardId);
         else
             throw new RuntimeException("Bạn không có quyền hoặc không tài tại tài sản này.");
     }

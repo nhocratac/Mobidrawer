@@ -168,6 +168,45 @@ class StompAuthChannelInterceptorTest {
         assertEquals("Token expired", ex.getMessage());
     }
 
+    // ---- SEND destination prefix: only /app/** ----
+    @Test
+    void sendAppBoardHandler_withUser_allowed() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/app/board/draw/board-1", null, authenticatedSession(future()));
+        assertEquals(send, interceptor.preSend(send, mockChannel()));
+    }
+
+    @Test
+    void sendTopic_withUser_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/topic/board/deleteStickyNote/board-1", null, authenticatedSession(future()));
+        MessagingException ex = assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+        assertEquals("SEND denied: only /app destinations are allowed", ex.getMessage());
+    }
+
+    @Test
+    void sendUserDestination_withUser_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/user/someone/queue/session", null, authenticatedSession(future()));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+    }
+
+    @Test
+    void sendRawQueue_withUser_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/queue/session-userXYZ", null, authenticatedSession(future()));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+    }
+
+    @Test
+    void sendPrefixLookalike_withUser_denied() {
+        // "/application" starts with "/app" but is not under the /app/ prefix.
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/application/topic/board/board-1", null, authenticatedSession(future()));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+    }
+
+    @Test
+    void sendMissingDestination_withUser_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, null, null, authenticatedSession(future()));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+    }
+
     // ---- pass-through ----
     @Test
     void disconnect_withoutUser_passes() {

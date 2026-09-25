@@ -90,7 +90,7 @@ public class BoardSocketController {
             @Payload  CreateCanvasPath createCanvasPath
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         CanvasPath canvasPath = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(createCanvasPath);
         canvasPath.setBoardId(boardId);
         canvasPath.setOwner(userDto.getId());
@@ -106,7 +106,7 @@ public class BoardSocketController {
     ) {
         // Xác thực user (nếu cần)
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
 
         // Xóa từng path một (phù hợp với service hiện có)
         pathIds.forEach(pathId -> {
@@ -130,7 +130,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         List<CanvasPath> updatedPaths = canvasPathService.updateMultipleCanvasPaths(canvas, boardId, userDto.getId());
 
         String senderSessionId = headerAccessor.getSessionId();
@@ -149,7 +149,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         String role = boardService.getRoleOfMember(boardId, userDto.getId());
         if(!Objects.equals(role, "EDITOR") && !Objects.equals(role, "OWNER")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa path này");
@@ -171,7 +171,7 @@ public class BoardSocketController {
             @Payload CreateStickyNote createStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.createToEntity(createStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -186,7 +186,7 @@ public class BoardSocketController {
             @Payload List<CreateStickyNote> createStickyNotes
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
 
         List<StickyNote> stickyNotes = createStickyNotes.stream()
                 .map(noteDto -> {
@@ -208,7 +208,7 @@ public class BoardSocketController {
             @Payload MoveStickyNote moveStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
 
         StickyNote moved = stickyNoteService.updateStickyNotePosition(
                 moveStickyNote.getId(), boardId, userDto.getId(),
@@ -234,7 +234,7 @@ public class BoardSocketController {
             @Payload ResizeStickyNote resizeStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.ResizeToEntity(resizeStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -256,7 +256,7 @@ public class BoardSocketController {
             @Payload ChangeText changeTextStickyNote
     )  {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.ChangeTextToEntity(changeTextStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -278,7 +278,7 @@ public class BoardSocketController {
         @Payload LockStickyNote lockStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         return Map.of(
                 "id" , lockStickyNote.getId(),
                 "userId", userDto.getId()
@@ -293,7 +293,7 @@ public class BoardSocketController {
             @Payload LockStickyNote lockStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         return Map.of(
                 "id" , lockStickyNote.getId(),
                 "userId", userDto.getId()
@@ -308,7 +308,7 @@ public class BoardSocketController {
             @Payload DeleteStickyNote deleteStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, userDto.getId());
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         stickyNoteService.deleteStickyNote(deleteStickyNote.getId(), boardId, userDto.getId());
         return Map.of(
                 "id" , deleteStickyNote.getId(),
@@ -344,7 +344,7 @@ public class BoardSocketController {
             @Payload CreateImage createImage,
             SimpMessageHeaderAccessor headerAccessor) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, user.getId());
+        boardAccessService.assertCanEdit(boardId, user.getId());
         Image image = ImageMapper.INSTANCE.CreateDtoImage(createImage);
         image.setBoardId(boardId);
         image.setOwner(user.getId());
@@ -364,7 +364,7 @@ public class BoardSocketController {
             @Payload List<CreateImage> createImages,
             SimpMessageHeaderAccessor headerAccessor) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, user.getId());
+        boardAccessService.assertCanEdit(boardId, user.getId());
         List<Image>  images =  createImages.stream().map(
                 imagedto -> {
                     Image img = ImageMapper.INSTANCE.CreateDtoImage(imagedto);
@@ -390,7 +390,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, user.getId());
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         Image image = ImageMapper.INSTANCE.MoveToDtoImage(moveImage);
@@ -410,7 +410,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, user.getId());
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         Image image = ImageMapper.INSTANCE.ResizeDtoImage(resizeImage);
@@ -430,7 +430,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        boardAccessService.assertCanWrite(boardId, user.getId());
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         imageService.deleteImage(deleteImage.getId(),boardId,user.getId());
