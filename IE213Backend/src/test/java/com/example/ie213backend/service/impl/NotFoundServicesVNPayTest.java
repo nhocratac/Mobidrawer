@@ -38,7 +38,7 @@ class NotFoundServicesVNPayTest {
                 null, userPlansRepository, null, null, null, null, null, null, null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.getUserPlanInfo("missing-plan"));
+                () -> service.getUserPlanInfo("missing-plan", null));
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
         assertEquals("Không tìm thấy plan với id: missing-plan", ex.getReason());

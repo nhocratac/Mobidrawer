@@ -117,7 +117,6 @@ export default function PricingSection() {
 
                   paymentsAPI
                     .createPaymentUrl(
-                      plan.amount,
                       `User với ID ${user.id} yêu cầu nâng cấp lên gói Pro`,
                       "other"
                     )

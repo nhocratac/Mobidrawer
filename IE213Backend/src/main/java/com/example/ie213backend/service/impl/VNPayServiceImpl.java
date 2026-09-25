@@ -1,6 +1,7 @@
 package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.Plans;
+import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.dto.PaymentDto.CreatePaymentDto;
 import com.example.ie213backend.domain.dto.PaymentDto.PaymentRequest;
 import com.example.ie213backend.domain.dto.PaymentDto.UserPlansDto;
@@ -36,6 +37,10 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class VNPayServiceImpl implements VNPayService {
+    // Server-side price (VND) per purchasable plan; mirrors client Pricing page (PRO = 400.000 VNĐ).
+    // FREE is not purchased and ENTERPRISE has custom pricing, so neither is accepted here.
+    static final Map<Plans, Long> PLAN_PRICES_VND = Map.of(Plans.PRO, 400_000L);
+
     private final VNPayUtil vnPayUtil;
     private final UserPlansRepository userPlansRepository;
     private final UserMapper userMapper;
@@ -56,7 +61,11 @@ public class VNPayServiceImpl implements VNPayService {
         String vnp_IpAddr = vnPayUtil.getIpAddress(req);
         String vnp_TmnCode = vnPayUtil.vnp_TmnCode;
 
-        int amount = createPaymentDto.getAmount() * 100;
+        Long price = PLAN_PRICES_VND.get(createPaymentDto.getPlan());
+        if (price == null) {
+            throw new IllegalArgumentException("Plan không hỗ trợ thanh toán: " + createPaymentDto.getPlan());
+        }
+        long amount = price * 100;
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
@@ -123,7 +132,7 @@ public class VNPayServiceImpl implements VNPayService {
                 PaymentRequest.builder()
                         .userId(req.getAttribute("userId").toString())
                         .plan(createPaymentDto.getPlan())
-                        .amount(createPaymentDto.getAmount())
+                        .amount(price)
                         .orderCode(vnp_TxnRef)
                         .createdAt(vnp_CreateDate)
                         .build(),
@@ -133,14 +142,6 @@ public class VNPayServiceImpl implements VNPayService {
 
     @Override
     public UserDto validPayment(HttpServletRequest req) {
-        String redisKey = req.getAttribute("userId") + "+-+" + req.getParameter("vnp_TxnRef");
-        System.out.println(redisKey);
-        PaymentRequest paymentRequest = redisTemplate.opsForValue().get(redisKey);
-        System.out.println(paymentRequest.toString());
-        if (paymentRequest == null) {
-            throw new IllegalArgumentException("Lỗi user ko có payment này");
-        }
-
         Map<String, String> fields = new HashMap<>();
         for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements(); ) {
             String fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII);
@@ -155,25 +156,44 @@ public class VNPayServiceImpl implements VNPayService {
         fields.remove("vnp_SecureHash");
         String signValue = vnPayUtil.hashAllFields(fields);
 
-        if (signValue.equals(vnp_SecureHash)) {
-            if ("00".equals(req.getParameter("vnp_ResponseCode"))) {
-                return processPayment(paymentRequest.getUserId(),
-                        paymentRequest.getPlan(),
-                        paymentRequest.getAmount(),
-                        paymentRequest.getOrderCode(),
-                        paymentRequest.getCreatedAt());
-            } else {
-                throw new IllegalArgumentException("GD Khong thanh cong");
-            }
-        } else {
+        if (signValue == null || signValue.isEmpty() || !signValue.equals(vnp_SecureHash)) {
             throw new IllegalArgumentException("Chu ky khong hop le");
         }
+        if (!"00".equals(req.getParameter("vnp_ResponseCode"))) {
+            throw new IllegalArgumentException("GD Khong thanh cong");
+        }
+        if (!Objects.equals(vnPayUtil.vnp_TmnCode, req.getParameter("vnp_TmnCode"))) {
+            throw new IllegalArgumentException("Ma merchant khong hop le");
+        }
+
+        // Atomic claim (Redis GETDEL): only one request can ever obtain the pending order,
+        // so a replayed/concurrent return cannot grant the plan twice.
+        String redisKey = req.getAttribute("userId") + "+-+" + req.getParameter("vnp_TxnRef");
+        PaymentRequest paymentRequest = redisTemplate.opsForValue().getAndDelete(redisKey);
+        if (paymentRequest == null) {
+            throw new IllegalArgumentException("Lỗi user ko có payment này");
+        }
+        if (!String.valueOf(paymentRequest.getAmount() * 100).equals(req.getParameter("vnp_Amount"))) {
+            throw new IllegalArgumentException("So tien khong khop");
+        }
+
+        return processPayment(paymentRequest.getUserId(),
+                paymentRequest.getPlan(),
+                paymentRequest.getAmount(),
+                paymentRequest.getOrderCode(),
+                paymentRequest.getCreatedAt());
     }
 
     @Override
-    public UserPlansDto getUserPlanInfo(String userPlanId) {
+    public UserPlansDto getUserPlanInfo(String userPlanId, UserDto user) {
         UserPlans userPlans = userPlansRepository.findById(userPlanId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy plan với id: " + userPlanId));
+
+        boolean isOwner = user != null && Objects.equals(userPlans.getUserId(), user.getId());
+        boolean isAdmin = user != null && user.getRole() == UserRoles.ADMIN;
+        if (!isOwner && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem plan này");
+        }
 
         return userPlanMapper.toDto(userPlans);
     }
@@ -269,8 +289,6 @@ public class VNPayServiceImpl implements VNPayService {
         user.setPlan(saveUserPlan.getPlan());
         user.setUserPlansId(saveUserPlan.getId());
         User updateUser = userService.saveUser(user);
-
-        redisTemplate.delete(userId + "+-+" + orderCode);
 
         DateTimeFormatter anotherformatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         String formatExpirationTime = expireDate.format(anotherformatter);
