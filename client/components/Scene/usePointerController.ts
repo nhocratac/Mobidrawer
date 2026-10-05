@@ -14,6 +14,7 @@ import {
   screenToWorld,
   zoomAt,
 } from "./geometry";
+import { revertPatchesFor } from "./gestureRevert";
 import { elementsInRect, hitElement, isLine } from "./hitTest";
 import { sceneSocket } from "./sceneSocket";
 import { shapeFromDrag } from "./shapeFactory";
@@ -518,12 +519,18 @@ export function usePointerController(opts: {
   }, [svgRef, local]);
 
   const cancelGesture = useCallback(() => {
+    // trả element về vị trí cũ (local + peers); preview chờ gửi của cùng id bị ghi đè trong sceneSocket.preview
+    const gesture = g.current;
+    const revert = revertPatchesFor(gesture);
+    if (revert.length) sceneSocket.preview(boardId, revert);
+    if (gesture.mode === "dragging" && gesture.moved && gesture.movePaths)
+      pencil.moveSelectedBy(gesture.startWorld.x - gesture.lastWorld.x, gesture.startWorld.y - gesture.lastWorld.y, true); // immediate: bỏ throttle để peers nhận vị trí cũ ngay
     setMarquee(null);
     setDraft(null);
     setConnectDraft(null);
     setDragging([]);
     g.current = idle();
-  }, []);
+  }, [boardId, pencil]);
 
   return {
     onPointerDown,

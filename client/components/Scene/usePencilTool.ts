@@ -47,14 +47,14 @@ export function usePencilTool(boardId: string) {
   const hasSelection = useCallback(() => useCanvasPathsStore.getState().canvasPaths.some((p) => p.isSelected), []);
 
   const moveSelectedBy = useCallback(
-    (dx: number, dy: number) => {
+    (dx: number, dy: number, immediate = false) => {
       const { canvasPaths: paths, setCanvasPaths } = useCanvasPathsStore.getState();
       const updated = paths.map((path) =>
         path.isSelected && path.paths ? { ...path, paths: path.paths.map((pt) => ({ x: pt.x + dx, y: pt.y + dy })) } : path
       );
       setCanvasPaths(updated);
       const now = Date.now();
-      if (now - lastMoveBroadcast.current >= MOVE_BROADCAST_INTERVAL) {
+      if (immediate || now - lastMoveBroadcast.current >= MOVE_BROADCAST_INTERVAL) {
         lastMoveBroadcast.current = now;
         publish(`/app/board/move-paths/${boardId}`, updated);
       }

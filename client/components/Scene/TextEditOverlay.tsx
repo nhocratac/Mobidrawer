@@ -9,6 +9,10 @@ import { newObjectId } from "./types";
 
 const TEXT_DEBOUNCE_MS = 500;
 
+// unmount không có onBlur: còn lần gõ chờ debounce, khác lastSent và element còn tồn tại thì phải gửi nốt
+export const shouldFlushOnClose = (pending: boolean, value: string, lastSent: string, elementExists: boolean) =>
+  pending && elementExists && value !== lastSent;
+
 // <textarea> HTML đặt đúng vị trí element đang sửa (cùng transform + xoay); chỉ mount khi đang sửa
 const TextEditOverlay = ({ boardId }: { boardId: string }) => {
   const editingId = useSceneStore((s) => s.editingId);
@@ -23,6 +27,8 @@ const Editor = ({ boardId, id }: { boardId: string; id: string }) => {
   const ref = useRef<HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSent = useRef(el?.text ?? "");
+  // giá trị đang gõ: reset() thay store và textarea đã detach khi cleanup chạy, nên không đọc lại từ store/DOM
+  const typed = useRef(el?.text ?? "");
   // mỗi lần mở ô sửa là một phiên: các lần gõ trong phiên gộp thành một tx trên server
   const [editSessionId] = useState(newObjectId);
 
@@ -47,7 +53,10 @@ const Editor = ({ boardId, id }: { boardId: string; id: string }) => {
     ref.current?.select();
     if (plan.acquire) sceneSocket.lock(boardId, id);
     return () => {
+      const pending = timer.current !== null;
       if (timer.current) clearTimeout(timer.current);
+      const exists = !!useSceneStore.getState().elements[id];
+      if (shouldFlushOnClose(pending, typed.current, lastSent.current, exists)) send(typed.current);
       if (plan.acquire) sceneSocket.unlock(boardId, id);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,6 +87,7 @@ const Editor = ({ boardId, id }: { boardId: string; id: string }) => {
       value={text}
       onChange={(e) => {
         setText(e.target.value);
+        typed.current = e.target.value;
         useSceneStore.getState().patchLocal([{ id, set: { text: e.target.value } }]);
         if (timer.current) clearTimeout(timer.current);
         const value = e.target.value;
