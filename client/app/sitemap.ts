@@ -40,20 +40,33 @@ const staticUrls: MetadataRoute.Sitemap = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const blogs: Blog[] = await blogAPIs.getAllBlogsForSitemap();
-  const blogUrls: MetadataRoute.Sitemap = blogs.map((blog) => ({
-    url: `https://mobidrawer.id.vn/Blog/${blog.slug}?id=${blog.id}`,
-    lastModified:now,
-    changeFrequency: "daily",
-    priority: 0.9,
-  }));
+  // Backend may be unreachable at build time (e.g. static export without the
+  // API running) — fall back to the static URL list instead of failing the build.
+  let blogUrls: MetadataRoute.Sitemap = [];
+  let templateUrls: MetadataRoute.Sitemap = [];
 
-  const templatePage : Template[] = await templatesApi.getAllTemplates();
-  const templateUrls: MetadataRoute.Sitemap = templatePage.map((template) => ({
-    url: `https://mobidrawer.id.vn/Store/${template.id}`,
-    lastModified: now,
-    changeFrequency: "daily",
-  }));
+  try {
+    const blogs: Blog[] = await blogAPIs.getAllBlogsForSitemap();
+    blogUrls = blogs.map((blog) => ({
+      url: `https://mobidrawer.id.vn/Blog/${blog.slug}?id=${blog.id}`,
+      lastModified:now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    }));
+  } catch (error) {
+    console.warn("sitemap: failed to fetch blogs, using static URLs only", error);
+  }
+
+  try {
+    const templatePage : Template[] = await templatesApi.getAllTemplates();
+    templateUrls = templatePage.map((template) => ({
+      url: `https://mobidrawer.id.vn/Store/${template.id}`,
+      lastModified: now,
+      changeFrequency: "daily",
+    }));
+  } catch (error) {
+    console.warn("sitemap: failed to fetch templates, using static URLs only", error);
+  }
 
   return [...staticUrls, ...blogUrls, ...templateUrls];
 }

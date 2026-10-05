@@ -67,9 +67,11 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     });
 
     return () => {
-      client.publish({
-        destination: `/app/board/leave/${boardId}`
-      });
+      if (client.connected) {
+        client.publish({
+          destination: `/app/board/leave/${boardId}`
+        });
+      }
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()

@@ -4,16 +4,16 @@ import { Metadata } from "next";
 
 
 type Props = {
-    params: {
+    params: Promise<{
       id: string;
-    };
+    }>;
   };
   
 
 export async function generateMetadata({
     params,
   }: Props): Promise<Metadata> {
-    const id = (params).id;
+    const id = (await params).id;
     const template: Template = await templatesApi.getTemplateById(id as string);
   
     if (!template) {
