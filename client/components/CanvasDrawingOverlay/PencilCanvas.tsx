@@ -1,4 +1,3 @@
-import { useToolDevStore } from '@/lib/Zustand/store';
 import { useEffect, useRef } from 'react';
 
 interface PencilCanvasProps {
@@ -13,7 +12,6 @@ interface PencilCanvasProps {
 
 const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSelected }: PencilCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const modeTool = useToolDevStore(state => state.mode)
 
   useEffect(() => {
     const canvasPen = canvasRef.current;
@@ -57,20 +55,6 @@ const PencilCanvas = ({ color, thickness, paths, scale, translate, opacity, isSe
 
     ctx.restore(); // Restore the previous context state
   }, [color, thickness, paths, scale, translate, isSelected, opacity]);
-
-  useEffect(() => {
-    const canvasPen = canvasRef.current;
-    if (!canvasPen || modeTool !== 'eraser') return;
-    const handleMouseDown = () => {
-
-    };
-    canvasPen.addEventListener('mousedown', handleMouseDown);
-    return () => {
-      canvasPen.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [modeTool, scale, translate, paths, opacity]);
-
-
 
   return (
     <canvas

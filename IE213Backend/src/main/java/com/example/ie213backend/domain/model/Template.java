@@ -41,6 +41,8 @@ public class Template {
     private List<CanvasPath> canvasPaths;
     private List<StickyNote> stickyNotes;
     private List<Image> images;
+    // Định dạng mới: danh sách element (id chỉ dùng để nối connector, sẽ được cấp lại khi dùng template)
+    private List<BoardElement> elements;
 
 
     @LastModifiedDate

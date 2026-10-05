@@ -10,6 +10,7 @@ import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.BoardMapper;
 import com.example.ie213backend.repository.BoardCustomRepository;
+import com.example.ie213backend.repository.BoardElementRepository;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
@@ -38,6 +39,8 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardCustomRepository boardCustomRepository;
 
+    private final BoardElementRepository boardElementRepository;
+
     private final MongoTemplate mongoTemplate;
     private final NotificationService notificationService;
 
@@ -58,6 +61,7 @@ public class BoardServiceImpl implements BoardService {
             throw new RuntimeException("You are not allowed to access this board");
         }
 
+        foundBoard.setElements(boardElementRepository.findByBoardIdOrderByZAsc(id));
         return foundBoard;
     }
 
@@ -164,6 +168,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public String getRoleOfMember(String boardId, String userId) {
         Board board = boardRepository.findByid(boardId);
+        if (board == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found");
         if (board.getOwner().equals(userId)) {
             return "OWNER";
         }

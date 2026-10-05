@@ -1,8 +1,9 @@
 "use client";
+import { DEFAULT_SHAPE_STYLE } from "@/components/Scene/shapeFactory";
 import {
   BoardStore,
-  ModeType,
-  ToolDevState
+  ToolDevState,
+  ToolType
 } from "@/lib/Zustand/type.type";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
@@ -13,30 +14,12 @@ const useToolDevStore = create<ToolDevState>()(
   devtools(
     persist(
       (set) => ({
-        mode: ModeType.drag,
-        setMode: (mode: ModeType) => {
-          switch (mode) {
-            case "drag":
-              set({ mode: ModeType.drag });
-              break;
-            case "resize":
-              set({ mode: ModeType.resize });
-              break;
-            case "rotate":
-              set({ mode: ModeType.rotate });
-              break;
-            case "pen":
-              set({ mode: ModeType.pen });
-              break;
-            case "eraser":
-              set({ mode: ModeType.eraser });
-              break;
-            case "idle":
-              set({ mode: ModeType.idle });
-            default:
-              break;
-          }
-        },
+        tool: "select" as ToolType,
+        setTool: (tool: ToolType) => set({ tool }),
+        stickyColor: "bg-yellow-200",
+        setStickyColor: (stickyColor: string) => set({ stickyColor }),
+        shapeStyle: { ...DEFAULT_SHAPE_STYLE },
+        setShapeStyle: (style) => set((state) => ({ shapeStyle: { ...state.shapeStyle, ...style } })),
         pencil: {
           color: "black",
           thickness: 15,
@@ -80,10 +63,22 @@ const useToolDevStore = create<ToolDevState>()(
       }),
       {
         name: "tool-dev-storage", // Tên lưu trữ trong localStorage
+        version: 2,
+        // v1 lưu `mode` (drag | idle | pen | ...); v2 dùng `tool`
+        migrate: (persistedState: any, version) => {
+          if (version < 2 && persistedState) {
+            const legacy: Record<string, ToolType> = { drag: "hand", idle: "select", pen: "pen" };
+            persistedState.tool = legacy[persistedState.mode] ?? "select";
+            delete persistedState.mode;
+          }
+          return persistedState;
+        },
         merge: (persistedState: any, currentState) => ({
           ...currentState,
           ...persistedState,
-          setMode: currentState.setMode,
+          setTool: currentState.setTool,
+          setStickyColor: currentState.setStickyColor,
+          setShapeStyle: currentState.setShapeStyle,
           pencil: {
             ...currentState.pencil,
             ...persistedState?.pencil,

@@ -1,12 +1,11 @@
-import { useBoard } from "@/app/user/board/[id]/useBoard";
+import { addImageElement } from "@/components/Scene/addImage";
 import { Button } from "@/components/ui/button";
-import { useImageNoteStore } from "@/lib/Zustand/ImageNoteStore";
+import { useSceneStore } from "@/lib/Zustand/sceneStore";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import { useRef, useState } from "react";
 
-export default function ImageTool() {
+export default function ImageTool({ boardId }: { boardId: string }) {
     const inputRef = useRef<HTMLInputElement>(null);
-    const { handleAddImageNote } = useBoard();
     const [uploadingImages, setUploadingImages] = useState<
         { url: string }[]
     >([]);
@@ -36,19 +35,7 @@ export default function ImageTool() {
                     if (data.url && data.id) {
                         console.log("Image uploaded successfully:", data.url);
                         // call socket api
-                        handleAddImageNote({
-                            alt: file.name,
-                            url: data.url,
-                            cloudinaryId: data.id,
-                            size: {
-                                width: 200,
-                                height: 200,
-                            },
-                            position: {
-                                x: 0,
-                                y: 0,
-                            },
-                        });
+                        addImageElement(boardId, { alt: file.name, url: data.url, cloudinaryId: data.id });
                     } else {
                         console.error("Image upload failed:", data.error || data.message);
                     }
@@ -90,7 +77,8 @@ export default function ImageTool() {
 
 // component Image List 
 const ImageList = ({ uploadingImages }: { uploadingImages: { url: string }[] }) => {
-    const { imageNotes } = useImageNoteStore();
+    const elements = useSceneStore((s) => s.elements);
+    const imageNotes = Object.values(elements).filter((e) => e.type === "image" && e.image).map((e) => ({ url: e.image!.url }));
     return (
         <>
             {

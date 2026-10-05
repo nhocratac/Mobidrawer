@@ -3,25 +3,18 @@ import BoardSubscription from '@/app/user/board/[id]/BoardSubscription';
 import NotFoundBoard from '@/app/user/board/[id]/notfound';
 import UnauthorizeBoard from '@/app/user/board/[id]/unauthorize';
 import { useBoard } from '@/app/user/board/[id]/useBoard';
-import ZoomableGrid from '@/components/BoardGrid/ZoomableGrid';
-import RNDBase from "@/components/BoxResizable/RNDBase";
-import RNDImageNote from '@/components/BoxResizable/RNDImageNote';
-import RNDImageNoteTemp from '@/components/BoxResizable/RNDImageNoteTemp';
-import RNDStickyNote from '@/components/BoxResizable/RNDStickyNote';
-import RNDStickyNoteTemp from '@/components/BoxResizable/RNDStickyNoteTemp';
-import RNDText from '@/components/BoxResizable/RNDText';
+import BoardScene from '@/components/Scene/BoardScene';
+import { imageDtoToElement, stickyDtoToElement } from '@/components/Scene/legacyConvert';
+import { sceneSocket } from '@/components/Scene/sceneSocket';
 import ConfirmSaveBar from '@/components/SideBar/ConfirmSaveBar';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
 import TopLeftBar from '@/components/SideBar/TopLeftBar';
 import TopRightBar from '@/components/SideBar/TopRightBar';
 import AIChatButton from '@/components/ui/AIChatButton';
-import { useImageNoteStore } from '@/lib/Zustand/ImageNoteStore';
-import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
+import { useSceneStore } from '@/lib/Zustand/sceneStore';
+import { useStompStore } from '@/lib/Zustand/socketStore';
 import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { useEffect } from 'react';
-
-
-
 
 const PlayGroundPage = () => {
   useEffect(() => {
@@ -30,108 +23,55 @@ const PlayGroundPage = () => {
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
     document.body.style.height = '100%';
-
   }, []);
-  const {
-    id,
-    scale,
-    status,
-    setScaleHandle,
-    textItemCount,
-    // setTextItemCount,
-    onClickCreateStickyNote,
-    shapeList,
-    onClickAddShape,
-    handleMoveStickyNote,
-    handleReSizeStickyNote,
-    handleChangeTextStickyNote,
-    handleLockStickyNote,
-    handleUnLockStickyNote,
-    handleChangeRole,
-    handleDeleteStickyNote,
-    CreateManyStickyNotes,
-    handleMoveImageNote,
-    handleResizeImageNote,
-    handleDeleteImageNote,
-    handleAddImageNotes
-  } = useBoard();
+  const { id, status, handleChangeRole } = useBoard();
+  const { stickyNotes: tempStickyNotes, imageNotes: tempImageNotes, canvasPaths: tempPaths, elements: tempElements } = useTempChangeStore();
+  const boardId = typeof id === 'string' ? id : '';
 
-  const { stickyNotes } = useStickyNoteStore();
-  const { stickyNotes: tempStickyNotes, imageNotes: tempImageNotes } = useTempChangeStore();
-  const { imageNotes } = useImageNoteStore()
-  if (status == 401)
-    return (
-      <UnauthorizeBoard />
-    )
-  else if (status == 404) {
-    return (
-      <NotFoundBoard />
-    )
-  }
+  // Bản xem trước (AI / import) hiển thị mờ trên scene cho tới khi bấm Save
+  useEffect(() => {
+    if (!boardId) return;
+    const base = useSceneStore.getState().topZ();
+    const ghosts = [
+      ...(tempElements ?? []),
+      ...(tempStickyNotes ?? []).map((n, i) => stickyDtoToElement(n, boardId, base + i + 1)),
+      ...(tempImageNotes ?? []).map((n, i) => imageDtoToElement(n, boardId, base + (tempStickyNotes?.length ?? 0) + i + 1)),
+    ];
+    useSceneStore.getState().setGhosts(ghosts);
+  }, [boardId, tempStickyNotes, tempImageNotes, tempElements]);
+
+  const hasTemp = !!(tempStickyNotes?.length || tempImageNotes?.length || tempPaths?.length || tempElements?.length);
+
+  const saveTemp = () => {
+    const ghosts = useSceneStore.getState().ghosts;
+    sceneSocket.create(boardId, ghosts);
+    const client = useStompStore.getState().client;
+    (tempPaths ?? []).forEach((path) => {
+      client?.publish({
+        destination: `/app/board/draw/${boardId}`,
+        body: JSON.stringify({ color: path.color, thickness: path.thickness, opacity: path.opacity, paths: path.paths, boardId }),
+      });
+    });
+    useTempChangeStore.getState().clearTempChanges();
+  };
+
+  if (status == 401) return <UnauthorizeBoard />;
+  if (status == 404) return <NotFoundBoard />;
   return (
     <div className="w-screen h-screen bg-slate-500">
-      {typeof id === 'string' &&
-        (<>
-          <BoardSubscription boardId={id.toString()} />
+      {boardId && (
+        <>
+          <BoardSubscription boardId={boardId} />
           <TopLeftBar />
-          {(tempStickyNotes && tempStickyNotes.length > 0) &&
-            <ConfirmSaveBar
-              onDiscard={() => {
-                useTempChangeStore.getState().clearTempChanges()
-              }}
-              onSave={() => {
-                CreateManyStickyNotes(tempStickyNotes)
-                handleAddImageNotes(tempImageNotes)
-                useTempChangeStore.getState().clearTempChanges()
-              }} />}
+          {hasTemp && (
+            <ConfirmSaveBar onDiscard={() => useTempChangeStore.getState().clearTempChanges()} onSave={saveTemp} />
+          )}
           <TopRightBar handleChangeRole={handleChangeRole} />
-          <LeftToolBar
-            onClickStickyNoteButton={onClickCreateStickyNote}
-            onClickShape={onClickAddShape}
-          />
-          <AIChatButton boardId={id.toString()} CreateManyStickyNotes={CreateManyStickyNotes} />
-          <ZoomableGrid onSetScale={setScaleHandle} boardId={id.toString()} >
-            {Array.from({ length: textItemCount }).map((_, index) => (
-              <RNDText key={index} parentScale={scale} />
-            ))}
-            {stickyNotes.map((stickyNote, index) => (
-              <RNDStickyNote key={index} parentScale={scale}
-                stickyNote={stickyNote}
-                handlemoveStickyNote={handleMoveStickyNote}
-                handleReSizeStickyNote={handleReSizeStickyNote}
-                handleChangeTextStickyNote={handleChangeTextStickyNote}
-                handleLockStickyNote={handleLockStickyNote}
-                handleUnLockStickyNote={handleUnLockStickyNote}
-                handleDeleteStickyNote={handleDeleteStickyNote}
-              />
-            ))}
-            {tempStickyNotes.map((stickyNote, index) => (
-              <RNDStickyNoteTemp key={`temp-${index}`} parentScale={scale} stickyNote={stickyNote} />
-            ))}
-            {shapeList.map((ShapeComponent, index) => (
-              <RNDBase key={index} parentScale={scale}  >
-                <ShapeComponent />
-              </RNDBase>
-            ))}
-            {imageNotes.map(note => (
-              <RNDImageNote
-                key={note.id}
-                parentScale={scale}
-                imageNote={note}
-                onMove={handleMoveImageNote}
-                onResize={handleResizeImageNote}
-                onDelete={handleDeleteImageNote}
-              />
-            ))}
-            {tempImageNotes.map((imageNote, index) => (
-              <RNDImageNoteTemp
-                parentScale={scale}
-                key={`temp-${index}`}
-                imageNote={imageNote}
-              />
-            ))}
-          </ZoomableGrid>
-          (</>)}
+          <LeftToolBar boardId={boardId} />
+          <AIChatButton boardId={boardId} />
+          <BoardScene boardId={boardId} />
+        </>
+      )}
     </div>
   );
 };

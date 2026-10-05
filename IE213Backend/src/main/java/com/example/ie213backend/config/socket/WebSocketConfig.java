@@ -26,10 +26,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
+        // giữ thứ tự message của mỗi session: preview gửi trước không được tới sau commit
+        config.setPreservePublishOrder(true);
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.setPreserveReceiveOrder(true);
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("http://localhost:3000", "https://localhost:3000", "https://mobidrawer.id.vn")
                 .addInterceptors(new WebSocketAuthInterceptor(authService))

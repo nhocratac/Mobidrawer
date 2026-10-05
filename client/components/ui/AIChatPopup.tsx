@@ -4,6 +4,8 @@ import { ChatMessage, geminiChatWithStickyNotes } from '@/api/AiApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { clearChatHistory, loadChatHistory, saveChatHistory } from '@/lib/chatHistoryStorage';
+import { screenToWorld } from '@/components/Scene/geometry';
+import { useSceneStore } from '@/lib/Zustand/sceneStore';
 import { useTempChangeStore } from '@/lib/Zustand/tempChangeStore';
 import { CreateStickNoteDto } from '@/lib/Zustand/type.type';
 import { Bot, Send, X } from 'lucide-react';
@@ -20,8 +22,17 @@ interface AIChatPopupProps {
   isOpen: boolean;
   onClose: () => void;
   boardId?: string;
-  CreateManyStickyNotes: (stickyNotes: CreateStickNoteDto[]) => void
 }
+
+// Đặt các note AI thành lưới 3 cột quanh giữa màn hình hiện tại (không còn vị trí ngẫu nhiên có thể nằm ngoài viewport)
+const AI_NOTE_GAP = 220;
+const aiNotePosition = (index: number) => {
+  const centre = screenToWorld({ x: window.innerWidth / 2, y: window.innerHeight / 2 }, useSceneStore.getState().viewport);
+  return {
+    x: Math.round(centre.x - AI_NOTE_GAP * 1.5 + (index % 3) * AI_NOTE_GAP),
+    y: Math.round(centre.y - AI_NOTE_GAP / 2 + Math.floor(index / 3) * AI_NOTE_GAP),
+  };
+};
 
 const AIChatPopup = ({ isOpen, onClose, boardId }: AIChatPopupProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -71,7 +82,7 @@ const AIChatPopup = ({ isOpen, onClose, boardId }: AIChatPopupProps) => {
     notes: { id: string; content: string; color: string }[],
     // boardId: string
   ): CreateStickNoteDto[] => {
-    return notes.map(note => ({
+    return notes.map((note, index) => ({
       // Use the exact color from AI response
       color: note.color,
       // Use the exact content from AI response
@@ -80,11 +91,7 @@ const AIChatPopup = ({ isOpen, onClose, boardId }: AIChatPopupProps) => {
         width: 200, // Default width
         height: 200, // Default height
       },
-      position: {
-        x: Math.floor(Math.random() * 600), // Random position
-        y: Math.floor(Math.random() * 400), // Random position
-      },
-
+      position: aiNotePosition(index),
     }));
   };  // Save messages to localStorage
   useEffect(() => {
