@@ -138,6 +138,8 @@ const AIGenerationPopup: React.FC<AIGenerationPopupProps> = ({
       if (data.url && data.id) {
         console.log("Upload thành công:", data.url);
 
+        // upload xong lúc đang xem lịch sử: không tạo element
+        if (useSceneStore.getState().historyMode) return;
         // 4. Tạo element image (gửi qua socket để lưu vào MongoDB)
         const boardId = useSceneStore.getState().boardId;
         if (boardId) addImageElement(boardId, { alt: prompt || `AI-generated ${index + 1}`, url: data.url, cloudinaryId: data.id });

@@ -54,6 +54,39 @@ export interface ElementEvent {
   ids?: string[];
 }
 
+
+// ElementEvent giữ preview/lock/unlock; create/patch/delete còn trong union để tương thích ngược
+export type BatchOp =
+  | { op: "create"; elements: BoardElement[] }
+  | { op: "patch"; patches: ElementPatch[] } // version luôn có trong batch
+  | { op: "delete"; ids: string[] };
+
+export type HistorySource = "user" | "undo" | "redo" | "restore" | "template";
+
+export interface BatchEvent {
+  op: "batch";
+  txId: string;
+  source: HistorySource;
+  seqFrom: number;
+  seqTo: number;
+  senderSessionId: string | null;
+  userId: string;
+  ops: BatchOp[];
+}
+
+export interface HistorySkip {
+  elementId?: string | null;
+  key?: string | null;
+  reason: "modified" | "gone" | "exists" | "end-missing" | "empty";
+  byUserId?: string | null;
+}
+
+export interface HistoryResult {
+  op: "undo" | "redo" | "restore";
+  applied: number;
+  skipped: HistorySkip[];
+}
+
 let counter = Math.floor(Math.random() * 0xffffff);
 
 // Mongo ObjectId dạng 24 hex sinh ở client để không phải đối chiếu id tạm

@@ -1,4 +1,4 @@
-import { useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, useSceneStore } from "@/lib/Zustand/sceneStore";
 import { AABB, anchorPoint, Handle, normBox } from "./geometry";
 import { connectorSegment, isLine, lineSegment } from "./hitTest";
 import type { Side } from "./types";
@@ -23,7 +23,7 @@ interface Props {
 
 const SelectionOverlay = ({ scale, canEdit, pencilBox }: Props) => {
   const selection = useSceneStore((s) => s.selection);
-  const elements = useSceneStore((s) => s.elements);
+  const elements = useSceneStore(selectDisplayedElements);
   const editingId = useSceneStore((s) => s.editingId);
   const hs = 10 / scale;
   const sw = 1.5 / scale;
@@ -109,7 +109,7 @@ const SIDES: Side[] = ["top", "right", "bottom", "left"];
 
 // 4 chấm neo để kéo connector ra từ element
 export const AnchorDots = ({ id, scale, highlight }: { id: string; scale: number; highlight?: boolean }) => {
-  const el = useSceneStore((s) => s.elements[id]);
+  const el = useSceneStore((s) => selectDisplayedElements(s)[id]);
   if (!el || el.type === "connector") return null;
   return (
     <g>

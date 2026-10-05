@@ -94,6 +94,7 @@ export interface Board {
   stickyNotes : StickyNote[],
   images: ImageNote[]; // Danh sách hình ảnh
   elements?: BoardElement[];
+  historySeq?: number; // committedSeq của op log, đọc trước elements (BoardFullDetailResponse.historySeq)
 }
 
 export interface BoardStore {

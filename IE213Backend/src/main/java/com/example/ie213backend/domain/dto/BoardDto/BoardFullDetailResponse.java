@@ -17,4 +17,6 @@ public class BoardFullDetailResponse extends Board {
     private List<StickyNote> stickyNotes;
     private List<Image> images;
     private List<BoardElement> elements;
+    // committedSeq của board lúc đọc (0 nếu chưa có counter); FE dùng làm lastSeq ban đầu
+    private long historySeq;
 }

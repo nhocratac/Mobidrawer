@@ -5,6 +5,7 @@ import { fillToHex } from "./colors";
 import { editLockPlan } from "./editLock";
 import { worldToScreen } from "./geometry";
 import { sceneSocket } from "./sceneSocket";
+import { newObjectId } from "./types";
 
 const TEXT_DEBOUNCE_MS = 500;
 
@@ -22,13 +23,15 @@ const Editor = ({ boardId, id }: { boardId: string; id: string }) => {
   const ref = useRef<HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSent = useRef(el?.text ?? "");
+  // mỗi lần mở ô sửa là một phiên: các lần gõ trong phiên gộp thành một tx trên server
+  const [editSessionId] = useState(newObjectId);
 
   const send = (value: string) => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     if (value === lastSent.current) return;
     lastSent.current = value;
-    sceneSocket.patch(boardId, [{ id, set: { text: value } }]);
+    sceneSocket.patch(boardId, [{ id, set: { text: value } }], { mergeKey: `text:${id}:${editSessionId}` });
   };
 
   const me = useTokenStore((s) => s.user?.id);

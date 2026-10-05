@@ -1,4 +1,5 @@
 "use client";
+import { showHistoryToast } from '@/components/Scene/HistoryToast';
 import { reloadBoard, subscribeScene } from '@/components/Scene/sceneSocket';
 import { useCanvasPathsStore } from '@/lib/Zustand/canvasPathsStore';
 import { useStompStore } from '@/lib/Zustand/socketStore';
@@ -59,7 +60,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       updatePaths(pathUpdated);
     });
 
-    const unsubscribeScene = subscribeScene(client, boardId, sessionId, () => reloadBoard(boardId));
+    const unsubscribeScene = subscribeScene(client, boardId, sessionId, () => reloadBoard(boardId), showHistoryToast);
 
     client.publish({
       destination: `/app/board/join/${boardId}`

@@ -1,6 +1,6 @@
 import BoardAPI from "@/api/BoardAPI";
 import { stickyDtoToElement } from "@/components/Scene/legacyConvert";
-import { sceneSocket } from "@/components/Scene/sceneSocket";
+import { invalidateSceneBaseline, sceneSocket, setSceneBaseline } from "@/components/Scene/sceneSocket";
 import boardTemplateConfig from "@/config/boardTemplates";
 import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
 import { useSceneStore } from "@/lib/Zustand/sceneStore";
@@ -24,14 +24,20 @@ export function useBoard() {
   useEffect(() => {
     if (!id) return;
     const boardId = id.toString();
+    // reset() giữ historyMode khi cùng board: thoát trước để vào lại board không còn banner cũ
+    useSceneStore.getState().exitHistory();
     // tránh hiện element của board trước khi chuyển board
     useSceneStore.getState().reset(boardId, []);
+    // baseline cũ (lần vào board trước) đã lỗi thời: giữ batch cho tới khi có historySeq mới
+    invalidateSceneBaseline();
     useCanvasPathsStore.getState().setCanvasPaths([]);
     setLoaded(false);
     BoardAPI.getBoardById(boardId)
       .then((res) => {
         setBoard(res);
         useSceneStore.getState().reset(boardId, res.elements ?? []);
+        // lastSeq bắt đầu từ historySeq (server đọc trước elements) → batch cũ hơn bị bỏ, không reload thừa
+        setSceneBaseline(res.historySeq ?? 0);
         useCanvasPathsStore.getState().setCanvasPaths(res.canvasPaths ?? []);
         setLoaded(true);
 

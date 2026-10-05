@@ -1,8 +1,8 @@
 import type { Viewport } from "@/components/Scene/geometry";
-import type { BoardElement, ElementEvent, ElementPatch } from "@/components/Scene/types";
+import type { BatchEvent, BoardElement, ElementEvent, ElementPatch } from "@/components/Scene/types";
 import { create } from "zustand";
 
-interface SceneState {
+export interface SceneState {
   boardId: string | null;
   elements: Record<string, BoardElement>;
   order: string[];
@@ -11,16 +11,21 @@ interface SceneState {
   editingId: string | null;
   locks: Record<string, string>;
   ghosts: BoardElement[];
+  historyMode: null | { seq: number; txId: string; label: string };
+  historyElements: Record<string, BoardElement>;
   reset: (boardId: string, elements: BoardElement[]) => void;
   upsertLocal: (els: BoardElement[]) => void;
   patchLocal: (patches: ElementPatch[]) => void;
   commitLocal: (patches: ElementPatch[]) => void;
   removeLocal: (ids: string[]) => void;
   applyRemote: (ev: ElementEvent, mySessionId: string | null) => void;
+  applyBatch: (ev: BatchEvent, mySessionId: string | null) => void;
   setSelection: (ids: string[]) => void;
   setViewport: (v: Viewport) => void;
   setEditing: (id: string | null) => void;
   setGhosts: (ghosts: BoardElement[]) => void;
+  enterHistory: (mode: { seq: number; txId: string; label: string }, elements: BoardElement[]) => void;
+  exitHistory: () => void;
   topZ: () => number;
   bottomZ: () => number;
   connectorsOf: (id: string) => string[];
@@ -67,6 +72,37 @@ function withoutIds(elements: Record<string, BoardElement>, ids: string[]) {
   return { next, drop };
 }
 
+// Áp patch từ server theo last-writer-wins từng field; echo = xác nhận commit của chính session này
+function applyServerPatches(
+  state: SceneState,
+  patches: ElementPatch[],
+  echo: boolean
+): Partial<Pick<SceneState, "elements" | "order">> {
+  const elements = { ...state.elements };
+  let zChanged = false;
+  patches.forEach((p) => {
+    const cur = elements[p.id];
+    if (!cur) return;
+    const version = p.version ?? cur.version;
+    const next: BoardElement = { ...cur, version: Math.max(cur.version, version) };
+    (Object.keys(p.set) as (keyof typeof p.set)[]).forEach((f) => {
+      let apply = version > fieldVersion(p.id, f);
+      if (apply) setField(fieldVersions, p.id, f, version);
+      if (echo) {
+        const pending = Math.max(0, (getField(pendingCommits, p.id, f) ?? 0) - 1);
+        setField(pendingCommits, p.id, f, pending);
+        // commit mới hơn của chính mình chưa được xác nhận → giữ giá trị local
+        if (pending > 0) apply = false;
+      }
+      if (!apply) return;
+      (next as unknown as Record<string, unknown>)[f] = p.set[f];
+      if (f === "z") zChanged = true;
+    });
+    elements[p.id] = next;
+  });
+  return zChanged ? { elements, order: sortOrder(elements) } : { elements };
+}
+
 export const useSceneStore = create<SceneState>((set, get) => ({
   boardId: null,
   elements: {},
@@ -76,6 +112,8 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   editingId: null,
   locks: {},
   ghosts: [],
+  historyMode: null,
+  historyElements: {},
 
   reset: (boardId, els) => {
     const elements: Record<string, BoardElement> = {};
@@ -83,7 +121,9 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     fieldVersions = new Map();
     pendingCommits = new Map();
     baseVersions = new Map(els.map((e) => [e.id, e.version ?? 0]));
-    set({ boardId, elements, order: sortOrder(elements), selection: [], editingId: null, locks: {}, ghosts: [] });
+    // reloadBoard cùng board khi đang xem lịch sử thì giữ chế độ xem; đổi board thì thoát
+    const leaveHistory = get().boardId !== boardId ? { historyMode: null, historyElements: {} } : {};
+    set({ boardId, elements, order: sortOrder(elements), selection: [], editingId: null, locks: {}, ghosts: [], ...leaveHistory });
   },
 
   upsertLocal: (els) =>
@@ -119,6 +159,12 @@ export const useSceneStore = create<SceneState>((set, get) => ({
   removeLocal: (ids) =>
     set((state) => {
       const { next, drop } = withoutIds(state.elements, ids);
+      // id bị xoá có thể được tạo lại (undo/restore) với version thấp hơn → bỏ dấu version cũ
+      drop.forEach((id) => {
+        fieldVersions.delete(id);
+        baseVersions.delete(id);
+        pendingCommits.delete(id);
+      });
       return {
         elements: next,
         order: state.order.filter((id) => !drop.has(id)),
@@ -134,31 +180,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
         get().upsertLocal(ev.elements ?? []);
         break;
       case "patch":
-        set((state) => {
-          const elements = { ...state.elements };
-          let zChanged = false;
-          (ev.patches ?? []).forEach((p) => {
-            const cur = elements[p.id];
-            if (!cur) return;
-            const version = p.version ?? cur.version;
-            const next: BoardElement = { ...cur, version: Math.max(cur.version, version) };
-            (Object.keys(p.set) as (keyof typeof p.set)[]).forEach((f) => {
-              let apply = version > fieldVersion(p.id, f);
-              if (apply) setField(fieldVersions, p.id, f, version);
-              if (mine) {
-                const pending = Math.max(0, (getField(pendingCommits, p.id, f) ?? 0) - 1);
-                setField(pendingCommits, p.id, f, pending);
-                // commit mới hơn của chính mình chưa được xác nhận → giữ giá trị local
-                if (pending > 0) apply = false;
-              }
-              if (!apply) return;
-              (next as unknown as Record<string, unknown>)[f] = p.set[f];
-              if (f === "z") zChanged = true;
-            });
-            elements[p.id] = next;
-          });
-          return zChanged ? { elements, order: sortOrder(elements) } : { elements };
-        });
+        set((state) => applyServerPatches(state, ev.patches ?? [], mine));
         break;
       case "preview":
         if (mine) break;
@@ -184,10 +206,37 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     }
   },
 
+  applyBatch: (ev, mySessionId) => {
+    // chỉ user/template đã được áp lạc quan ở local; undo/redo/restore luôn áp kể cả với người bấm
+    const echo =
+      mySessionId !== null && ev.senderSessionId === mySessionId && (ev.source === "user" || ev.source === "template");
+    ev.ops.forEach((o) => {
+      switch (o.op) {
+        case "create":
+          get().upsertLocal(o.elements);
+          break;
+        case "patch":
+          set((state) => applyServerPatches(state, o.patches, echo));
+          break;
+        case "delete":
+          get().removeLocal(o.ids);
+          break;
+      }
+    });
+  },
+
   setSelection: (ids) => set({ selection: ids }),
   setViewport: (viewport) => set({ viewport }),
   setEditing: (editingId) => set({ editingId }),
   setGhosts: (ghosts) => set({ ghosts }),
+
+  enterHistory: (mode, els) => {
+    const historyElements: Record<string, BoardElement> = {};
+    els.forEach((e) => (historyElements[e.id] = e));
+    // editingId = null làm TextEditOverlay unmount và nhả lock text đang giữ
+    set({ historyMode: mode, historyElements, selection: [], editingId: null });
+  },
+  exitHistory: () => set({ historyMode: null, historyElements: {}, selection: [] }),
 
   topZ: () => {
     const { order, elements } = get();
@@ -202,3 +251,16 @@ export const useSceneStore = create<SceneState>((set, get) => ({
       .filter((e) => e.type === "connector" && e.connector && (e.connector.from.elementId === id || e.connector.to.elementId === id))
       .map((e) => e.id),
 }));
+
+// Các component vẽ / hit-test đọc qua 2 selector này: đang xem lịch sử thì trả bản lịch sử
+export const selectDisplayedElements = (s: SceneState): Record<string, BoardElement> =>
+  s.historyMode ? s.historyElements : s.elements;
+
+// Cache theo tham chiếu historyElements: selector của zustand phải trả mảng ổn định
+let historyOrderCache: { src: Record<string, BoardElement>; order: string[] } | null = null;
+export const selectDisplayedOrder = (s: SceneState): string[] => {
+  if (!s.historyMode) return s.order;
+  if (historyOrderCache?.src !== s.historyElements)
+    historyOrderCache = { src: s.historyElements, order: sortOrder(s.historyElements) };
+  return historyOrderCache.order;
+};

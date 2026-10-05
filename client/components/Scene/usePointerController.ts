@@ -1,4 +1,4 @@
-import { setDragging, useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, selectDisplayedOrder, setDragging, useSceneStore } from "@/lib/Zustand/sceneStore";
 import { useToolDevStore } from "@/lib/Zustand/store";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import { SHAPE_TOOLS, ToolType } from "@/lib/Zustand/type.type";
@@ -235,7 +235,7 @@ export function usePointerController(opts: {
         return;
       }
 
-      const hitId = hitElement(w, st.elements, st.order, st.viewport.s);
+      const hitId = hitElement(w, selectDisplayedElements(st), selectDisplayedOrder(st), st.viewport.s);
 
       if (tool === "connector") {
         if (!canEdit || !hitId || st.elements[hitId].type === "connector") return;
@@ -307,7 +307,7 @@ export function usePointerController(opts: {
             if (hoverId) setHoverId(null);
             return;
           }
-          const id = hitElement(w, st.elements, st.order, st.viewport.s, { skipConnectors: true });
+          const id = hitElement(w, selectDisplayedElements(st), selectDisplayedOrder(st), st.viewport.s, { skipConnectors: true });
           if (id !== hoverId) setHoverId(id);
           return;
         }
@@ -425,7 +425,7 @@ export function usePointerController(opts: {
             maxY: Math.max(gesture.startWorld.y, w.y),
           };
           if (gesture.moved) {
-            const ids = elementsInRect(rect, st.elements);
+            const ids = elementsInRect(rect, selectDisplayedElements(st));
             st.setSelection(gesture.additive ? Array.from(new Set([...st.selection, ...ids])) : ids);
             pencil.selectInRect(rect);
           }

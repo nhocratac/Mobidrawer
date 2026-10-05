@@ -1,5 +1,5 @@
 import { exportStickyNoteToPDF } from "@/lib/export";
-import { useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, useSceneStore } from "@/lib/Zustand/sceneStore";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import { sceneSocket } from "./sceneSocket";
 
@@ -12,7 +12,7 @@ export interface MenuState {
 const TITLES = { sticky: "Sticky Note", image: "Image", shape: "Shape", connector: "Connector" };
 
 const ElementContextMenu = ({ boardId, menu, canEdit, onClose }: { boardId: string; menu: MenuState; canEdit: boolean; onClose: () => void }) => {
-  const el = useSceneStore((s) => s.elements[menu.id]);
+  const el = useSceneStore((s) => selectDisplayedElements(s)[menu.id]);
   const lock = useSceneStore((s) => s.locks[menu.id]);
   const userId = useTokenStore((s) => s.user?.id);
   if (!el) return null;

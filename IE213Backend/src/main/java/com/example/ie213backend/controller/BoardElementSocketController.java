@@ -5,6 +5,9 @@ import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.BoardElement;
 import com.example.ie213backend.service.element.BoardElementService;
 import com.example.ie213backend.service.element.ElementPatches;
+import com.example.ie213backend.service.history.HistoryResult;
+import com.example.ie213backend.service.history.HistoryService;
+import com.example.ie213backend.service.history.UndoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -30,6 +33,8 @@ public class BoardElementSocketController {
     private final BoardElementService elementService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ElementLockRegistry lockRegistry;
+    private final UndoService undoService;
+    private final HistoryService historyService;
 
     private UserDto user(SimpMessageHeaderAccessor headerAccessor) {
         return (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
@@ -48,21 +53,21 @@ public class BoardElementSocketController {
         messagingTemplate.convertAndSend("/topic/board/" + boardId + "/el", message);
     }
 
+    // create/patch/delete: ElementWriter phát một event "batch" có seq trong lock, controller không tự gửi
     @MessageMapping("/board/{boardId}/el/create")
     public void create(@DestinationVariable String boardId,
                        @Payload Map<String, List<BoardElement>> body,
                        SimpMessageHeaderAccessor headerAccessor) {
-        List<BoardElement> created = elementService.create(boardId, user(headerAccessor).getId(),
+        elementService.create(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId(),
                 body.getOrDefault("elements", List.of()));
-        if (!created.isEmpty()) broadcast(boardId, "create", headerAccessor, "elements", created);
     }
 
     @MessageMapping("/board/{boardId}/el/patch")
     public void patch(@DestinationVariable String boardId,
                       @Payload ElementPatches.PatchBody body,
                       SimpMessageHeaderAccessor headerAccessor) {
-        List<Map<String, Object>> applied = elementService.patch(boardId, user(headerAccessor).getId(), body.patches());
-        if (!applied.isEmpty()) broadcast(boardId, "patch", headerAccessor, "patches", applied);
+        elementService.patch(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId(),
+                body.patches(), body.mergeKey());
     }
 
     // Chỉ relay khi đang kéo, không lưu DB
@@ -80,8 +85,31 @@ public class BoardElementSocketController {
     public void delete(@DestinationVariable String boardId,
                        @Payload Map<String, List<String>> body,
                        SimpMessageHeaderAccessor headerAccessor) {
-        List<String> ids = elementService.delete(boardId, user(headerAccessor).getId(), body.getOrDefault("ids", List.of()));
-        if (!ids.isEmpty()) broadcast(boardId, "delete", headerAccessor, "ids", ids);
+        elementService.delete(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId(),
+                body.getOrDefault("ids", List.of()));
+    }
+
+    // Kết quả undo/redo chỉ gửi về người bấm; thay đổi thật đi qua batch của writer
+    @MessageMapping("/board/{boardId}/el/undo")
+    @SendToUser(destinations = "/queue/history", broadcast = false)
+    public HistoryResult undo(@DestinationVariable String boardId, SimpMessageHeaderAccessor headerAccessor) {
+        return undoService.undo(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId());
+    }
+
+    @MessageMapping("/board/{boardId}/el/redo")
+    @SendToUser(destinations = "/queue/history", broadcast = false)
+    public HistoryResult redo(@DestinationVariable String boardId, SimpMessageHeaderAccessor headerAccessor) {
+        return undoService.redo(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId());
+    }
+
+    // Chỉ OWNER (HistoryService kiểm); kết quả chỉ về người bấm, board đổi qua batch của writer
+    @MessageMapping("/board/{boardId}/el/restore")
+    @SendToUser(destinations = "/queue/history", broadcast = false)
+    public HistoryResult restore(@DestinationVariable String boardId,
+                                 @Payload Map<String, Object> body,
+                                 SimpMessageHeaderAccessor headerAccessor) {
+        if (!(body.get("seq") instanceof Number seq)) throw new IllegalArgumentException("seq required");
+        return historyService.restore(boardId, user(headerAccessor).getId(), headerAccessor.getSessionId(), seq.longValue());
     }
 
     @MessageMapping("/board/{boardId}/el/lock")

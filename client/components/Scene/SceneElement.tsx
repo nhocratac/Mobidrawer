@@ -1,4 +1,4 @@
-import { useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, useSceneStore } from "@/lib/Zustand/sceneStore";
 import { memo } from "react";
 import ConnectorView from "./elements/ConnectorView";
 import ImageView from "./elements/ImageView";
@@ -26,9 +26,10 @@ export const ElementBody = ({ el, editing, locked, scale }: { el: BoardElement; 
 };
 
 const SceneElement = memo(({ id, scale }: { id: string; scale: number }) => {
-  const el = useSceneStore((s) => s.elements[id]);
+  const el = useSceneStore((s) => selectDisplayedElements(s)[id]);
   const editing = useSceneStore((s) => s.editingId === id);
-  const locked = useSceneStore((s) => !!s.locks[id]);
+  // lock là trạng thái live, không hiển thị trên bản lịch sử
+  const locked = useSceneStore((s) => !s.historyMode && !!s.locks[id]);
   if (!el) return null;
   return <ElementBody el={el} editing={editing} locked={locked} scale={scale} />;
 });

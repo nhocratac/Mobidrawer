@@ -1,10 +1,12 @@
 package com.example.ie213backend.service.impl;
 
 import com.example.ie213backend.domain.model.*;
-import com.example.ie213backend.repository.BoardElementRepository;
 import com.example.ie213backend.repository.TemplateRepository;
 import com.example.ie213backend.service.*;
 import com.example.ie213backend.service.element.TemplateElementConverter;
+import com.example.ie213backend.service.history.ElementNormalizer;
+import com.example.ie213backend.service.history.ElementWriter;
+import com.example.ie213backend.service.history.Intent;
 import org.bson.types.ObjectId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +29,7 @@ public class TemplateServiceImpl implements TemplateService {
     final  private BoardService boardService;
 
     final  private CanvasPathService canvasPathService;
-    private final BoardElementRepository boardElementRepository;
+    private final ElementWriter elementWriter;
 
     @Override
     public List<Template> findAll() {
@@ -106,12 +108,16 @@ public class TemplateServiceImpl implements TemplateService {
         if (!canvasPaths.isEmpty()) canvasPathService.createCanvasPaths(canvasPaths);
 
         List<BoardElement> elements = TemplateElementConverter.fromTemplate(template, () -> new ObjectId().toHexString());
-        elements.forEach(e -> {
+        List<Intent> intents = elements.stream().map(e -> {
             e.setBoardId(createdBoard.getId());
             e.setOwner(ownerId);
             e.setVersion(1L);
-        });
-        if (!elements.isEmpty()) boardElementRepository.insert(elements);
+            return Intent.create(ElementNormalizer.full(e));
+        }).toList();
+        // ghi qua writer (source template) để có op log; không đến từ socket nên sessionId null
+        if (!intents.isEmpty())
+            elementWriter.commit(new ElementWriter.CommitRequest(
+                    createdBoard.getId(), ownerId, null, "template", intents, null, null));
 
         return createdBoard;
     }

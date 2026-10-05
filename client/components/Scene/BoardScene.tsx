@@ -3,7 +3,7 @@
 import BoardGridContext from "@/components/BoardGrid/BoardGridContext";
 import PencilCanvas from "@/components/CanvasDrawingOverlay/PencilCanvas";
 import MultiCursor from "@/components/MultiCursor/MultiCursor";
-import { useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, selectDisplayedOrder, useSceneStore } from "@/lib/Zustand/sceneStore";
 import { useStompStore } from "@/lib/Zustand/socketStore";
 import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
 import useTokenStore from "@/lib/Zustand/tokenStore";
@@ -13,7 +13,7 @@ import ArrowMarker from "./elements/ArrowMarker";
 import GridCanvas from "./GridCanvas";
 import { anchorPoint, center, normBox, Pt, screenToWorld } from "./geometry";
 import { hitElement } from "./hitTest";
-import { isTypingTarget, shouldHandleDeleteKey } from "./keyboard";
+import { isRedoKey, isTypingTarget, isUndoKey, shouldHandleDeleteKey } from "./keyboard";
 import SceneElement, { ElementBody } from "./SceneElement";
 import SelectionOverlay, { AnchorDots } from "./SelectionOverlay";
 import { sceneSocket } from "./sceneSocket";
@@ -43,9 +43,10 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
   const cursorRef = useRef<Pt | null>(null);
   const board = useBoardStoreof((s) => s.board);
   const viewport = useSceneStore((s) => s.viewport);
-  const order = useSceneStore((s) => s.order);
+  const order = useSceneStore(selectDisplayedOrder);
   const ghosts = useSceneStore((s) => s.ghosts);
   const selection = useSceneStore((s) => s.selection);
+  const historyMode = useSceneStore((s) => s.historyMode);
   const tool = useToolDevStore((s) => s.tool);
   const canEdit = useCanEdit();
   const pencil = usePencilTool(boardId);
@@ -60,6 +61,8 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || useSceneStore.getState().editingId) return;
+      // đang xem lịch sử: không undo/redo (spec §9.3)
+      if ((isUndoKey(e) || isRedoKey(e)) && useSceneStore.getState().historyMode) return;
       if (e.key === " ") {
         spaceHeld.current = true;
         e.preventDefault();
@@ -69,6 +72,14 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
         cancelGesture();
         useSceneStore.getState().setSelection([]);
         clearPencilSelection();
+        return;
+      }
+      // Cmd/Ctrl+Z hoàn tác, Shift+Cmd/Ctrl+Z hoặc Ctrl+Y làm lại (stack ở server, chỉ thao tác của mình)
+      if (isUndoKey(e) || isRedoKey(e)) {
+        e.preventDefault();
+        if (!canEdit) return;
+        if (isRedoKey(e)) sceneSocket.redo(boardId);
+        else sceneSocket.undo(boardId);
         return;
       }
       if (shouldHandleDeleteKey(e) && canEdit) {
@@ -109,7 +120,7 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
     const st = useSceneStore.getState();
     const rect = svgRef.current?.getBoundingClientRect();
     const w = screenToWorld({ x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) }, st.viewport);
-    const id = hitElement(w, st.elements, st.order, st.viewport.s);
+    const id = hitElement(w, selectDisplayedElements(st), selectDisplayedOrder(st), st.viewport.s);
     setGridMenu(null);
     setMenu(null);
     if (id) {
@@ -132,20 +143,23 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
       }}
     >
       <GridCanvas viewport={viewport} visible={board?.option?.grid ?? true} />
-      <div className="absolute inset-0 pointer-events-none">
-        {pencil.canvasPaths.map((path, index) => (
-          <PencilCanvas
-            key={path.id ?? `local-${index}`}
-            color={path.color}
-            thickness={path.thickness}
-            paths={path.paths}
-            opacity={path.opacity}
-            scale={viewport.s}
-            translate={{ x: viewport.tx, y: viewport.ty }}
-            isSelected={!!path.isSelected}
-          />
-        ))}
-      </div>
+      {/* nét vẽ không có lịch sử: ẩn khi đang xem phiên bản cũ */}
+      {!historyMode && (
+        <div className="absolute inset-0 pointer-events-none">
+          {pencil.canvasPaths.map((path, index) => (
+            <PencilCanvas
+              key={path.id ?? `local-${index}`}
+              color={path.color}
+              thickness={path.thickness}
+              paths={path.paths}
+              opacity={path.opacity}
+              scale={viewport.s}
+              translate={{ x: viewport.tx, y: viewport.ty }}
+              isSelected={!!path.isSelected}
+            />
+          ))}
+        </div>
+      )}
       <svg
         ref={svgRef}
         className="absolute inset-0"
@@ -168,7 +182,7 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
           {order.map((id) => (
             <SceneElement key={id} id={id} scale={viewport.s} />
           ))}
-          {ghosts.map((el) => (
+          {!historyMode && ghosts.map((el) => (
             <g key={`ghost-${el.id}`} opacity={0.5} pointerEvents="none">
               <ElementBody el={el} editing={false} locked={false} scale={viewport.s} />
               <rect
@@ -188,7 +202,7 @@ const BoardScene = ({ boardId }: { boardId: string }) => {
               <ElementBody el={ctl.draft} editing={false} locked={false} scale={viewport.s} />
             </g>
           )}
-          <SelectionOverlay scale={viewport.s} canEdit={canEdit} pencilBox={pencil.selectionBox} />
+          <SelectionOverlay scale={viewport.s} canEdit={canEdit} pencilBox={historyMode ? null : pencil.selectionBox} />
           {showAnchorsFor && selection.length <= 1 && <AnchorDots id={showAnchorsFor} scale={viewport.s} />}
           {ctl.connectDraft && <ConnectDraftView draft={ctl.connectDraft} scale={viewport.s} />}
           {ctl.marquee && (

@@ -2,7 +2,7 @@
 import { useCanEdit } from "@/components/Scene/useCanEdit";
 import AIGenerationPopup from "@/components/ui/Panel_Popup/AIGenerationPopup";
 import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaHighlighter,
   FaPen,
@@ -264,6 +264,15 @@ const LeftToolBar = ({ boardId }) => {
     setIsPenConfigPopupVisible(false);
   };
 
+  // mất quyền sửa (VIEWER hoặc đang xem lịch sử): đóng popup tạo element, trả tool về select
+  useEffect(() => {
+    if (canEdit) return;
+    resetSelectPopup();
+    setIsPopupVisible(false);
+    if (tool !== "select" && tool !== "hand") setTool("select");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canEdit]);
+
   const handlePenColorChange = (color) => {
     setPenColor(color);
   };
@@ -359,7 +368,7 @@ const LeftToolBar = ({ boardId }) => {
             visibleImageTool ? "h-[600px]" : "h-0"
           } transition-all duration-300`}
         >
-          <ImageTool boardId={boardId} />
+          {canEdit && <ImageTool boardId={boardId} />}
         </div>
 
         {/* select shape */}

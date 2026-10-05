@@ -9,6 +9,7 @@ export default function ImageTool({ boardId }: { boardId: string }) {
     const [uploadingImages, setUploadingImages] = useState<
         { url: string }[]
     >([]);
+    const historyMode = useSceneStore((s) => s.historyMode);
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -34,6 +35,8 @@ export default function ImageTool({ boardId }: { boardId: string }) {
                     console.log("Upload response:", data);
                     if (data.url && data.id) {
                         console.log("Image uploaded successfully:", data.url);
+                        // upload xong lúc đang xem lịch sử: không tạo element
+                        if (useSceneStore.getState().historyMode) return;
                         // call socket api
                         addImageElement(boardId, { alt: file.name, url: data.url, cloudinaryId: data.id });
                     } else {
@@ -59,7 +62,7 @@ export default function ImageTool({ boardId }: { boardId: string }) {
 
     return (
         <div className="w-[350px] h-full overflow-y-hidden bg-white transform translate-x-[50px] rounded-3xl px-4">
-            <Button variant={"secondary"} className="w-full h-12 mb-2 text-4xl mt-8" onClick={() => inputRef.current?.click()}>
+            <Button variant={"secondary"} className="w-full h-12 mb-2 text-4xl mt-8" disabled={!!historyMode} onClick={() => inputRef.current?.click()}>
                 Thêm hình ảnh
             </Button>
             <input

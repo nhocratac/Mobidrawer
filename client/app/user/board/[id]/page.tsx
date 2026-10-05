@@ -5,6 +5,8 @@ import UnauthorizeBoard from '@/app/user/board/[id]/unauthorize';
 import { useBoard } from '@/app/user/board/[id]/useBoard';
 import BoardScene from '@/components/Scene/BoardScene';
 import { imageDtoToElement, stickyDtoToElement } from '@/components/Scene/legacyConvert';
+import HistoryBanner from '@/components/Scene/HistoryBanner';
+import HistoryPanel from '@/components/Scene/HistoryPanel';
 import { sceneSocket } from '@/components/Scene/sceneSocket';
 import ConfirmSaveBar from '@/components/SideBar/ConfirmSaveBar';
 import LeftToolBar from '@/components/SideBar/LeftToolBar';
@@ -27,6 +29,7 @@ const PlayGroundPage = () => {
   const { id, status, handleChangeRole } = useBoard();
   const { stickyNotes: tempStickyNotes, imageNotes: tempImageNotes, canvasPaths: tempPaths, elements: tempElements } = useTempChangeStore();
   const boardId = typeof id === 'string' ? id : '';
+  const historyMode = useSceneStore((s) => s.historyMode);
 
   // Bản xem trước (AI / import) hiển thị mờ trên scene cho tới khi bấm Save
   useEffect(() => {
@@ -43,6 +46,8 @@ const PlayGroundPage = () => {
   const hasTemp = !!(tempStickyNotes?.length || tempImageNotes?.length || tempPaths?.length || tempElements?.length);
 
   const saveTemp = () => {
+    // đang xem lịch sử thì không ghi bản xem trước AI / template
+    if (useSceneStore.getState().historyMode) return;
     const ghosts = useSceneStore.getState().ghosts;
     sceneSocket.create(boardId, ghosts);
     const client = useStompStore.getState().client;
@@ -63,10 +68,12 @@ const PlayGroundPage = () => {
         <>
           <BoardSubscription boardId={boardId} />
           <TopLeftBar />
-          {hasTemp && (
+          {hasTemp && !historyMode && (
             <ConfirmSaveBar onDiscard={() => useTempChangeStore.getState().clearTempChanges()} onSave={saveTemp} />
           )}
           <TopRightBar handleChangeRole={handleChangeRole} />
+          <HistoryPanel boardId={boardId} />
+          <HistoryBanner boardId={boardId} />
           <LeftToolBar boardId={boardId} />
           <AIChatButton boardId={boardId} />
           <BoardScene boardId={boardId} />

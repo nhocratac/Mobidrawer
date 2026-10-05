@@ -1,12 +1,12 @@
-import { useSceneStore } from "@/lib/Zustand/sceneStore";
+import { selectDisplayedElements, useSceneStore } from "@/lib/Zustand/sceneStore";
 import { connectorSegment, HIT_TOLERANCE_PX } from "../hitTest";
 import type { BoardElement } from "../types";
 import ArrowMarker from "./ArrowMarker";
 
 // Đường nối suy ra từ vị trí hiện tại của 2 element, nên tự bám theo khi chúng di chuyển
 const ConnectorView = ({ el, scale }: { el: BoardElement; scale: number }) => {
-  const from = useSceneStore((s) => (el.connector ? s.elements[el.connector.from.elementId] : undefined));
-  const to = useSceneStore((s) => (el.connector ? s.elements[el.connector.to.elementId] : undefined));
+  const from = useSceneStore((s) => (el.connector ? selectDisplayedElements(s)[el.connector.from.elementId] : undefined));
+  const to = useSceneStore((s) => (el.connector ? selectDisplayedElements(s)[el.connector.to.elementId] : undefined));
   if (!from || !to || !el.connector) return null;
   const seg = connectorSegment(el, { [from.id]: from, [to.id]: to });
   if (!seg) return null;

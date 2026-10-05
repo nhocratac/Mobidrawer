@@ -13,7 +13,8 @@ public final class ElementPatches {
     public record ElementPatch(String id, Map<String, Object> set) {
     }
 
-    public record PatchBody(List<ElementPatch> patches) {
+    // mergeKey tuỳ chọn: các patch gõ chữ cùng key trong 3s được gộp thành 1 tx để undo một lần
+    public record PatchBody(List<ElementPatch> patches, String mergeKey) {
     }
 
     private static final Set<String> GEOMETRY = Set.of("x", "y", "w", "h", "rotation", "z");

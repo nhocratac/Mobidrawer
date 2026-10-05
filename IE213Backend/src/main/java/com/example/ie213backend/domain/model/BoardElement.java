@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 // Một đối tượng trên board: sticky | image | shape | connector
 @Data
@@ -65,6 +66,9 @@ public class BoardElement {
 
     // stickyNote | Images khi được migrate từ collection cũ
     private String migratedFrom;
+
+    // "dấu" seq của lần ghi đang hiển thị cho từng key K; thiếu = 0 (không patch được từ client)
+    private Map<String, Long> fieldSeq;
 
     @Data
     @AllArgsConstructor
