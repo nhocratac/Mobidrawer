@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
-import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
+import { portableElement } from "@/components/Scene/legacyConvert";
+import { useSceneStore } from "@/lib/Zustand/sceneStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
 import path from "@/utils/path";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +29,8 @@ export default function CreateTemplateForm() {
     const { toast } = useToast();
 
     const { board } = useBoardStoreof()
-    const stickyNotes = useStickyNoteStore((state) => state.stickyNotes);
+    const sceneElements = useSceneStore((state) => state.elements);
+    const sceneOrder = useSceneStore((state) => state.order);
     const canvasPaths = useCanvasPathsStore((state) => state.canvasPaths);
 
 
@@ -68,14 +70,6 @@ export default function CreateTemplateForm() {
             //     x: number;
             //     y: number;
             //   },
-            if (!board.canvasPaths || !board.stickyNotes) {
-                toast({
-                    title: "Lỗi",
-                    description: "Không có dữ liệu để tạo mẫu.",
-                    variant: "destructive",
-                });
-                return;
-            }
             const canvaspaths = canvasPaths.map((path) => ({
                 thickness: path.thickness,
                 color: path.color,
@@ -83,18 +77,8 @@ export default function CreateTemplateForm() {
                 paths: path.paths,
             }));
 
-            const StickyNotes = stickyNotes.map((note) => ({
-                color: note.color,
-                text: note.text,
-                size: {
-                    width: note.size.width,
-                    height: note.size.height,
-                },
-                position: {
-                    x: note.position.x,
-                    y: note.position.y,
-                },
-            }));
+            // id giữ nguyên để backend nối lại connector khi dùng template
+            const elements = sceneOrder.map((id) => portableElement(sceneElements[id]));
             //   await createTemplate(data);
             templatesApi.createTemplate({
                 title: data.title,
@@ -102,7 +86,7 @@ export default function CreateTemplateForm() {
                 isPublic: data.isPublic,
                 previewImageUrl: board?.thumbnail || "",
                 canvasPaths: canvaspaths || [], // Chuyển đổi canvasPaths sang định dạng phù hợp
-                stickyNotes: StickyNotes || [], // Chuyển đổi stickyNotes sang định dạng phù hợp
+                elements,
             }).then(() => {
                 toast({
                     title: "Thành công",

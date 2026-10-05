@@ -1,14 +1,12 @@
 "use client";
-import { getShapeByIndex } from "@/components/ui/CustomShape";
+import { useCanEdit } from "@/components/Scene/useCanEdit";
 import AIGenerationPopup from "@/components/ui/Panel_Popup/AIGenerationPopup";
 import ToolBarBtn from "@/components/ui/WhiteBoardLeftToolBarBtn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  FaEraser,
   FaHighlighter,
   FaPen,
   FaRegCircle,
-  FaRegStar,
   FaRegStickyNote,
 } from "react-icons/fa";
 import { HiMiniSparkles } from "react-icons/hi2";
@@ -16,12 +14,11 @@ import { IoColorFillSharp, IoTriangleOutline } from "react-icons/io5";
 import { LuShapes } from "react-icons/lu";
 import { MdGrid4X4, MdOutlineRectangle } from "react-icons/md";
 import { PiHandGrabbingFill } from "react-icons/pi";
-import { RxThickArrowLeft, RxThickArrowRight } from "react-icons/rx";
 
 import { FaDotCircle } from "react-icons/fa";
 
 import { useBoardStoreof, useToolDevStore } from "@/lib/Zustand/store";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Minus, MousePointer2, MoveUpRight, Waypoints } from "lucide-react";
 import ImageTool from "./ImageTool";
 
 // Color mapping between simple names and tailwind classes
@@ -132,10 +129,12 @@ const backgroundColors = [
   "bg-amber-700",
 ];
 
-const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
+const LeftToolBar = ({ boardId }) => {
   // get state from zustand store
-  const ModeTool = useToolDevStore((state) => state.mode);
-  const setMode = useToolDevStore((state) => state.setMode);
+  const tool = useToolDevStore((state) => state.tool);
+  const setTool = useToolDevStore((state) => state.setTool);
+  const setStickyColor = useToolDevStore((state) => state.setStickyColor);
+  const canEdit = useCanEdit();
   const setGridVisible = useBoardStoreof((state) => state.setGridVisible);
   const setBoardColor = useBoardStoreof((state) => state.setBoardColor);
   // local state
@@ -164,8 +163,17 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
 
   const OnClickPiHandGrabbingFillButton = () => {
     resetSelectPopup();
-    if (ModeTool == "drag") setMode("idle");
-    else setMode("drag");
+    setTool(tool === "hand" ? "select" : "hand");
+  };
+
+  const onClickSelectButton = () => {
+    resetSelectPopup();
+    setTool("select");
+  };
+
+  const onClickConnectorButton = () => {
+    resetSelectPopup();
+    setTool(tool === "connector" ? "select" : "connector");
   };
 
   // const onClickCreateTextButton = () => {
@@ -196,49 +204,46 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
     resetSelectPopup();
     setIsSelectPenVisible(!isSelectPenVisible);
     setIsPenConfigPopupVisible(false);
-    setMode("idle");
+    setTool("select");
   };
 
   const handleClickPenButton = () => {
     setIsSelectPenVisible(!isSelectPenVisible);
     setIsPenConfigPopupVisible(false);
-    setMode("pen");
+    setTool("pen");
     setHighlightPen(1);
   };
 
   const handleClickHighlightButton = () => {
     setIsSelectPenVisible(!isSelectPenVisible);
     setIsPenConfigPopupVisible(false);
-    setMode("pen");
+    setTool("pen");
     setHighlightPen(0.5);
-  };
-
-  const handleClickEraserButton = () => {
-    setIsSelectPenVisible(!isSelectPenVisible);
-    setMode("eraser");
   };
 
   const handleThicknessChange = (e) => {
     setPenThickness(e.target.value);
   };
 
-  const shapeIcons = [
-    MdOutlineRectangle,
-    IoTriangleOutline,
-    FaRegCircle,
-    FaRegStar,
-    RxThickArrowRight,
-    RxThickArrowLeft,
+  const shapeTools = [
+    { tool: "rect", icon: MdOutlineRectangle },
+    { tool: "ellipse", icon: FaRegCircle },
+    { tool: "triangle", icon: IoTriangleOutline },
+    { tool: "line", icon: Minus },
+    { tool: "arrow", icon: MoveUpRight },
   ];
 
+  // Chọn màu xong thì click lên board để đặt sticky note
   const onSelectNoteColor = (i) => {
     resetSelectPopup();
-    onClickStickyNoteButton(colorMapping[stickyNoteColor[i]]);
+    setStickyColor(colorMapping[stickyNoteColor[i]]);
+    setTool("sticky");
     setIsSelectNotePopupVisible(false);
   };
 
-  const onSelectShape = (i) => {
-    onClickShape(getShapeByIndex(i));
+  // Chọn loại shape xong thì kéo chuột trên board để vẽ
+  const onSelectShape = (shapeTool) => {
+    setTool(shapeTool);
     resetSelectPopup();
   };
 
@@ -259,6 +264,15 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
     setIsPenConfigPopupVisible(false);
   };
 
+  // mất quyền sửa (VIEWER hoặc đang xem lịch sử): đóng popup tạo element, trả tool về select
+  useEffect(() => {
+    if (canEdit) return;
+    resetSelectPopup();
+    setIsPopupVisible(false);
+    if (tool !== "select" && tool !== "hand") setTool("select");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canEdit]);
+
   const handlePenColorChange = (color) => {
     setPenColor(color);
   };
@@ -278,21 +292,31 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
 
         {/* toolbar container */}
         <div className="bg-red-900 w-0 h-fit transform translate-x-full pr-[10px]">
-          <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />
+          {canEdit && <ToolBarBtn onclick={onClickAIButton} icon={HiMiniSparkles} />}
+          <ToolBarBtn onclick={onClickSelectButton} icon={MousePointer2} isChoosing={tool === "select"} />
           <ToolBarBtn
             onclick={OnClickPiHandGrabbingFillButton}
             icon={PiHandGrabbingFill}
-            isChoosing={ModeTool == "drag"}
+            isChoosing={tool === "hand"}
           />
-          <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} />
-          <ToolBarBtn onclick={onClickImageIcon} icon={ImagePlus} />
-          <ToolBarBtn onclick={onClickShapeButton} icon={LuShapes} />
+          {canEdit && (
+            <>
+              <ToolBarBtn onclick={onClickNoteButton} icon={FaRegStickyNote} isChoosing={tool === "sticky"} />
+              <ToolBarBtn onclick={onClickImageIcon} icon={ImagePlus} />
+              <ToolBarBtn
+                onclick={onClickShapeButton}
+                icon={LuShapes}
+                isChoosing={shapeTools.some((s) => s.tool === tool)}
+              />
+              <ToolBarBtn onclick={onClickConnectorButton} icon={Waypoints} isChoosing={tool === "connector"} />
+            </>
+          )}
           <ToolBarBtn onclick={handleClickVisibleGridButton} icon={MdGrid4X4} />
           <ToolBarBtn
             onclick={onClickBackgroundButton}
             icon={IoColorFillSharp}
           />
-          <ToolBarBtn onclick={onClickPenVisibleButton} icon={FaPen} />
+          {canEdit && <ToolBarBtn onclick={onClickPenVisibleButton} icon={FaPen} isChoosing={tool === "pen"} />}
         </div>
 
         {
@@ -344,22 +368,25 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
             visibleImageTool ? "h-[600px]" : "h-0"
           } transition-all duration-300`}
         >
-          <ImageTool />
+          {canEdit && <ImageTool boardId={boardId} />}
         </div>
 
         {/* select shape */}
         <div
           className={` w-0 ${
-            isSelectShapeVisible ? "h-[200px]" : "h-0"
+            isSelectShapeVisible ? "h-[220px]" : "h-0"
           } transition-all duration-300`}
         >
           <div className="w-[100px] h-full overflow-y-hidden bg-gray-900 transform translate-x-1/2 ">
             <div className="grid grid-cols-2 gap-2 p-2">
-              {shapeIcons.map((Icon, i) => (
+              {shapeTools.map(({ tool: shapeTool, icon: Icon }) => (
                 <button
-                  key={i}
-                  onClick={() => onSelectShape(i)}
-                  className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
+                  key={shapeTool}
+                  title={shapeTool}
+                  onClick={() => onSelectShape(shapeTool)}
+                  className={`inline-flex items-center justify-center px-3 py-2 rounded ${
+                    tool === shapeTool ? "bg-cyan-600" : "bg-gray-700"
+                  }`}
                 >
                   <Icon className="w-10 h-10" />
                 </button>
@@ -389,12 +416,6 @@ const LeftToolBar = ({ onClickStickyNoteButton, onClickShape }) => {
                 onClick={handleClickHighlightButton}
               >
                 <FaHighlighter className="w-10 h-10" />
-              </button>
-              <button
-                className="inline-flex items-center justify-center px-3 py-2 rounded bg-gray-700"
-                onClick={handleClickEraserButton}
-              >
-                <FaEraser className="w-10 h-10" />
               </button>
               <button
                 onClick={onTogglePenConfigPopup}

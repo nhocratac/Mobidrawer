@@ -1,6 +1,7 @@
 package com.example.ie213backend.domain.dto.BoardDto;
 
 import com.example.ie213backend.domain.model.Board;
+import com.example.ie213backend.domain.model.BoardElement;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.Image;
 import com.example.ie213backend.domain.model.StickyNote;
@@ -15,4 +16,7 @@ public class BoardFullDetailResponse extends Board {
     private List<CanvasPath> canvasPaths;
     private List<StickyNote> stickyNotes;
     private List<Image> images;
+    private List<BoardElement> elements;
+    // committedSeq của board lúc đọc (0 nếu chưa có counter); FE dùng làm lastSeq ban đầu
+    private long historySeq;
 }

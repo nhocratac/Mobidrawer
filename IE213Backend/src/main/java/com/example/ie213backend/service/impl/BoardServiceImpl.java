@@ -10,10 +10,12 @@ import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.mapper.BoardMapper;
 import com.example.ie213backend.repository.BoardCustomRepository;
+import com.example.ie213backend.repository.BoardElementRepository;
 import com.example.ie213backend.repository.BoardRepository;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.BoardService;
 import com.example.ie213backend.service.NotificationService;
+import com.example.ie213backend.service.history.ElementWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -38,8 +40,11 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardCustomRepository boardCustomRepository;
 
+    private final BoardElementRepository boardElementRepository;
+
     private final MongoTemplate mongoTemplate;
     private final NotificationService notificationService;
+    private final ElementWriter elementWriter;
 
     @Override
     public BoardFullDetailResponse getBoard(String id, String userId) {
@@ -58,6 +63,9 @@ public class BoardServiceImpl implements BoardService {
             throw new RuntimeException("You are not allowed to access this board");
         }
 
+        // đọc seq trước elements: elements luôn mới bằng hoặc hơn historySeq, event trùng áp lại vô hại
+        foundBoard.setHistorySeq(elementWriter.committedSeq(id));
+        foundBoard.setElements(boardElementRepository.findByBoardIdOrderByZAsc(id));
         return foundBoard;
     }
 
@@ -164,6 +172,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public String getRoleOfMember(String boardId, String userId) {
         Board board = boardRepository.findByid(boardId);
+        if (board == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found");
         if (board.getOwner().equals(userId)) {
             return "OWNER";
         }

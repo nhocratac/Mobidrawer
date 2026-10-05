@@ -1,16 +1,20 @@
 "use client";
-import { useImageNoteStore } from '@/lib/Zustand/ImageNoteStore';
+import { showHistoryToast } from '@/components/Scene/HistoryToast';
+import { reloadBoard, subscribeScene } from '@/components/Scene/sceneSocket';
 import { useCanvasPathsStore } from '@/lib/Zustand/canvasPathsStore';
 import { useStompStore } from '@/lib/Zustand/socketStore';
-import useStickyNoteStore from '@/lib/Zustand/stickyNoteStore';
 import useUserInBoardStore from '@/lib/Zustand/userInBoardStore';
 import { useEffect } from 'react';
 
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
-  const { client, sessionId } = useStompStore();
+  const { client, sessionId, connectCount } = useStompStore();
   const { addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
-  const { addStickyNote, addStickyNotes, moveStickyNote, resizeStickyNote, changTextStickNote, selectStickyNote, deselectStickyNote, deleteStickyNote } = useStickyNoteStore()
   const { markOnlineUsers } = useUserInBoardStore()
+
+  // Kết nối lại: các message bị lỡ khi offline không được gửi lại, nên tải lại board
+  useEffect(() => {
+    if (connectCount > 1) reloadBoard(boardId);
+  }, [connectCount, boardId]);
   useEffect(() => {
     if (!client || !client.connected || !boardId || !sessionId) {
       return;
@@ -56,95 +60,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       updatePaths(pathUpdated);
     });
 
-    const addStickyNoteSubscription = client.subscribe(`/topic/board/addStickyNote/${boardId}`, (message) => {
-      const stickyNote = JSON.parse(message.body)
-      addStickyNote(stickyNote)
-    });
-
-    const addStickyNotesSubscription = client.subscribe(`/topic/board/addStickyNotes/${boardId}`, (message) => {
-      const stickyNotes = JSON.parse(message.body)
-      addStickyNotes(stickyNotes)
-    });
-
-    const moveStickyNoteSubscription = client.subscribe(`/topic/board/moveStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      const stickyNote = payload.stickyNote;
-      const senderSessionId = payload.senderSessionId;
-      // Bỏ qua nếu tin nhắn đến từ chính mình
-      if (senderSessionId === sessionId) {
-        return;
-      }
-      moveStickyNote(stickyNote.id, stickyNote.position);
-    });
-
-    const reSizeStickyNoteSubcription = client.subscribe(`/topic/board/reSizeStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      const stickyNote = payload.stickyNote;
-      const senderSessionId = payload.senderSessionId;
-      if (senderSessionId === sessionId) {
-        return;
-      }
-      resizeStickyNote(stickyNote.id, stickyNote.size)
-    })
-
-    const changeTextSubcription = client.subscribe(`/topic/board/ChangeTextStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      const stickyNote = payload.stickyNote;
-      const senderSessionId = payload.senderSessionId;
-      if (senderSessionId === sessionId) {
-        return;
-      }
-      changTextStickNote(stickyNote.id, stickyNote.text)
-    })
-
-    const lockStickNoteSubscription = client.subscribe(`/topic/board/lockStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      selectStickyNote(payload.id, payload.userId)
-    })
-
-    const unLockStickNoteSubscription = client.subscribe(`/topic/board/unLockStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      deselectStickyNote(payload.id)
-    })
-
-    const deleteStickyNoteSubcription = client.subscribe(`/topic/board/deleteStickyNote/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body)
-      deleteStickyNote(payload.id)
-    })
-
-
-    const moveImageNoteSubscription = client.subscribe(`/topic/board/moveImage/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      const imageNote = payload.image;
-      const senderSessionId = payload.senderSessionId;
-      // Bỏ qua nếu tin nhắn đến từ chính mình
-      if (senderSessionId === sessionId) {
-        return;
-      }
-      useImageNoteStore.getState().updateImageNote(imageNote.id, { position: imageNote.position });
-    })
-    const resizeImageNoteSubscription = client.subscribe(`/topic/board/resizeImage/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      const imageNote = payload.image;
-      const senderSessionId = payload.senderSessionId;
-      // Bỏ qua nếu tin nhắn đến từ chính mình
-      if (senderSessionId === sessionId) {
-        return;
-      }
-      useImageNoteStore.getState().updateImageNote(imageNote.id, { size: imageNote.size });
-    });
-    
-    const addImageNoteSubscription = client.subscribe(`/topic/board/image/${boardId}`, (message) => {
-      const imageNote = JSON.parse(message.body);
-      // Xử lý thêm hình ảnh vào store hoặc state
-      useImageNoteStore.getState().addImageNote(imageNote.image);
-    });
-
-    const deleteImageNoteSubscription = client.subscribe(`/topic/board/deleteImage/${boardId}`, (message) => {
-      const payload = JSON.parse(message.body);
-      useImageNoteStore.getState().deleteImageNote(payload.id);
-    });
-
+    const unsubscribeScene = subscribeScene(client, boardId, sessionId, () => reloadBoard(boardId), showHistoryToast);
 
     client.publish({
       destination: `/app/board/join/${boardId}`
@@ -159,18 +75,7 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()
       movePathsSubscription.unsubscribe()
-      addStickyNoteSubscription.unsubscribe()
-      moveStickyNoteSubscription.unsubscribe()
-      reSizeStickyNoteSubcription.unsubscribe()
-      changeTextSubcription.unsubscribe()
-      lockStickNoteSubscription.unsubscribe()
-      unLockStickNoteSubscription.unsubscribe()
-      deleteStickyNoteSubcription.unsubscribe()
-      addStickyNotesSubscription.unsubscribe()
-      addImageNoteSubscription.unsubscribe();
-      moveImageNoteSubscription.unsubscribe();
-      resizeImageNoteSubscription.unsubscribe();
-      deleteImageNoteSubscription.unsubscribe();
+      unsubscribeScene();
     };
   }, [client, boardId, sessionId,client?.connected]);
 

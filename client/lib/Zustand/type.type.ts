@@ -1,13 +1,19 @@
+import type { BoardElement, ElementStyle } from "@/components/Scene/types";
 import { ImageNote } from "@/lib/Zustand/ImageNoteStore";
 
-export enum ModeType {
-  drag = "drag",
-  idle = "idle",
-  resize = "resize",
-  rotate = "rotate",
-  pen = "pen",
-  eraser = "eraser",
-}
+export type ToolType =
+  | "select"
+  | "hand"
+  | "pen"
+  | "sticky"
+  | "rect"
+  | "ellipse"
+  | "triangle"
+  | "line"
+  | "arrow"
+  | "connector";
+
+export const SHAPE_TOOLS: ToolType[] = ["rect", "ellipse", "triangle", "line", "arrow"];
 
 export enum ModeRole {
   editor = "editor",
@@ -15,8 +21,12 @@ export enum ModeRole {
 }
 
 export interface ToolDevState {
-  mode: ModeType;
-  setMode: (mode: ModeType) => void;
+  tool: ToolType;
+  setTool: (tool: ToolType) => void;
+  stickyColor: string;
+  setStickyColor: (color: string) => void;
+  shapeStyle: ElementStyle;
+  setShapeStyle: (style: ElementStyle) => void;
   pencil: {
     color: string;
     thickness?: number;
@@ -83,6 +93,8 @@ export interface Board {
   canvasPaths : canvasPath[],
   stickyNotes : StickyNote[],
   images: ImageNote[]; // Danh sách hình ảnh
+  elements?: BoardElement[];
+  historySeq?: number; // committedSeq của op log, đọc trước elements (BoardFullDetailResponse.historySeq)
 }
 
 export interface BoardStore {

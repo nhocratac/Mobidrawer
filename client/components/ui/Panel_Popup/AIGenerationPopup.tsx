@@ -1,5 +1,6 @@
 import { geminiGenerateImage } from "@/api/AiApi";
-import { useBoard } from "@/app/user/board/[id]/useBoard";
+import { addImageElement } from "@/components/Scene/addImage";
+import { useSceneStore } from "@/lib/Zustand/sceneStore";
 import useTokenStore from "@/lib/Zustand/tokenStore";
 import { SparklesIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
@@ -13,13 +14,6 @@ type GeneratedImage = {
 
 interface AIGenerationPopupProps {
   togglePopup: () => void;
-  handleAddImageNote: (payload: {
-    alt: string;
-    url: string;
-    cloudinaryId: string;
-    size: { width: number; height: number };
-    position: { x: number; y: number };
-  }) => void;
 }
 
 
@@ -35,7 +29,6 @@ const AIGenerationPopup: React.FC<AIGenerationPopupProps> = ({
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const {handleAddImageNote} = useBoard()
 
   // Clear text functionality
   const handleClearText = () => {
@@ -145,20 +138,11 @@ const AIGenerationPopup: React.FC<AIGenerationPopupProps> = ({
       if (data.url && data.id) {
         console.log("Upload thành công:", data.url);
 
-        // 4. Gọi handleAddImageNote (gửi đến Spring Boot) để lưu metadata vào MongoDB
-        handleAddImageNote({
-          alt: prompt || `AI-generated ${index + 1}`,
-          url: data.url,
-          cloudinaryId: data.id,
-          size: {
-            width: 200,
-            height: 200,
-          },
-          position: {
-            x: 0,
-            y: 0,
-          },
-        });
+        // upload xong lúc đang xem lịch sử: không tạo element
+        if (useSceneStore.getState().historyMode) return;
+        // 4. Tạo element image (gửi qua socket để lưu vào MongoDB)
+        const boardId = useSceneStore.getState().boardId;
+        if (boardId) addImageElement(boardId, { alt: prompt || `AI-generated ${index + 1}`, url: data.url, cloudinaryId: data.id });
       } else {
         console.error("Upload thất bại:", data.error || data.message);
       }

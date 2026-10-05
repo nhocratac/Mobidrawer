@@ -44,7 +44,8 @@ const createTemplate = async (data: {
     isPublic: boolean;
     previewImageUrl: string;
     canvasPaths: {}[],
-    stickyNotes: {}[],
+    stickyNotes?: {}[],
+    elements?: {}[],
 }) => {
     try {
         const response = await httpRequest.post("/template", data);

@@ -1,5 +1,10 @@
 'use client'
 import StickyNoteForExport from "@/components/BoxResizable/StickyNoteForExport";
+import { renderBoardToCanvas } from "@/components/Scene/exportScene";
+import { portableElement, remapIds } from "@/components/Scene/legacyConvert";
+import type { BoardElement } from "@/components/Scene/types";
+import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
+import { useSceneStore } from "@/lib/Zustand/sceneStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
 import { useTempChangeStore } from "@/lib/Zustand/tempChangeStore";
 import env from "@/utils/environment";
@@ -9,12 +14,11 @@ import jsPDF from "jspdf";
 import React from "react";
 import { createRoot } from "react-dom/client";
 async function handleSaveAsImage() {
-  const element = document.getElementById("board-area");
-  if (!element) return;
   const board = useBoardStoreof.getState().board;
   const fileName = sanitizeFileName(board?.name || "mobidrawer-board");
 
-  const canvas = await html2canvas(element);
+  const canvas = await renderBoardToCanvas();
+  if (!canvas) return;
   const dataUrl = canvas.toDataURL("image/png");
 
   const link = document.createElement("a");
@@ -79,12 +83,11 @@ const exportStickyNoteToPDF = async ({
 };
 
 async function handleSaveAsPDF() {
-  const element = document.getElementById("board-area");
-  if (!element) return;
   const board = useBoardStoreof.getState().board;
   const fileName = sanitizeFileName(board?.name || "mobidrawer-board");
 
-  const canvas = await html2canvas(element);
+  const canvas = await renderBoardToCanvas();
+  if (!canvas) return;
   const imgData = canvas.toDataURL("image/png");
 
   const pdf = new jsPDF({
@@ -101,40 +104,22 @@ const handleExportMobidrawerFile = () => {
   const board = useBoardStoreof.getState().board;
   if (!board) return;
 
-  const canvasPaths = board?.canvasPaths.map((path) => ({
+  // v2.0: đọc từ store đang hiển thị (không dùng snapshot lúc load board)
+  const canvasPaths = useCanvasPathsStore.getState().canvasPaths.map((path) => ({
     thickness: path.thickness,
     color: path.color,
     opacity: path.opacity,
     paths: path.paths,
   }));
 
-  const stickyNotes = board?.stickyNotes.map((note) => ({
-    text: note.text,
-    position: note.position,
-    size: note.size,
-    color: note.color,
-  }));
-
-  const images = board?.images.map((imageNote) => ({
-    url: imageNote.url,
-    position: imageNote.position,
-    size: imageNote.size,
-    alt: imageNote.alt,
-    cloudinaryId: imageNote.cloudinaryId,
-  }));
-
-  console.log("Exporting data:", {
-    canvasPaths,
-    stickyNotes,
-    images,
-  });
+  const { order, elements: byId } = useSceneStore.getState();
+  const elements = order.map((id) => portableElement(byId[id]));
 
   const exportData = {
-    version: "1.0",
+    version: "2.0",
     timestamp: new Date().toISOString(),
     canvasPaths,
-    stickyNotes,
-    images,
+    elements,
   };
 
   // 🔐 Mã hóa dữ liệu JSON thành chuỗi
@@ -175,9 +160,14 @@ const handleImportMobidrawerFile = async (
 
     console.log("Parsed data:", parsed);
 
-    useTempChangeStore
-      .getState()
-      .setTempChanges(parsed.canvasPaths, parsed.stickyNotes, parsed.images);
+    if (parsed.version === "2.0") {
+      const boardId = useSceneStore.getState().boardId ?? "";
+      useTempChangeStore.getState().setTempChanges(parsed.canvasPaths ?? [], [], [], remapIds((parsed.elements ?? []).map((e: BoardElement) => ({ ...e, boardId, version: 0 })), boardId));
+    } else {
+      useTempChangeStore
+        .getState()
+        .setTempChanges(parsed.canvasPaths ?? [], parsed.stickyNotes ?? [], parsed.images ?? []);
+    }
   } catch (err) {
     console.error("Lỗi giải mã file .mobidrawer:", err);
     alert("❌ File không hợp lệ hoặc sai key mã hóa.");

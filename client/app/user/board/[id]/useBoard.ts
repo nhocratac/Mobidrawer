@@ -1,387 +1,89 @@
 import BoardAPI from "@/api/BoardAPI";
+import { stickyDtoToElement } from "@/components/Scene/legacyConvert";
+import { invalidateSceneBaseline, sceneSocket, setSceneBaseline } from "@/components/Scene/sceneSocket";
 import boardTemplateConfig from "@/config/boardTemplates";
-import { CreateImageNoteDto, useImageNoteStore } from "@/lib/Zustand/ImageNoteStore";
+import { useCanvasPathsStore } from "@/lib/Zustand/canvasPathsStore";
+import { useSceneStore } from "@/lib/Zustand/sceneStore";
 import { useStompStore } from "@/lib/Zustand/socketStore";
-import useStickyNoteStore from "@/lib/Zustand/stickyNoteStore";
 import { useBoardStoreof } from "@/lib/Zustand/store";
-import { CreateStickNoteDto } from "@/lib/Zustand/type.type";
 import useUserInBoardStore from "@/lib/Zustand/userInBoardStore";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-type ShapeComponent = React.FC<React.SVGProps<SVGSVGElement>>;
-
-type Status = 401 | 404 | 200
+type Status = 401 | 404 | 200;
 
 export function useBoard() {
   const { id } = useParams();
-  const { client } = useStompStore();
-  const [scale, setScale] = useState(1);
-  const [textItemCount, setTextItemCount] = useState(0);
-  const [shapeList, setShapeList] = useState<ShapeComponent[]>([]);
+  const isConnected = useStompStore((s) => s.isConnected);
   const [status, setStatus] = useState<Status>(200);
+  const [loaded, setLoaded] = useState(false);
+  const [pendingTemplate, setPendingTemplate] = useState<number | null>(null);
   const setBoard = useBoardStoreof((state) => state.setBoard);
-  const setStickyNotes = useStickyNoteStore((state) => state.setStickyNotes);
   const { setUsers } = useUserInBoardStore();
 
   useEffect(() => {
     if (!id) return;
-    BoardAPI.getBoardById(id.toString())
+    const boardId = id.toString();
+    // reset() giữ historyMode khi cùng board: thoát trước để vào lại board không còn banner cũ
+    useSceneStore.getState().exitHistory();
+    // tránh hiện element của board trước khi chuyển board
+    useSceneStore.getState().reset(boardId, []);
+    // baseline cũ (lần vào board trước) đã lỗi thời: giữ batch cho tới khi có historySeq mới
+    invalidateSceneBaseline();
+    useCanvasPathsStore.getState().setCanvasPaths([]);
+    setLoaded(false);
+    BoardAPI.getBoardById(boardId)
       .then((res) => {
         setBoard(res);
-        setStickyNotes(res.stickyNotes ? res.stickyNotes : []);
-        useImageNoteStore.getState().setImageNotes(res.images ? res.images : []);
+        useSceneStore.getState().reset(boardId, res.elements ?? []);
+        // lastSeq bắt đầu từ historySeq (server đọc trước elements) → batch cũ hơn bị bỏ, không reload thừa
+        setSceneBaseline(res.historySeq ?? 0);
+        useCanvasPathsStore.getState().setCanvasPaths(res.canvasPaths ?? []);
+        setLoaded(true);
 
-        // Check if this is a newly created board with a template index
+        // Board mới tạo từ template mẫu ở dashboard
         const templateIndex = localStorage.getItem("boardTemplateIndex");
         if (templateIndex !== null) {
-          // Create sticky notes based on the template index
           const index = parseInt(templateIndex, 10);
-          if (index >= 0 && index < boardTemplateConfig.length) {
-            createTemplateNotes(index);
-          }
-          // Clear the template index from local storage after use
+          if (index >= 0 && index < boardTemplateConfig.length) setPendingTemplate(index);
           localStorage.removeItem("boardTemplateIndex");
         }
 
-        BoardAPI.getDetailMemberInBoard(id.toString())
-          .then((res) => {
-            setUsers(res);
-          })
-          .catch(() => {
-            console.log("get board by id error:");
-          });
+        BoardAPI.getDetailMemberInBoard(boardId)
+          .then((members) => setUsers(members))
+          .catch(() => console.log("get board members error"));
       })
       .catch((e) => {
-        if (
-          e.response.data.message == "You are not allowed to access this board"
-        ) {
-          console.error("You are not allowed to access this board");
+        if (e.response?.data?.message == "You are not allowed to access this board") {
           setStatus(401);
-        } else if (e.status == 404) {
-          console.log("notfound")
-          setStatus(404)
+        } else if (e.status == 404 || e.response?.status == 404) {
+          setStatus(404);
         } else console.log("get board by id error: ", e);
       });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  // Function to create template-specific sticky notes
-  const createTemplateNotes = useCallback(
-    (templateIndex: number) => {
-      if (!client || !id) return;
-
-      // Get the template notes configuration for this index
-      const templateNotes = boardTemplateConfig[templateIndex];
-
-      // Create each template note
-      templateNotes.forEach((templateNote) => {
-        client.publish({
-          destination: `/app/board/addStickyNote/${id}`,
-          body: JSON.stringify(templateNote),
-        });
-      });
-    },
-    [client, id]
-  );
-
-  // xóa shape
+  // Tạo sticky của template mẫu khi đã có kết nối socket (trước đây bị bỏ qua nếu socket chưa sẵn sàng)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Delete" || e.key === "Backspace") {
-        setShapeList([]);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  const onClickCreateStickyNote = useCallback(
-    (colorName: string) => {
-      const newStickyNote = {
-        color: colorName,
-        position: { x: 100, y: 100 },
-        size: { width: 200, height: 200 },
-        text: "Type here...",
-      };
-      client?.publish({
-        destination: `/app/board/addStickyNote/${id}`,
-        body: JSON.stringify(newStickyNote),
-      });
-    },
-    [client, id]
-  );
-
-  const CreateManyStickyNotes = useCallback(
-    (stickyNotes : CreateStickNoteDto[]) => {
-      client?.publish({
-        destination: `/app/board/addStickyNotes/${id}`,
-        body: JSON.stringify(stickyNotes),
-      });
-    }, [client]
-  )
-
-  const handleMoveStickyNote = useCallback(
-    (stickyNoteId: string, newPosition: { x: number; y: number }) => {
-      client?.publish({
-        destination: `/app/board/moveStickyNote/${id}`,
-        body: JSON.stringify({ id: stickyNoteId, position: newPosition }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleLockStickyNote = useCallback(
-    (stickyNoteId: string) => {
-      client?.publish({
-        destination: `/app/board/lockStickyNote/${id}`,
-        body: JSON.stringify({ id: stickyNoteId }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleUnLockStickyNote = useCallback(
-    (stickyNoteId: string) => {
-      client?.publish({
-        destination: `/app/board/unLockStickyNote/${id}`,
-        body: JSON.stringify({ id: stickyNoteId }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleReSizeStickyNote = useCallback(
-    (
-      stickyNoteId: string,
-      newSize: { width: number | string; height: number | string }
-    ) => {
-      // Chuẩn hóa width
-      let width =
-        typeof newSize.width === "string"
-          ? parseInt(newSize.width.replace("px", ""), 10)
-          : newSize.width;
-
-      // Chuẩn hóa height
-      let height =
-        typeof newSize.height === "string"
-          ? parseInt(newSize.height.replace("px", ""), 10)
-          : newSize.height;
-
-      // Đảm bảo width và height là số hợp lệ
-      width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
-      height = isNaN(height) ? 0 : height;
-
-      client?.publish({
-        destination: `/app/board/reSizeStickyNote/${id}`,
-        body: JSON.stringify({
-          id: stickyNoteId,
-          size: {
-            width,
-            height,
-          },
-        }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleChangeTextStickyNote = useCallback(
-    (stickyNoteId: string, text: string) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-      client?.publish({
-        destination: `/app/board/ChangeTextStickyNote/${id}`,
-        body: JSON.stringify({
-          id: stickyNoteId,
-          text: text,
-        }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleDeleteStickyNote = useCallback(
-    (stickyNoteId: string) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-      client.publish({
-        destination: `/app/board/deleteStickyNote/${id}`,
-        body: JSON.stringify({
-          id: stickyNoteId,
-        }),
-      });
-    },
-    [id]
-  );
-
-  const handleAddImageNote = useCallback(
-    ({
-      alt,
-      url,
-      cloudinaryId,
-      size,
-      position,
-    }: {
-      alt: string;
-      url: string;
-      cloudinaryId?: string;
-      size: {
-        width: number | string;
-        height: number | string;
-      };
-      position: {
-        x: number;
-        y: number;
-      };
-    }) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-  
-      client.publish({
-        destination: `/app/board/image/${id}`,
-        body: JSON.stringify({
-          alt,
-          url,
-          cloudinaryId,
-          size,
-          position,
-        }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleAddImageNotes = useCallback(
-    (imageNotes : CreateImageNoteDto []) => {
-    if (!client || !client.connected) {
-      console.error("STOMP client chưa kết nối!");
-      return;
-    }
-    client.publish({
-      destination: `/app/board/images/${id}`,
-      body: JSON.stringify(imageNotes),
-    });
-    },[client, id])
-
-  const handleMoveImageNote = useCallback(
-    (_id: string, position: { x: number; y: number }) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-      client.publish({
-        destination: `/app/board/moveImage/${id}`,
-        body: JSON.stringify({ id: _id, position }),
-      });
-    },
-    [client, id]
-  );
-
-  const handleResizeImageNote = useCallback(
-    (_id: string, size: { width: number | string; height: number | string }) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-
-      // Chuẩn hóa width
-      let width =
-        typeof size.width === "string"
-          ? parseInt(size.width.replace("px", ""), 10)
-          : size.width;
-
-      // Chuẩn hóa height
-      let height =
-        typeof size.height === "string"
-          ? parseInt(size.height.replace("px", ""), 10)
-          : size.height;
-
-      // Đảm bảo width và height là số hợp lệ
-      width = isNaN(width) ? 0 : width; // Nếu parseInt thất bại, mặc định là 0
-      height = isNaN(height) ? 0 : height;
-
-      client.publish({
-        destination: `/app/board/resizeImage/${id}`,
-        body: JSON.stringify({ id: _id, size: { width, height } }),
-      });
-    },
-    [client]
-  );
-  
-  const handleDeleteImageNote = useCallback(
-    (_id: string) => {
-      if (!client || !client.connected) {
-        console.error("STOMP client chưa kết nối!");
-        return;
-      }
-      client.publish({
-        destination: `/app/board/deleteImage/${id}`,
-        body: JSON.stringify({ id: _id }),
-      });
-    },
-    [client, id]
-  );
-  const onClickAddShape = useCallback(
-    (shape: ShapeComponent) => {
-      setShapeList((prevShapes) => [...prevShapes, shape]);
-    },
-    [setShapeList]
-  );
-
-  const setScaleHandle = useCallback(
-    (s: number) => {
-      setScale(s);
-    },
-    [setScale]
-  );
+    if (pendingTemplate === null || !loaded || !isConnected || !id) return;
+    const boardId = id.toString();
+    const base = useSceneStore.getState().topZ();
+    const notes = boardTemplateConfig[pendingTemplate].map((note, i) => stickyDtoToElement(note, boardId, base + i + 1));
+    sceneSocket.create(boardId, notes);
+    setPendingTemplate(null);
+  }, [pendingTemplate, loaded, isConnected, id]);
 
   const handleChangeRole = useCallback(
     async (memberId: string, role: "EDITOR" | "VIEWER") => {
       try {
-        const res = await BoardAPI.changeRoleMember(
-          id.toString(),
-          memberId,
-          role
-        );
+        const res = await BoardAPI.changeRoleMember(id.toString(), memberId, role);
         setBoard(res);
       } catch (error) {
         console.log(error);
       }
     },
-    [id]
+    [id, setBoard]
   );
 
-  return {
-    id,
-    status,
-    scale,
-    setScaleHandle,
-    textItemCount,
-    setTextItemCount,
-    onClickCreateStickyNote,
-    shapeList,
-    onClickAddShape,
-    handleMoveStickyNote,
-    handleReSizeStickyNote,
-    handleChangeTextStickyNote,
-    handleLockStickyNote,
-    handleUnLockStickyNote,
-    handleChangeRole,
-    handleDeleteStickyNote,
-    CreateManyStickyNotes,
-    handleAddImageNote,
-    handleAddImageNotes,
-    handleMoveImageNote,
-    handleResizeImageNote,
-    handleDeleteImageNote,
-  };
+  return { id, status, handleChangeRole };
 }

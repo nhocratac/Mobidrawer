@@ -7,6 +7,7 @@ interface StompState {
   client: Client | null;
   sessionId: string | null;
   isConnected: boolean; // 🆕 Thêm trạng thái kết nối
+  connectCount: number; // số lần onConnect, > 1 nghĩa là đã kết nối lại
   connect: (token: string) => void;
   disconnect: () => void;
 }
@@ -16,6 +17,7 @@ const SOCKET_URL = (MODE_ENV === "PRODUCTION") ? (env.NEXT_PUBLIC_BACKEND_SOCKET
 export const useStompStore = create<StompState>((set, get) => ({
   client: null,
   isConnected: false, // 🆕 Mặc định chưa kết nối
+  connectCount: 0,
   sessionId: null,
   connect: (token) => {
     if (!token) {
@@ -43,7 +45,7 @@ export const useStompStore = create<StompState>((set, get) => ({
           destination: "/app/connect",
           body: JSON.stringify({}),
         });
-        set({ isConnected: true }); // 🆕 Cập nhật trạng thái khi kết nối thành công
+        set({ isConnected: true, connectCount: get().connectCount + 1 }); // 🆕 Cập nhật trạng thái khi kết nối thành công
       },
       onStompError: (frame) => {
         console.error("❌ WebSocket error:", frame.headers["message"]);

@@ -3,6 +3,11 @@ package com.example.ie213backend.service.impl;
 import com.example.ie213backend.domain.model.*;
 import com.example.ie213backend.repository.TemplateRepository;
 import com.example.ie213backend.service.*;
+import com.example.ie213backend.service.element.TemplateElementConverter;
+import com.example.ie213backend.service.history.ElementNormalizer;
+import com.example.ie213backend.service.history.ElementWriter;
+import com.example.ie213backend.service.history.Intent;
+import org.bson.types.ObjectId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +29,7 @@ public class TemplateServiceImpl implements TemplateService {
     final  private BoardService boardService;
 
     final  private CanvasPathService canvasPathService;
-    private final StickyNoteService stickyNoteService;
-    private final ImageService imageService;
+    private final ElementWriter elementWriter;
 
     @Override
     public List<Template> findAll() {
@@ -62,6 +66,8 @@ public class TemplateServiceImpl implements TemplateService {
         oldTemplate.setDescription(template.getDescription());
         oldTemplate.setCanvasPaths(template.getCanvasPaths());
         oldTemplate.setStickyNotes(template.getStickyNotes());
+        oldTemplate.setImages(template.getImages());
+        oldTemplate.setElements(template.getElements());
         oldTemplate.setPreviewImageUrl(template.getPreviewImageUrl());
         oldTemplate.setPublic(template.isPublic());
 
@@ -97,30 +103,25 @@ public class TemplateServiceImpl implements TemplateService {
         Board newBoard = buildBoardFromTemplate(template);
         Board createdBoard = boardService.createBoard(newBoard, ownerId);
 
-        List<CanvasPath> canvasPaths = convertCanvasPaths(template.getCanvasPaths(), ownerId, createdBoard.getId());
-        List<StickyNote> stickyNotes = convertStickyNotes(template.getStickyNotes(), ownerId, createdBoard.getId());
-        List<Image> images = convertImages(template.getImages(), ownerId, createdBoard.getId());
+        List<CanvasPath> canvasPaths = convertCanvasPaths(
+                template.getCanvasPaths() == null ? List.of() : template.getCanvasPaths(), ownerId, createdBoard.getId());
+        if (!canvasPaths.isEmpty()) canvasPathService.createCanvasPaths(canvasPaths);
 
-        canvasPathService.createCanvasPaths(canvasPaths);
-        stickyNoteService.createStickyNotes(stickyNotes);
-        imageService.createImages(images);
+        List<BoardElement> elements = TemplateElementConverter.fromTemplate(template, () -> new ObjectId().toHexString());
+        List<Intent> intents = elements.stream().map(e -> {
+            e.setBoardId(createdBoard.getId());
+            e.setOwner(ownerId);
+            e.setVersion(1L);
+            return Intent.create(ElementNormalizer.full(e));
+        }).toList();
+        // ghi qua writer (source template) để có op log; không đến từ socket nên sessionId null
+        if (!intents.isEmpty())
+            elementWriter.commit(new ElementWriter.CommitRequest(
+                    createdBoard.getId(), ownerId, null, "template", intents, null, null));
 
         return createdBoard;
     }
 
-
-    private List<StickyNote> convertStickyNotes(List<Template.StickyNote> stickyNotes, String ownerId, String boardId) {
-        return stickyNotes.stream().map(item -> {
-            StickyNote newNote = new StickyNote();
-            newNote.setOwner(ownerId);
-            newNote.setColor(item.getColor());
-            newNote.setSize(new StickyNote.Size(item.getSize().getWidth(), item.getSize().getHeight()));
-            newNote.setPosition(new StickyNote.Position(item.getPosition().getX(), item.getPosition().getY()));
-            newNote.setText(item.getText());
-            newNote.setBoardId(boardId);
-            return newNote;
-        }).toList();
-    }
 
     private List<CanvasPath> convertCanvasPaths(List<Template.CanvasPath> canvasPaths, String ownerId, String boardId) {
         return canvasPaths.stream().map(item -> {
@@ -137,19 +138,5 @@ public class TemplateServiceImpl implements TemplateService {
         }).toList();
     }
 
-    private List<Image> convertImages(List<Template.Image> images, String ownerId, String boardId) {
-        return images.stream().map(
-                item -> {
-                    Image newImage = new Image();
-                    newImage.setOwner(ownerId);
-                    newImage.setBoardId(boardId);
-                    newImage.setAlt(item.getAlt());
-                    newImage.setUrl(item.getUrl());
-                    newImage.setCloudinaryId(item.getCloudinaryId());
-                    newImage.setSize(new Image.Size(item.getSize().getWidth(), item.getSize().getHeight()));
-                    newImage.setPosition(new Image.Position(item.getPosition().getX(), item.getPosition().getY()));
-                    return newImage;
-                }).toList();
-    }
 
 }
