@@ -26,6 +26,7 @@
       "@api/*":["./api/*"],
       "@assets/*":["./assets/*"],
     },
+    "target": "ES2017",
     // "typeRoots": ["./node_modules/@types", "./types"],
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fe:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    env:
+      # client/utils/environment.ts falls back to localhost defaults whenever
+      # NEXT_PUBLIC_MODE_ENV != PRODUCTION, so no real NEXT_PUBLIC_* values are
+      # needed; the sitemap falls back to static URLs when the backend is down.
+      NEXT_PUBLIC_MODE_ENV: ci
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+      - run: npx next build
+
+  be:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: IE213Backend
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      MONGO_IT_URI: mongodb://localhost:27017
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: bash ./mvnw -B test -Dtest='!Ie213BackendApplicationTests' -Dsurefire.failIfNoSpecifiedTests=false

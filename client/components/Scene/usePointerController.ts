@@ -90,7 +90,7 @@ const pick = (els: Record<string, BoardElement>, ids: string[]) => {
 
 export function usePointerController(opts: {
   boardId: string;
-  svgRef: RefObject<SVGSVGElement>;
+  svgRef: RefObject<SVGSVGElement | null>;
   canEdit: boolean;
   pencil: PencilTool;
   cursorRef: { current: Pt | null };

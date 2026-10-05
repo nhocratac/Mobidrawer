@@ -76,7 +76,7 @@ export function useBoard() {
   const handleChangeRole = useCallback(
     async (memberId: string, role: "EDITOR" | "VIEWER") => {
       try {
-        const res = await BoardAPI.changeRoleMember(id.toString(), memberId, role);
+        const res = await BoardAPI.changeRoleMember(id!.toString(), memberId, role);
         setBoard(res);
       } catch (error) {
         console.log(error);
