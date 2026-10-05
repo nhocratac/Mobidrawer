@@ -29,9 +29,10 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci --legacy-peer-deps
-      - run: npx tsc --noEmit
       - run: npx vitest run
+      # next build sinh next-env.d.ts (gitignored, chứa khai báo kiểu cho .png/.svg) trước khi chạy tsc
       - run: npx next build
+      - run: npx tsc --noEmit
 
   be:
     runs-on: ubuntu-latest
