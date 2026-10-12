@@ -17,13 +17,24 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.MessageBuilder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static com.example.ie213backend.security.BoardTopicAuthorizationInterceptor.extractBoardId;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -40,6 +51,18 @@ class BoardTopicAuthorizationInterceptorTest {
     private static final String VIEWER_ID = "viewer-1";
     private static final String STRANGER_ID = "stranger-1";
     private static final String BOARD_ID = "board-1";
+    private static final String OTHER_BOARD_ID = "board-2";
+    private static final String OTHER_OWNER_ID = "owner-2";
+    private static final String OBJECT_ID = "650000000000000000000001";
+
+    /**
+     * Spec §3: 17 op của dạng /topic/board/{op}/{id}. Liệt kê tay ở đây để test độc lập với
+     * interceptor; ops_constantMatchesSpecList giữ 2 danh sách đồng bộ.
+     */
+    private static final List<String> SPEC_OPS = List.of(
+            "addStickyNote", "addStickyNotes", "ChangeTextStickyNote", "cursor", "delete-paths",
+            "deleteImage", "deleteStickyNote", "image", "images", "lockStickyNote", "move-paths",
+            "moveImage", "moveStickyNote", "resizeImage", "reSizeStickyNote", "unLockStickyNote", "update-paths");
 
     private FakeBoardRepository boardRepository;
     private CountingBoardAccessService boardAccessService;
@@ -59,6 +82,12 @@ class BoardTopicAuthorizationInterceptorTest {
         members.add(new Board.Member(VIEWER_ID, Board.ROLE.VIEWER));
         board.setMembers(members);
         boardRepository.seed(board);
+
+        Board otherBoard = new Board();
+        otherBoard.setId(OTHER_BOARD_ID);
+        otherBoard.setOwner(OTHER_OWNER_ID);
+        otherBoard.setMembers(new ArrayList<>());
+        boardRepository.seed(otherBoard);
     }
 
     // ---- PARSER (7) ----
@@ -234,6 +263,245 @@ class BoardTopicAuthorizationInterceptorTest {
     @Test void canAccess_missingBoard_false() { assertFalse(boardAccessService.canAccess("no-such-board", OWNER_ID)); }
     @Test void canAccess_nullBoardId_falseNoNpe() { assertFalse(boardAccessService.canAccess(null, OWNER_ID)); }
     @Test void canAccess_blankBoardId_false() { assertFalse(boardAccessService.canAccess("   ", OWNER_ID)); }
+
+    // ---- M1 PARSER: exhaustive topic shapes (14) ----
+    @Test void parser_elTopic() { assertEquals("B1", extractBoardId("/topic/board/B1/el")); }
+    @Test void parser_elTopic_objectId() { assertEquals(OBJECT_ID, extractBoardId("/topic/board/" + OBJECT_ID + "/el")); }
+    @Test void parser_allSeventeenOps_resolve() {
+        for (String op : SPEC_OPS) {
+            assertEquals("B1", extractBoardId("/topic/board/" + op + "/B1"), "op topic must resolve: " + op);
+        }
+    }
+    @Test void parser_bareEl_noMatch() { assertNull(extractBoardId("/topic/board/el")); }
+    @Test void parser_elExtraSegment_noMatch() { assertNull(extractBoardId("/topic/board/B1/el/x")); }
+    @Test void parser_unknownSuffix_noMatch() { assertNull(extractBoardId("/topic/board/B1/unknown")); }
+    @Test void parser_unknownOp_noMatch() { assertNull(extractBoardId("/topic/board/unknownOp/B1")); }
+    @Test void parser_idIsOpName_noMatch() { assertNull(extractBoardId("/topic/board/cursor")); }
+    @Test void parser_opThenEl_noMatch() { assertNull(extractBoardId("/topic/board/cursor/el")); }
+    @Test void parser_emptyId_noMatch() { assertNull(extractBoardId("/topic/board//el")); }
+    @Test void parser_wildcardDoubleStar_noMatch() { assertNull(extractBoardId("/topic/**")); }
+    @Test void parser_wildcardBoardStar_noMatch() { assertNull(extractBoardId("/topic/board/*")); }
+    @Test void parser_wildcardBoardDoubleStar_noMatch() { assertNull(extractBoardId("/topic/board/**")); }
+    @Test void parser_drawWithOp_noMatch() { assertNull(extractBoardId("/topic/draw/board/cursor/B1")); }
+
+    // ---- M1 SUBSCRIBE: /el topic + fail-closed before lookup (10) ----
+    @Test
+    void subscribe_elTopic_memberAllowed_cachePopulated() {
+        Map<String, Object> session = sessionOf(EDITOR_ID);
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/" + BOARD_ID + "/el", session);
+        assertEquals(subscribe, interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(1, boardAccessService.canAccessCalls);
+        assertTrue(authorizedBoards(session).contains(BOARD_ID));
+    }
+
+    @Test
+    void subscribe_elTopic_viewerAllowed() {
+        Map<String, Object> session = sessionOf(VIEWER_ID);
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/" + BOARD_ID + "/el", session);
+        assertEquals(subscribe, interceptor.preSend(subscribe, mockChannel()));
+        assertTrue(authorizedBoards(session).contains(BOARD_ID));
+    }
+
+    @Test
+    void subscribe_elTopic_nonMember_denied_cacheEmpty() {
+        Map<String, Object> session = sessionOf(STRANGER_ID);
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/" + BOARD_ID + "/el", session);
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertFalse(authorizedBoards(session).contains(BOARD_ID));
+    }
+
+    /** Review Focus 4: member of board A subscribing to /topic/board/{B}/el is denied; A's proof does not leak to B. */
+    @Test
+    void subscribe_elTopic_memberOfOtherBoard_denied() {
+        Map<String, Object> session = sessionOf(EDITOR_ID);
+        interceptor.preSend(subscribeMessage("/topic/board/" + BOARD_ID + "/el", session), mockChannel());
+        assertTrue(authorizedBoards(session).contains(BOARD_ID));
+
+        Message<byte[]> cross = subscribeMessage("/topic/board/" + OTHER_BOARD_ID + "/el", session);
+        assertThrows(MessagingException.class, () -> interceptor.preSend(cross, mockChannel()));
+        assertEquals(2, boardAccessService.canAccessCalls);
+        assertFalse(authorizedBoards(session).contains(OTHER_BOARD_ID));
+    }
+
+    @Test
+    void subscribe_bareEl_denied_beforeLookup() {
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/el", sessionOf(OWNER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void subscribe_elExtraSegment_denied_beforeLookup() {
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/" + BOARD_ID + "/el/x", sessionOf(OWNER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void subscribe_unknownSuffix_denied_beforeLookup() {
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/" + BOARD_ID + "/unknown", sessionOf(OWNER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void subscribe_wildcardBoardStar_denied_beforeLookup() {
+        Message<byte[]> subscribe = subscribeMessage("/topic/board/*", sessionOf(OWNER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void subscribe_wildcardDoubleStar_denied_beforeLookup() {
+        Message<byte[]> subscribe = subscribeMessage("/topic/**", sessionOf(OWNER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void subscribe_queueDestination_passesWithoutBoardCheck() {
+        Message<byte[]> subscribe = subscribeMessage("/queue/errors", sessionOf(STRANGER_ID));
+        assertEquals(subscribe, interceptor.preSend(subscribe, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    // ---- M1 SEND handling intact (2) ----
+    @Test
+    void send_cursor_cacheHitFromElSubscribe_zeroExtraLookups() {
+        Map<String, Object> session = sessionOf(EDITOR_ID);
+        interceptor.preSend(subscribeMessage("/topic/board/" + BOARD_ID + "/el", session), mockChannel());
+        assertEquals(1, boardAccessService.canAccessCalls);
+        for (int i = 0; i < 5; i++) {
+            interceptor.preSend(sendMessage("/app/board/cursor/" + BOARD_ID, session), mockChannel());
+        }
+        assertEquals(1, boardAccessService.canAccessCalls);
+    }
+
+    @Test
+    void send_elAppDestination_passesThrough_zeroAuthorizationCalls() {
+        Message<byte[]> send = sendMessage("/app/board/" + BOARD_ID + "/el/patch", sessionOf(STRANGER_ID));
+        assertEquals(send, interceptor.preSend(send, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
+    // ---- M1 EXHAUSTIVE SCAN (Review Focus 1) (3) ----
+    /**
+     * Quét mọi string literal "/topic/..." trong src/main/java (trừ chính interceptor, vì nó chứa
+     * prefix "/topic/" dùng để so khớp) và bắt từng dạng phải resolve ra đúng {id}. Thêm topic mới
+     * mà quên cập nhật extractBoardId/BOARD_TOPIC_OPS thì test này đỏ ở build, thay vì âm thầm
+     * từ chối subscriber trên production.
+     *
+     * Quy tắc chuẩn hoá literal -> shape (normaliseTopicLiterals):
+     *  1. Literal có placeholder kiểu @SendTo: "/topic/board/cursor/{boardId}" -> mọi "{...}" thành "{id}".
+     *  2. Literal kết thúc bằng "/" và được nối chuỗi trên CÙNG dòng:
+     *       "/topic/board/" + boardId + "/el"  -> "/topic/board/{id}/el"
+     *       "/topic/board/" + boardId          -> "/topic/board/{id}"
+     *     tức prefix + "{id}" + (literal hậu tố đứng ngay sau toán hạng nối, nếu có).
+     *     Nối chuỗi xuống dòng hoặc nhiều hơn 1 toán hạng biến -> shape mang đuôi "?UNPARSED" và test fail,
+     *     người thêm topic phải viết cùng dòng hoặc mở rộng CONCAT_TAIL.
+     *  3. Shape không chứa "{id}" sau chuẩn hoá -> fail (topic không có board id thì không authorize được).
+     * Comment / Javadoc không có dấu nháy kép nên không bị quét.
+     */
+    private static final Pattern TOPIC_LITERAL = Pattern.compile("\"(/topic/[^\"]*)\"");
+    private static final Pattern CONCAT_TAIL =
+            Pattern.compile("^\\s*\\+\\s*[A-Za-z_][\\w.()]*\\s*(?:\\+\\s*\"([^\"]*)\")?");
+    private static final String SAMPLE_ID = "650000000000000000000001";
+    private static final String SCAN_SELF_EXCLUDE = "BoardTopicAuthorizationInterceptor.java";
+
+    static List<String> normaliseTopicLiterals(String line) {
+        List<String> shapes = new ArrayList<>();
+        Matcher m = TOPIC_LITERAL.matcher(line);
+        while (m.find()) {
+            String literal = m.group(1);
+            if (literal.endsWith("/")) {
+                Matcher tail = CONCAT_TAIL.matcher(line.substring(m.end()));
+                if (!tail.find()) {
+                    shapes.add(literal + "{id}?UNPARSED");
+                } else {
+                    shapes.add(literal + "{id}" + (tail.group(1) == null ? "" : tail.group(1)));
+                }
+            } else {
+                shapes.add(literal.replaceAll("\\{[^}]+}", "{id}"));
+            }
+        }
+        return shapes;
+    }
+
+    /** shape -> first "relative/file.java:line" it was seen at. */
+    static Map<String, String> scanMainTopicShapes() throws IOException {
+        Path root = Paths.get("src", "main", "java");
+        if (!Files.isDirectory(root)) {
+            root = Paths.get("IE213Backend", "src", "main", "java"); // chạy từ repo root (IDE)
+        }
+        assertTrue(Files.isDirectory(root), "main source root not found from cwd " + Paths.get("").toAbsolutePath());
+
+        List<Path> javaFiles;
+        try (Stream<Path> walk = Files.walk(root)) {
+            javaFiles = walk.filter(p -> p.toString().endsWith(".java")).sorted().collect(Collectors.toList());
+        }
+        Map<String, String> shapes = new TreeMap<>();
+        for (Path file : javaFiles) {
+            if (file.getFileName().toString().equals(SCAN_SELF_EXCLUDE)) {
+                continue;
+            }
+            List<String> lines = Files.readAllLines(file);
+            for (int i = 0; i < lines.size(); i++) {
+                for (String shape : normaliseTopicLiterals(lines.get(i))) {
+                    shapes.putIfAbsent(shape, root.relativize(file) + ":" + (i + 1));
+                }
+            }
+        }
+        return shapes;
+    }
+
+    @Test
+    void scan_normaliser_samples() {
+        assertEquals(List.of("/topic/board/{id}/el"),
+                normaliseTopicLiterals("        messagingTemplate.convertAndSend(\"/topic/board/\" + boardId + \"/el\", message);"));
+        assertEquals(List.of("/topic/board/{id}"),
+                normaliseTopicLiterals("                messagingTemplate.convertAndSend(\"/topic/board/\" + boardId, snapshot));"));
+        assertEquals(List.of("/topic/board/cursor/{id}"),
+                normaliseTopicLiterals("    @SendTo(\"/topic/board/cursor/{boardId}\")"));
+        assertEquals(List.of("/topic/draw/board/{id}"),
+                normaliseTopicLiterals("    @SendTo(\"/topic/draw/board/{boardId}\")"));
+        assertEquals(List.of("/topic/board/{id}?UNPARSED"),
+                normaliseTopicLiterals("        messagingTemplate.convertAndSend(\"/topic/board/\""));
+        assertEquals(List.of(),
+                normaliseTopicLiterals("// Realtime cho element thống nhất: mọi thay đổi phát trên /topic/board/{boardId}/el"));
+    }
+
+    @Test
+    void scan_coversTheFourSpecShapes() throws IOException {
+        Map<String, String> shapes = scanMainTopicShapes();
+        assertTrue(shapes.size() >= 20, "expected >= 20 distinct board topic shapes on main, got " + shapes);
+        assertTrue(shapes.containsKey("/topic/board/{id}"), shapes.toString());
+        assertTrue(shapes.containsKey("/topic/board/{id}/el"), shapes.toString());
+        assertTrue(shapes.containsKey("/topic/draw/board/{id}"), shapes.toString());
+        for (String op : SPEC_OPS) {
+            assertTrue(shapes.containsKey("/topic/board/" + op + "/{id}"), "missing op topic " + op + " in " + shapes);
+        }
+    }
+
+    @Test
+    void scan_everyMainTopicLiteralResolvesToItsBoardId() throws IOException {
+        Map<String, String> shapes = scanMainTopicShapes();
+        List<String> broken = new ArrayList<>();
+        for (Map.Entry<String, String> entry : shapes.entrySet()) {
+            String shape = entry.getKey();
+            String resolved = shape.contains("{id}") ? extractBoardId(shape.replace("{id}", SAMPLE_ID)) : null;
+            if (!SAMPLE_ID.equals(resolved)) {
+                broken.add(shape + " @ " + entry.getValue() + " -> " + resolved);
+            }
+        }
+        assertTrue(broken.isEmpty(),
+                "topic shapes the interceptor would deny (add the shape to extractBoardId or BOARD_TOPIC_OPS): " + broken);
+    }
+    // ---- M1 OPS constant == spec §3 list (1) ----
+    @Test
+    void ops_constantMatchesSpecList() {
+        assertEquals(17, SPEC_OPS.size());
+        assertEquals(new HashSet<>(SPEC_OPS), BoardTopicAuthorizationInterceptor.BOARD_TOPIC_OPS);
+    }
 
     // ---- helpers ----
     private Map<String, Object> sessionOf(String userId) {

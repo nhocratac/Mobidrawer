@@ -13,16 +13,24 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Client-inbound STOMP authorization guard (SEC-3).
+ * Client-inbound STOMP authorization guard (SEC-3, M1).
  *
- * <p>SUBSCRIBE to a board topic (destination starts with {@code /topic/}, has a
- * {@code board} path segment, non-empty last segment != {@code board}; boardId =
- * last segment via {@link #extractBoardId(String)}) requires the handshake
- * session user (session-attribute {@code "user"}, the only identity source) to
- * pass {@link BoardAccessService#canAccess(String, String)}; allow caches the
- * boardId under session-attribute {@code "authorizedBoards"}. Any other
- * {@code /topic} destination — including AntPathMatcher wildcard shapes like
- * {@code /topic/**} or {@code /topic/board/*} — is denied fail-closed.
+ * <p>SUBSCRIBE to a board topic requires the handshake session user
+ * (session-attribute {@code "user"}, the only identity source) to pass
+ * {@link BoardAccessService#canAccess(String, String)} for the board id that
+ * {@link #extractBoardId(String)} resolves from the destination; allow caches the
+ * boardId under session-attribute {@code "authorizedBoards"}. The destination
+ * must match exactly one of the four shapes main publishes:
+ * <pre>
+ *   /topic/board/{id}
+ *   /topic/board/{op}/{id}     op in {@link #BOARD_TOPIC_OPS} (17)
+ *   /topic/board/{id}/el
+ *   /topic/draw/board/{id}
+ * </pre>
+ * where {@code {id}} is non-empty, contains no {@code /} or {@code *}, and is
+ * neither an op name nor {@code el}. Any other {@code /topic} destination,
+ * including AntPathMatcher wildcard shapes like {@code /topic/**} or
+ * {@code /topic/board/*}, is denied fail-closed before any repository lookup.
  * {@code /user/} and {@code /queue/} personal destinations pass without a
  * board check.
  *
@@ -45,6 +53,13 @@ public class BoardTopicAuthorizationInterceptor implements ChannelInterceptor {
     static final String AUTHORIZED_BOARDS_ATTR = "authorizedBoards";
     private static final String USER_ATTR = "user";
     private static final Set<String> GUARDED_SEND_OPS = Set.of("join", "leave", "cursor");
+
+    /** 17 op của dạng /topic/board/{op}/{id} (BoardSocketController @SendTo). Thêm topic mới thì thêm vào đây. */
+    static final Set<String> BOARD_TOPIC_OPS = Set.of(
+            "addStickyNote", "addStickyNotes", "ChangeTextStickyNote", "cursor", "delete-paths",
+            "deleteImage", "deleteStickyNote", "image", "images", "lockStickyNote", "move-paths",
+            "moveImage", "moveStickyNote", "resizeImage", "reSizeStickyNote", "unLockStickyNote", "update-paths");
+    private static final String EL_SUFFIX = "el";
 
     private final BoardAccessService boardAccessService;
 
@@ -132,30 +147,51 @@ public class BoardTopicAuthorizationInterceptor implements ChannelInterceptor {
     }
 
     /**
-     * Single static parser covering all 19 enumerated distinct baseline board
-     * topics with one rule. Returns null on any non-match (null input, no
-     * board segment, empty last segment from a trailing slash, or a bare
-     * {@code /topic/board} destination).
+     * Exhaustive shape matcher (M1). Returns the {@code {id}} of exactly one of
+     * the four accepted shapes, else {@code null} (fail-closed): null input,
+     * unknown prefix, wrong segment count (trailing slash, {@code /el/x}),
+     * unknown op, invalid id. Replaces the last-segment rule, which returned
+     * {@code "el"} for main's {@code /topic/board/{id}/el} and denied every
+     * SVG-scene subscriber.
      */
     static String extractBoardId(String destination) {
         if (destination == null || !destination.startsWith("/topic/")) {
             return null;
         }
 
-        String[] segments = destination.split("/", -1);
-        boolean hasBoardSegment = false;
-        for (String segment : segments) {
-            if ("board".equals(segment)) {
-                hasBoardSegment = true;
-                break;
-            }
+        String[] s = destination.split("/", -1); // s[0] = "", s[1] = "topic"
+        switch (s.length) {
+            case 4:
+                // /topic/board/{id}
+                return "board".equals(s[2]) ? validId(s[3]) : null;
+            case 5:
+                if ("draw".equals(s[2]) && "board".equals(s[3])) {
+                    return validId(s[4]); // /topic/draw/board/{id}
+                }
+                if (!"board".equals(s[2])) {
+                    return null;
+                }
+                if (EL_SUFFIX.equals(s[4])) {
+                    return validId(s[3]); // /topic/board/{id}/el
+                }
+                if (BOARD_TOPIC_OPS.contains(s[3])) {
+                    return validId(s[4]); // /topic/board/{op}/{id}
+                }
+                return null;
+            default:
+                return null;
         }
-        if (!hasBoardSegment) {
+    }
+
+    // {id}: khác rỗng, không "/" hay "*" (wildcard AntPathMatcher), không trùng op, không phải "el"
+    private static String validId(String id) {
+        if (id == null || id.isEmpty() || id.indexOf('/') >= 0 || id.indexOf('*') >= 0) {
             return null;
         }
-
-        String last = segments[segments.length - 1];
-        return (last.isEmpty() || "board".equals(last)) ? null : last;
+        if (EL_SUFFIX.equals(id) || BOARD_TOPIC_OPS.contains(id)) {
+            return null;
+        }
+        return id;
     }
 
     private UserDto extractUser(StompHeaderAccessor accessor) {
