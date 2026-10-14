@@ -66,13 +66,16 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     });
 
     return () => {
-      if (client.connected) {
-        client.publish({
-          destination: `/app/board/leave/${boardId}`
-        });
-      }
       // Reset presence (and its seq) so the next session/board starts clean.
       clearPresence();
+      // When the socket is already closed (token-refresh reconnect, server close) the broker
+      // has dropped every subscription and the presence listener has handled "leave";
+      // stompjs 7 throws TypeError("There is no underlying STOMP connection") on
+      // publish()/unsubscribe() in that state, so only talk to the client while connected.
+      if (!client.connected) return;
+      client.publish({
+        destination: `/app/board/leave/${boardId}`
+      });
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()
