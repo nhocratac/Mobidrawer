@@ -68,6 +68,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     return () => {
       // Reset presence (and its seq) so the next session/board starts clean.
       clearPresence();
+      // Local SeqSync teardown always runs; it only touches the socket while connected.
+      unsubscribeScene();
       // When the socket is already closed (token-refresh reconnect, server close) the broker
       // has dropped every subscription and the presence listener has handled "leave";
       // stompjs 7 throws TypeError("There is no underlying STOMP connection") on
@@ -81,7 +83,6 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()
       movePathsSubscription.unsubscribe()
-      unsubscribeScene();
     };
   }, [client, boardId, sessionId,client?.connected]);
 
