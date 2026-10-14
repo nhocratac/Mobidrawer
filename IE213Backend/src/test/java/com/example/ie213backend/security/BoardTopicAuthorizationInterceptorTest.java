@@ -221,6 +221,13 @@ class BoardTopicAuthorizationInterceptorTest {
         assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
     }
 
+    @Test
+    void send_emptySegment_denied() {
+        Message<byte[]> send = sendMessage("/app/board//join/" + BOARD_ID, sessionOf(STRANGER_ID));
+        assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+        assertEquals(0, boardAccessService.canAccessCalls);
+    }
+
     // ---- PASS-THROUGH (4) ----
     @Test
     void send_drawDestination_passesThrough_zeroAuthorizationCalls() {

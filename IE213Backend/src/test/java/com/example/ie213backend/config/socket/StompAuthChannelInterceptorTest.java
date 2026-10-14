@@ -155,6 +155,33 @@ class StompAuthChannelInterceptorTest {
     }
 
     @Test
+    void send_emptySegment_boardJoin_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/app/board//join/B1", null, authenticatedSession(future()));
+        MessagingException ex = assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+        assertEquals("SEND denied: empty path segment in destination", ex.getMessage());
+    }
+
+    @Test
+    void send_emptySegment_boardCursor_denied() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/app//board/cursor/B1", null, authenticatedSession(future()));
+        MessagingException ex = assertThrows(MessagingException.class, () -> interceptor.preSend(send, mockChannel()));
+        assertEquals("SEND denied: empty path segment in destination", ex.getMessage());
+    }
+
+    @Test
+    void subscribe_emptySegment_denied() {
+        Message<byte[]> sub = stompMessage(StompCommand.SUBSCRIBE, "/topic/board//B1", null, authenticatedSession(future()));
+        MessagingException ex = assertThrows(MessagingException.class, () -> interceptor.preSend(sub, mockChannel()));
+        assertEquals("SUBSCRIBE denied: empty path segment in destination", ex.getMessage());
+    }
+
+    @Test
+    void send_normalAppDestination_stillAllowed() {
+        Message<byte[]> send = stompMessage(StompCommand.SEND, "/app/board/join/B1", null, authenticatedSession(future()));
+        assertEquals(send, interceptor.preSend(send, mockChannel()));
+    }
+
+    @Test
     void subscribeRawQueue_withUser_denied() {
         Message<byte[]> subscribe = stompMessage(StompCommand.SUBSCRIBE, "/queue/session-userXYZ", null, authenticatedSession(future()));
         assertThrows(MessagingException.class, () -> interceptor.preSend(subscribe, mockChannel()));

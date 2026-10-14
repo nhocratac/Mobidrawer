@@ -36,6 +36,9 @@ import java.util.Map;
  * other destination (e.g. {@code /topic/**}, {@code /user/**}) is denied so it
  * can never reach the broker directly.
  *
+ * SUBSCRIBE and SEND destinations containing an empty path segment ({@code //}) are denied
+ * (AntPathMatcher collapses them, which would bypass the positional join/leave/cursor guard).
+ *
  * <p>Deny = throw {@link MessagingException} (ERROR frame + session close).
  * Header values are never logged or echoed.
  */
@@ -79,6 +82,12 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         Object exp = sessionAttributes.get(TOKEN_EXP_ATTR);
         if (!(exp instanceof Long) || System.currentTimeMillis() > (Long) exp) {
             deny("Token expired");
+        }
+        if (command == StompCommand.SUBSCRIBE || command == StompCommand.SEND) {
+            String dest = accessor.getDestination();
+            if (dest != null && dest.contains("//")) {
+                deny(command.name() + " denied: empty path segment in destination");
+            }
         }
         if (command == StompCommand.SUBSCRIBE) {
             String destination = accessor.getDestination();

@@ -111,6 +111,11 @@ public class BoardTopicAuthorizationInterceptor implements ChannelInterceptor {
             return;
         }
 
+        if (destination.contains("//")) {
+            deny("SEND denied: empty path segment in destination");
+            return;
+        }
+
         String[] segments = destination.split("/", -1);
         if (!isGuardedSendPrefix(segments)) {
             return; // not join/leave/cursor -> pass through (in-handler assertCanEdit applies)
