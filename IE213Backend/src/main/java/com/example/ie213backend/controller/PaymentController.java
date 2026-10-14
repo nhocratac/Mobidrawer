@@ -40,8 +40,9 @@ public class PaymentController {
     }
 
     @GetMapping("/{userPlanId}")
-    public ResponseEntity<UserPlansDto> getUserPlans(@PathVariable String userPlanId) {
-        UserPlansDto userPlansDto = vnPayService.getUserPlanInfo(userPlanId);
+    public ResponseEntity<UserPlansDto> getUserPlans(@PathVariable String userPlanId,
+                                                     @RequestAttribute("user") UserDto userDto) {
+        UserPlansDto userPlansDto = vnPayService.getUserPlanInfo(userPlanId, userDto);
 
         return ResponseEntity.ok(userPlansDto);
     }

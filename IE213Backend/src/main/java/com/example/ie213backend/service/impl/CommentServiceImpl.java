@@ -17,7 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,15 +59,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto createComment(CreateCommentDto createCommentDto) {
-        User owner = userService.getUserById(createCommentDto.getUserId());
-        BlogDto blogDto = blogservice.getBlogById(createCommentDto.getBlogId());
+    public CommentDto createComment(CreateCommentDto createCommentDto, UserDto actor) {
+        String userId = actor.getId();
+        User owner = userService.getUserById(userId);
+        // Blog chưa publish -> 404 với người ngoài (cùng quy tắc với GET /blogs/{id})
+        BlogDto blogDto = blogservice.getBlogById(createCommentDto.getBlogId(), actor);
         Comment comment = commentMapper.toEntity(createCommentDto);
+        comment.setUserId(userId);
 
         if(comment.getRepliedId() != null) {
             Comment repliedComment = getCommentById(comment.getRepliedId());
 
-            if (!repliedComment.getUserId().equals(createCommentDto.getUserId())) {
+            if (!repliedComment.getUserId().equals(userId)) {
                 String name = owner.getFirstName() + " " + owner.getLastName();
 
                 notificationService.sendNotification(name + " đã phản hồi comment của bạn!",
@@ -76,25 +81,25 @@ public class CommentServiceImpl implements CommentService {
 
         }
 
-        return convertToDto(commentRepository.save(comment), createCommentDto.getUserId(), defaultSubCommentPageable);
+        return convertToDto(commentRepository.save(comment), userId, defaultSubCommentPageable);
     }
 
     @Override
-    public CommentDto updateComment(UpdateCommentDto updateCommentDto) {
+    public CommentDto updateComment(UpdateCommentDto updateCommentDto, String userId) {
         Comment comment = getCommentById(updateCommentDto.getCommentId());
-        if (!comment.getUserId().equals(updateCommentDto.getCurrentUserId())) {
+        if (!comment.getUserId().equals(userId)) {
             throw new IllegalArgumentException("You are not allowed to update this comment");
         }
         comment.setContent(updateCommentDto.getContent());
         comment.setEdited(true);
 
-        return convertToDto(commentRepository.save(comment), updateCommentDto.getCurrentUserId(), defaultSubCommentPageable);
+        return convertToDto(commentRepository.save(comment), userId, defaultSubCommentPageable);
     }
 
     @Override
     public void deleteComment(String commentId, String userId) {
         commentRepository.findByIdAndUserId(commentId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found or you dont have permission"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found or you dont have permission"));
 
         deepDelete(commentId);
     }
@@ -108,7 +113,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Page<CommentDto> getCommentsByBlogId(String blogId, String currUserId, Pageable pageable) {
+    public Page<CommentDto> getCommentsByBlogId(String blogId, String currUserId, UserDto viewer, Pageable pageable) {
+        blogservice.getBlogById(blogId, viewer); // 404 nếu blog chưa publish và viewer không phải owner/ADMIN
         return commentRepository.findByBlogIdAndParentComment(blogId, true, pageable)
                 .map(n -> convertToDto(n, currUserId, defaultSubCommentPageable));
     }
@@ -124,6 +130,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment getCommentById(String commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found with id: " + commentId));
     }
 }

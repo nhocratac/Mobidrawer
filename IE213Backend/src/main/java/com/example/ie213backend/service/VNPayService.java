@@ -8,6 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface VNPayService {
     String createPaymentUrl(CreatePaymentDto createPaymentDto, HttpServletRequest req);
     UserDto validPayment(HttpServletRequest req);
-    UserPlansDto getUserPlanInfo(String userPlanId);
+    UserPlansDto getUserPlanInfo(String userPlanId, UserDto user);
     void checkExpiringMemberships();
 }

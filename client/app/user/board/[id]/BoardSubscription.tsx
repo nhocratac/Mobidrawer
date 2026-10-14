@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 const BoardSubscription = ({ boardId }: { boardId: string }) => {
   const { client, sessionId, connectCount } = useStompStore();
   const { addCanvasPath, deletePaths, updatePaths } = useCanvasPathsStore()
-  const { markOnlineUsers } = useUserInBoardStore()
+  const { applyPresence, clearPresence } = useUserInBoardStore()
 
   // Kết nối lại: các message bị lỡ khi offline không được gửi lại, nên tải lại board
   useEffect(() => {
@@ -21,9 +21,8 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     }
     // Khi đã kết nối, subscribe và publish
     const subscription = client.subscribe(`/topic/board/${boardId}`, (message) => {
-      console.log("Received message:", message.body);
       const payload = JSON.parse(message.body);
-      markOnlineUsers(payload)
+      applyPresence(boardId, payload)
     });
 
     const drawSubcription = client.subscribe(`/topic/draw/board/${boardId}`, (message) => {
@@ -67,17 +66,23 @@ const BoardSubscription = ({ boardId }: { boardId: string }) => {
     });
 
     return () => {
-      if (client.connected) {
-        client.publish({
-          destination: `/app/board/leave/${boardId}`
-        });
-      }
+      // Reset presence (and its seq) so the next session/board starts clean.
+      clearPresence();
+      // Local SeqSync teardown always runs; it only touches the socket while connected.
+      unsubscribeScene();
+      // When the socket is already closed (token-refresh reconnect, server close) the broker
+      // has dropped every subscription and the presence listener has handled "leave";
+      // stompjs 7 throws TypeError("There is no underlying STOMP connection") on
+      // publish()/unsubscribe() in that state, so only talk to the client while connected.
+      if (!client.connected) return;
+      client.publish({
+        destination: `/app/board/leave/${boardId}`
+      });
       subscription.unsubscribe();
       drawSubcription.unsubscribe()
       deletePathsSubscription.unsubscribe()
       updatePathsSubscription.unsubscribe()
       movePathsSubscription.unsubscribe()
-      unsubscribeScene();
     };
   }, [client, boardId, sessionId,client?.connected]);
 

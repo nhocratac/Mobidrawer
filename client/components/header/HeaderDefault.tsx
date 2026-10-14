@@ -96,10 +96,7 @@ export default function HeaderDefault({ ...props }: HeaderDefaultProps) {
     if (!user || notificationNotSeen.length === 0) return;
 
     try {
-      const notifications = await markNotificationAsRead(
-        user?.id,
-        notificationIds
-      );
+      const notifications = await markNotificationAsRead(notificationIds);
 
       console.log("notifications", notifications);
       setNotificationNotSeen((prev) =>

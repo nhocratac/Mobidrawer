@@ -27,6 +27,9 @@ function fakeClient() {
   const handlers = new Map<string, (m: { body: string }) => void>();
   const unsubscribed: string[] = [];
   const client = {
+    // A real stompjs client can only subscribe() while connected; tests flip this to
+    // simulate the socket closing before the effect cleanup runs.
+    connected: true,
     subscribe: (dest: string, cb: (m: { body: string }) => void) => {
       handlers.set(dest, cb);
       return { unsubscribe: () => unsubscribed.push(dest) };
@@ -140,6 +143,21 @@ describe("subscribeScene", () => {
     const stop = subscribeScene(f.client, "b8", "me", () => {});
     stop();
     expect([...f.unsubscribed].sort()).toEqual(["/topic/board/b8/el", "/user/queue/errors", "/user/queue/history"]);
+  });
+
+  it("teardown on a closed socket skips unsubscribe (stompjs would throw) but still resets the sync", () => {
+    S().reset("b9", [el("a")]);
+    setSceneBaseline(10);
+    const f = fakeClient();
+    const stop = subscribeScene(f.client, "b9", "me", () => {});
+    (f.client as unknown as { connected: boolean }).connected = false;
+    expect(() => stop()).not.toThrow();
+    expect(f.unsubscribed).toEqual([]);
+    // a fresh subscribe after the closed-socket teardown still applies events in order
+    const g = fakeClient();
+    unsub = subscribeScene(g.client, "b9", "me", () => {});
+    g.send("/topic/board/b9/el", patchBatch(11, "a", 5));
+    expect(S().elements.a.x).toBe(5);
   });
 
   it("reloadBoard sets the baseline from historySeq (Review Focus 2)", async () => {

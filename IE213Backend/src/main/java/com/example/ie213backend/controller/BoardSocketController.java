@@ -8,6 +8,8 @@ import com.example.ie213backend.domain.dto.ImageDto.DeleteImage;
 import com.example.ie213backend.domain.dto.ImageDto.MoveImage;
 import com.example.ie213backend.domain.dto.ImageDto.ResizeImage;
 import com.example.ie213backend.domain.dto.StickyNote.*;
+import com.example.ie213backend.config.socket.PresenceSessionListener;
+import com.example.ie213backend.domain.dto.UserDto.PresenceSnapshot;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.domain.model.Image;
@@ -16,6 +18,7 @@ import com.example.ie213backend.domain.model.Template;
 import com.example.ie213backend.mapper.CanvasPathMapper;
 import com.example.ie213backend.mapper.ImageMapper;
 import com.example.ie213backend.mapper.StickyNoteMapper;
+import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -48,6 +50,7 @@ public class BoardSocketController {
 
     private final BoardService boardService;
     private final ImageService imageService;
+    private final BoardAccessService boardAccessService;
 
     @MessageMapping("/connect")
     @SendToUser("/queue/session")
@@ -60,23 +63,30 @@ public class BoardSocketController {
 
     @MessageMapping("/board/join/{boardId}")
     @SendTo("/topic/board/{boardId}")
-    public Set<UserDto> handleUserJoin(
+    public PresenceSnapshot handleUserJoin(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
     )  {
-        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        return cacheUserInBoardService.addUserToBoard(boardId, userDto);
+        Map<String, Object> sessionAttributes = Objects.requireNonNull(headerAccessor.getSessionAttributes());
+        UserDto userDto = (UserDto) sessionAttributes.get("user");
+        String sessionId = Objects.requireNonNull(headerAccessor.getSessionId());
+        PresenceSnapshot snapshot = cacheUserInBoardService.join(boardId, sessionId, userDto);
+        // The session may have ended while this join was queued: the disconnect listener
+        // already ran removeSession, so undo our own entry instead of leaving a ghost.
+        if (Boolean.TRUE.equals(sessionAttributes.get(PresenceSessionListener.PRESENCE_CLOSED_ATTR))) {
+            return cacheUserInBoardService.leave(boardId, sessionId);
+        }
+        return snapshot;
     }
 
     @MessageMapping("/board/leave/{boardId}")
     @SendTo("/topic/board/{boardId}")
-    public Set<UserDto> handleUserLeave(
+    public PresenceSnapshot handleUserLeave(
             SimpMessageHeaderAccessor headerAccessor,
             @DestinationVariable String boardId
     ) {
-        UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        cacheUserInBoardService.removeUserFromBoard(boardId, userDto.getId());
-        return cacheUserInBoardService.getUsersInBoard(boardId);
+        String sessionId = Objects.requireNonNull(headerAccessor.getSessionId());
+        return cacheUserInBoardService.leave(boardId, sessionId);
     }
 
 
@@ -88,6 +98,7 @@ public class BoardSocketController {
             @Payload  CreateCanvasPath createCanvasPath
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         CanvasPath canvasPath = CanvasPathMapper.INSTANCE.createCanvasPathToEntity(createCanvasPath);
         canvasPath.setBoardId(boardId);
         canvasPath.setOwner(userDto.getId());
@@ -103,6 +114,7 @@ public class BoardSocketController {
     ) {
         // Xác thực user (nếu cần)
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
 
         // Xóa từng path một (phù hợp với service hiện có)
         pathIds.forEach(pathId -> {
@@ -126,6 +138,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         List<CanvasPath> updatedPaths = canvasPathService.updateMultipleCanvasPaths(canvas, boardId, userDto.getId());
 
         String senderSessionId = headerAccessor.getSessionId();
@@ -144,6 +157,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto userDto = (UserDto) headerAccessor.getSessionAttributes().get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         String role = boardService.getRoleOfMember(boardId, userDto.getId());
         if(!Objects.equals(role, "EDITOR") && !Objects.equals(role, "OWNER")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa path này");
@@ -165,6 +179,7 @@ public class BoardSocketController {
             @Payload CreateStickyNote createStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.createToEntity(createStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -179,7 +194,8 @@ public class BoardSocketController {
             @Payload List<CreateStickyNote> createStickyNotes
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
-        
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
+
         List<StickyNote> stickyNotes = createStickyNotes.stream()
                 .map(noteDto -> {
                     StickyNote note = StickyNoteMapper.INSTANCE.createToEntity(noteDto);
@@ -200,6 +216,7 @@ public class BoardSocketController {
             @Payload MoveStickyNote moveStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
 
         StickyNote moved = stickyNoteService.updateStickyNotePosition(
                 moveStickyNote.getId(), boardId, userDto.getId(),
@@ -225,6 +242,7 @@ public class BoardSocketController {
             @Payload ResizeStickyNote resizeStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.ResizeToEntity(resizeStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -246,6 +264,7 @@ public class BoardSocketController {
             @Payload ChangeText changeTextStickyNote
     )  {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         StickyNote stickyNote = StickyNoteMapper.INSTANCE.ChangeTextToEntity(changeTextStickyNote);
         stickyNote.setBoardId(boardId);
         stickyNote.setOwner(userDto.getId());
@@ -267,6 +286,7 @@ public class BoardSocketController {
         @Payload LockStickyNote lockStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         return Map.of(
                 "id" , lockStickyNote.getId(),
                 "userId", userDto.getId()
@@ -281,6 +301,7 @@ public class BoardSocketController {
             @Payload LockStickyNote lockStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         return Map.of(
                 "id" , lockStickyNote.getId(),
                 "userId", userDto.getId()
@@ -295,6 +316,7 @@ public class BoardSocketController {
             @Payload DeleteStickyNote deleteStickyNote
     ) {
         UserDto userDto = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, userDto.getId());
         stickyNoteService.deleteStickyNote(deleteStickyNote.getId(), boardId, userDto.getId());
         return Map.of(
                 "id" , deleteStickyNote.getId(),
@@ -330,6 +352,7 @@ public class BoardSocketController {
             @Payload CreateImage createImage,
             SimpMessageHeaderAccessor headerAccessor) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, user.getId());
         Image image = ImageMapper.INSTANCE.CreateDtoImage(createImage);
         image.setBoardId(boardId);
         image.setOwner(user.getId());
@@ -349,6 +372,7 @@ public class BoardSocketController {
             @Payload List<CreateImage> createImages,
             SimpMessageHeaderAccessor headerAccessor) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, user.getId());
         List<Image>  images =  createImages.stream().map(
                 imagedto -> {
                     Image img = ImageMapper.INSTANCE.CreateDtoImage(imagedto);
@@ -374,6 +398,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         Image image = ImageMapper.INSTANCE.MoveToDtoImage(moveImage);
@@ -393,6 +418,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         Image image = ImageMapper.INSTANCE.ResizeDtoImage(resizeImage);
@@ -412,6 +438,7 @@ public class BoardSocketController {
             SimpMessageHeaderAccessor headerAccessor
     ) {
         UserDto user = (UserDto) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("user");
+        boardAccessService.assertCanEdit(boardId, user.getId());
         String senderSessionId = headerAccessor.getSessionId();
         assert senderSessionId != null;
         imageService.deleteImage(deleteImage.getId(),boardId,user.getId());

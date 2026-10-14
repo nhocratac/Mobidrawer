@@ -6,11 +6,14 @@ import com.example.ie213backend.domain.dto.UserDto.UserDto;
 import com.example.ie213backend.domain.model.Board;
 import com.example.ie213backend.domain.model.CanvasPath;
 import com.example.ie213backend.mapper.BoardMapper;
+import com.example.ie213backend.security.BoardAccessService;
 import com.example.ie213backend.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final BoardAccessService boardAccessService;
 
 
     @GetMapping("/{id}")
@@ -42,8 +46,10 @@ public class BoardController {
     @PostMapping("/addPath/{id}")
     ResponseEntity<CanvasPath> addPathToBoard(
             @PathVariable String id,
-            @RequestBody CanvasPath canvasPath
+            @RequestBody CanvasPath canvasPath,
+            @RequestAttribute("user") UserDto userDto
     ) {
+        boardAccessService.assertCanEdit(id, userDto.getId());
         return ResponseEntity.ok(boardService.addCanvasPath(id,canvasPath));
     }
 
@@ -80,13 +86,18 @@ public class BoardController {
             @RequestBody UpdateThumbnail updateThumbnail,
             @PathVariable String id
     ) {
+        boardAccessService.assertCanWrite(id, userDto.getId());
         return ResponseEntity.ok(boardService.updateThumbnail(id,userDto.getId(),updateThumbnail.getThumbnail()));
     }
 
     @GetMapping("/getMembersDetail/{id}")
     ResponseEntity<List<MemberDetailDTO>> getMembersDetail(
-            @PathVariable String id // boardId
+            @PathVariable String id, // boardId
+            @RequestAttribute("user") UserDto userDto
     ) {
+        if (!boardAccessService.canAccess(id, userDto.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập board này");
+        }
         return ResponseEntity.ok(boardService.getMembersDetail(id));
     }
 

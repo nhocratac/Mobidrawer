@@ -44,8 +44,11 @@ public class TemplateController {
 
     // ✅ Get template by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Template> getTemplateById(@PathVariable String id) {
-        return ResponseEntity.ok(templateService.getTemplate(id));
+    public ResponseEntity<Template> getTemplateById(
+            @PathVariable String id,
+            @RequestAttribute(value = "user", required = false) UserDto userDto
+    ) {
+        return ResponseEntity.ok(templateService.getVisibleTemplate(id, userDto));
     }
 
     // ✅ Create a new template
@@ -61,14 +64,21 @@ public class TemplateController {
 
     // ✅ Update a template
     @PutMapping("/{id}")
-    public ResponseEntity<Template> updateTemplate(@PathVariable String id, @RequestBody Template updatedTemplate) {
-        return ResponseEntity.ok(templateService.updateTemplate(updatedTemplate));
+    public ResponseEntity<Template> updateTemplate(
+            @PathVariable String id,
+            @RequestBody Template updatedTemplate,
+            @RequestAttribute("user") UserDto userDto
+    ) {
+        return ResponseEntity.ok(templateService.updateTemplate(id, updatedTemplate, userDto));
     }
 
     // ✅ Delete a template
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTemplate(@PathVariable String id) {
-        templateService.deleteTemplate(id);
+    public ResponseEntity<Void> deleteTemplate(
+            @PathVariable String id,
+            @RequestAttribute("user") UserDto userDto
+    ) {
+        templateService.deleteTemplate(id, userDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -77,6 +87,6 @@ public class TemplateController {
             @PathVariable String id,
             @RequestAttribute("user") UserDto userDto
     ) {
-        return ResponseEntity.ok(templateService.usingTemplate(templateService.getTemplate(id), userDto.getId()));
+        return ResponseEntity.ok(templateService.usingTemplate(templateService.getVisibleTemplate(id, userDto), userDto.getId()));
     }
 }

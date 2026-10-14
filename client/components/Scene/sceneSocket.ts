@@ -148,9 +148,13 @@ export function subscribeScene(
     onHistory?.(JSON.parse(message.body) as HistoryResult);
   });
   return () => {
-    elementSub.unsubscribe();
-    errorSub.unsubscribe();
-    historySub.unsubscribe();
+    // stompjs 7 throws on unsubscribe() once the connection is gone; the broker has already
+    // dropped the subscriptions then, but the local SeqSync teardown below must still run.
+    if (client.connected) {
+      elementSub.unsubscribe();
+      errorSub.unsubscribe();
+      historySub.unsubscribe();
+    }
     if (sync === own) {
       // giữ seq đã áp để lần subscribe lại (reconnect) tiếp tục từ đó
       if (baseline?.boardId === boardId) baseline = { boardId, seq: own.lastSeq() };

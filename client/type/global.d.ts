@@ -73,7 +73,6 @@ type CreatedCommentInfo = {
   content: string;
   parentComment?: boolean;
   edited?: boolean;
-  userId: string;
   blogId: string;
   repliedId?: string;
 };

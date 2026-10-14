@@ -7,8 +7,10 @@ import com.example.ie213backend.domain.model.User;
 import com.example.ie213backend.repository.UserRepository;
 import com.example.ie213backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,18 +66,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
     }
 
     @Override
     public User getBaseInFormation(String userId) {
-        return userRepository.getBaseInformation(userId).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        return userRepository.getBaseInformation(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
     }
 
     @Override
     public User uploadAvatar(UploadAvatar uploadAvatar) {
         User user = userRepository.findById(uploadAvatar.getId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + uploadAvatar.getId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + uploadAvatar.getId()));
         user.setAvatarUrl(uploadAvatar.getAvatarUrl());
         return userRepository.save(user);
     }

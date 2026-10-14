@@ -46,32 +46,22 @@ const commentAPI = {
     return data;
   },
 
-  async deleteComment(commentId: string, userId: string) {
-    await httpRequest.delete(`/comments/${commentId}`, {
-      params: {
-        userId,
-      },
-    });
+  async deleteComment(commentId: string) {
+    await httpRequest.delete(`/comments/${commentId}`);
   },
 
-  async updateComment(
-    commentId: string,
-    currentUserId: string,
-    content: string
-  ) {
+  async updateComment(commentId: string, content: string) {
     const { data } = await httpRequest.patch<CommentObj>("/comments", {
       commentId,
-      currentUserId,
       content,
     });
 
     return data;
   },
 
-  async reactComment(commentId: string, userId: string, type: ReactionType | null) {
+  async reactComment(commentId: string, type: ReactionType | null) {
     const { data } = await httpRequest.post("/comment-reaction", {
       commentId,
-      userId,
       type,
     });
 
