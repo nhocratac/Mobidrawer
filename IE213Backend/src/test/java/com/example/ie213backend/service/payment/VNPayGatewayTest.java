@@ -110,4 +110,18 @@ class VNPayGatewayTest {
         server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction")).andRespond(withServerError());
         assertThrows(GatewayException.class, () -> gw.queryDr(order));
     }
+
+    @Test
+    void queryDr_emptyBody_throwsGatewayException() {
+        server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"))
+                .andRespond(withSuccess("", MediaType.APPLICATION_JSON));
+        assertThrows(GatewayException.class, () -> gw.queryDr(order));
+    }
+
+    @Test
+    void queryDr_nonNumericAmount_throwsGatewayException() {
+        server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"))
+                .andRespond(withSuccess("{\"vnp_ResponseCode\":\"00\",\"vnp_Amount\":\"abc\"}", MediaType.APPLICATION_JSON));
+        assertThrows(GatewayException.class, () -> gw.queryDr(order));
+    }
 }

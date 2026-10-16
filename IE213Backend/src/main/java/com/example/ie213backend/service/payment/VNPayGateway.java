@@ -87,13 +87,14 @@ public class VNPayGateway {
         body.put("vnp_SecureHash", signer.signPipe(requestId, VERSION, "querydr", tmnCode, o.getTxnRef(), txnDate, createDate, ip, info));
         try {
             String raw = rest.post().uri(apiUrl).contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(String.class);
-            Map<String, String> r = json.readValue(raw == null ? "{}" : raw, new TypeReference<Map<String, String>>() {});
+            if (raw == null || raw.isBlank()) throw new GatewayException("empty querydr reply", null);
+            Map<String, String> r = json.readValue(raw, new TypeReference<Map<String, String>>() {});
             String rc = r.get("vnp_ResponseCode");
             boolean found = "00".equals(rc);
             Long amount = r.get("vnp_Amount") == null ? null : Long.parseLong(r.get("vnp_Amount"));
             return new QueryDrResult(found, rc, r.get("vnp_TransactionStatus"), amount,
                     r.get("vnp_TransactionNo"), r.get("vnp_PayDate"), r.get("vnp_BankCode"), r);
-        } catch (RestClientException | java.io.IOException e) {
+        } catch (RestClientException | java.io.IOException | NumberFormatException e) {
             throw new GatewayException("querydr failed for " + o.getTxnRef(), e);
         }
     }
