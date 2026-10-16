@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/template/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/vnpay-ipn").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/vnpay-ipn").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

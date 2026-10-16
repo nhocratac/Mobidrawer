@@ -130,6 +130,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Bỏ qua những URL không cần xác thực
         return (
+                path.equals("/api/v1/payments/vnpay-ipn") ||   // VNPay IPN: authenticated by HMAC, not JWT
                 path.startsWith("/api/v1/auth/login") ||
                         path.startsWith("/api/v1/auth/register") ||
                         path.startsWith("/api/v1/auth/verify-register") ||
