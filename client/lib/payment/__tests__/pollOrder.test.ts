@@ -55,4 +55,12 @@ describe("pollOrder", () => {
     const r = await pollOrder(fetch, { intervalMs: 1, timeoutMs: 1000, sleep: noSleep, urlResponseCode: "24" });
     expect(r.kind).toBe("paid");
   });
+
+  it("aborted signal stops polling and returns aborted", async () => {
+    const controller = new AbortController();
+    const fetch = vi.fn().mockImplementation(async () => { controller.abort(); return order("PENDING"); });
+    const r = await pollOrder(fetch, { intervalMs: 1, timeoutMs: 1000, sleep: noSleep, signal: controller.signal });
+    expect(r.kind).toBe("aborted");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
 });

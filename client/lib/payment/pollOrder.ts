@@ -4,7 +4,8 @@ export type PollOutcome =
   | { kind: "paid"; order: OrderStatus }
   | { kind: "failed"; order: OrderStatus }
   | { kind: "timeout"; last: OrderStatus | null }
-  | { kind: "error"; error: unknown };
+  | { kind: "error"; error: unknown }
+  | { kind: "aborted" };
 
 export interface PollOptions {
   intervalMs: number;
@@ -13,6 +14,8 @@ export interface PollOptions {
   urlResponseCode?: string | null;
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
+  /** Aborting stops polling; the result is `{ kind: "aborted" }` and callers should ignore it. */
+  signal?: AbortSignal;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -26,12 +29,15 @@ export async function pollOrder(fetchOrder: () => Promise<OrderStatus>, opts: Po
   let last: OrderStatus | null = null;
   let attempt = 0;
   for (;;) {
+    if (opts.signal?.aborted) return { kind: "aborted" };
     attempt++;
     try {
       last = await fetchOrder();
     } catch (error) {
+      if (opts.signal?.aborted) return { kind: "aborted" };
       if (attempt === 1) return { kind: "error", error };
     }
+    if (opts.signal?.aborted) return { kind: "aborted" };
     if (last) {
       if (last.status === "PAID" && last.grantedUserPlanId) return { kind: "paid", order: last };
       if (last.status === "FAILED" || last.status === "EXPIRED") return { kind: "failed", order: last };
@@ -39,5 +45,6 @@ export async function pollOrder(fetchOrder: () => Promise<OrderStatus>, opts: Po
     if (urlSaysFailed) return { kind: "timeout", last };
     if (now() >= deadline) return { kind: "timeout", last };
     await sleep(opts.intervalMs);
+    if (opts.signal?.aborted) return { kind: "aborted" };
   }
 }

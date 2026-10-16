@@ -16,21 +16,28 @@ const PaymentCallback = () => {
   const urlResponseCode = searchParams.get("vnp_ResponseCode");
   const [outcome, setOutcome] = useState<PollOutcome | null>(null);
   const { user, setUser } = useTokenStore();
-  const called = useRef(false);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (called.current) return;
-    called.current = true;
     if (!txnRef) { setOutcome({ kind: "error", error: "missing vnp_TxnRef" }); return; }
+    const controller = new AbortController();
     pollOrder(() => paymentsAPI.getOrderStatus(txnRef).then((r) => r.data), {
-      intervalMs: 2000, timeoutMs: 60000, urlResponseCode,
+      intervalMs: 2000, timeoutMs: 60000, urlResponseCode, signal: controller.signal,
     }).then(async (r) => {
-      if (r.kind === "paid" && user?.id) {
-        try { setUser(await userApi.getUserDetailById(user.id)); } catch { /* dashboard reloads the user anyway */ }
-        setTimeout(() => { window.location.href = "/user/dashboard"; }, 1000);
+      if (r.kind === "aborted" || controller.signal.aborted) return;
+      if (r.kind === "paid") {
+        if (user?.id) {
+          try { setUser(await userApi.getUserDetailById(user.id)); } catch { /* dashboard reloads the user anyway */ }
+          if (controller.signal.aborted) return;
+        }
+        redirectTimer.current = setTimeout(() => { window.location.href = "/user/dashboard"; }, 1000);
       }
       setOutcome(r);
     });
+    return () => {
+      controller.abort();
+      if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
