@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -83,6 +85,16 @@ public class OrderLedger {
     public void markGranted(String txnRef, String userPlanId) {
         mongo.updateFirst(Query.query(Criteria.where("txnRef").is(txnRef)),
                 new Update().set("grantedUserPlanId", userPlanId).set("updatedAt", nowVn()), PaymentOrder.class);
+    }
+
+    /** Evidence that VNPay reported success for an order we already closed as EXPIRED/FAILED. Status is left untouched. */
+    public void recordLateSuccess(String txnRef, Map<String, String> params) {
+        Map<String, String> audit = new HashMap<>(params);
+        audit.remove("vnp_SecureHash");
+        audit.remove("vnp_SecureHashType");
+        Query q = Query.query(Criteria.where("txnRef").is(txnRef)
+                .and("status").in(OrderStatus.EXPIRED, OrderStatus.FAILED));
+        mongo.updateFirst(q, new Update().set("lateSuccessParams", audit).set("lateSuccessAt", nowVn()), PaymentOrder.class);
     }
 
     public List<PaymentOrder> findStalePending(LocalDateTime createdBefore, int limit) {

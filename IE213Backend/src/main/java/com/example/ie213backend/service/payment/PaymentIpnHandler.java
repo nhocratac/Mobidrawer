@@ -38,10 +38,15 @@ public class PaymentIpnHandler {
             if (!tmnCode.equals(params.get("vnp_TmnCode"))) return log(txnRef, params, IpnResponse.INVALID_SIGNATURE);
             PaymentOrder order = found.get();
             if (!String.valueOf(order.getAmountVnd() * 100).equals(params.get("vnp_Amount"))) return log(txnRef, params, IpnResponse.INVALID_AMOUNT);
-            if (!order.getStatus().isOpen()) return log(txnRef, params, IpnResponse.ALREADY_CONFIRMED);
-
             boolean success = "00".equals(params.get("vnp_ResponseCode"))
                     && (params.get("vnp_TransactionStatus") == null || "00".equals(params.get("vnp_TransactionStatus")));
+            if (!order.getStatus().isOpen()) {
+                if (success && (order.getStatus() == OrderStatus.EXPIRED || order.getStatus() == OrderStatus.FAILED)) {
+                    log.error("IPN {}: VNPay reports PAID but order is {} — manual refund/grant needed", txnRef, order.getStatus());
+                    ledger.recordLateSuccess(txnRef, params);
+                }
+                return log(txnRef, params, IpnResponse.ALREADY_CONFIRMED);
+            }
             Map<String, String> audit = new HashMap<>(params);
             audit.remove("vnp_SecureHash");
             audit.remove("vnp_SecureHashType");

@@ -135,4 +135,24 @@ class OrderLedgerTest {
         assertEquals(OrderStatus.PAID, ungranted.get("status"));
         assertTrue(ungranted.containsKey("grantedUserPlanId"), ungranted.toString());
     }
+
+    @Test
+    void recordLateSuccess_filtersTerminalNonPaid_andStoresParamsWithoutHash() {
+        ledger.recordLateSuccess("T1", Map.of("vnp_TxnRef", "T1", "vnp_ResponseCode", "00",
+                "vnp_SecureHash", "sig", "vnp_SecureHashType", "HmacSHA512"));
+        ArgumentCaptor<Query> q = ArgumentCaptor.forClass(Query.class);
+        ArgumentCaptor<Update> u = ArgumentCaptor.forClass(Update.class);
+        verify(mongo).updateFirst(q.capture(), u.capture(), eq(PaymentOrder.class));
+        org.bson.Document query = q.getValue().getQueryObject();
+        assertEquals("T1", query.get("txnRef"));
+        org.bson.Document status = (org.bson.Document) query.get("status");
+        assertEquals(java.util.List.of(OrderStatus.EXPIRED, OrderStatus.FAILED), new java.util.ArrayList<>((java.util.Collection<?>) status.get("$in")));
+        org.bson.Document set = (org.bson.Document) u.getValue().getUpdateObject().get("$set");
+        assertNotNull(set.get("lateSuccessAt"));
+        @SuppressWarnings("unchecked") Map<String, String> params = (Map<String, String>) set.get("lateSuccessParams");
+        assertEquals("00", params.get("vnp_ResponseCode"));
+        assertFalse(params.containsKey("vnp_SecureHash"));
+        assertFalse(params.containsKey("vnp_SecureHashType"));
+        assertFalse(set.containsKey("status"));
+    }
 }

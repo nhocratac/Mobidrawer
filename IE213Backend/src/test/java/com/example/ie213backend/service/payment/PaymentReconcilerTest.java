@@ -25,7 +25,7 @@ class PaymentReconcilerTest {
     PlanGrantService grants = mock(PlanGrantService.class);
     SchedulerLock lock = mock(SchedulerLock.class);
     Clock clock = Clock.fixed(NOW.atZone(OrderLedger.VN).toInstant(), OrderLedger.VN);
-    PaymentReconciler rec = new PaymentReconciler(ledger, gw, grants, lock, clock, 15);
+    PaymentReconciler rec = new PaymentReconciler(ledger, gw, grants, lock, clock, 15, 15, 1440);
 
     PaymentOrder stale(String txn) {
         return PaymentOrder.builder().txnRef(txn).userId("u").plan(Plans.PRO).amountVnd(400_000L).status(OrderStatus.PENDING).createdAt(NOW.minusMinutes(30)).build();
@@ -50,10 +50,10 @@ class PaymentReconcilerTest {
     }
 
     @Test
-    void stale_queriesWithCutoff_nowMinusTtl() {
+    void stale_queriesWithCutoff_nowMinusTtlPlusGrace() {
         when(ledger.findStalePending(any(), anyInt())).thenReturn(List.of());
         rec.run();
-        verify(ledger).findStalePending(NOW.minusMinutes(15), 50);
+        verify(ledger).findStalePending(NOW.minusMinutes(30), 50);
     }
 
     @Test
@@ -117,5 +117,41 @@ class PaymentReconcilerTest {
         when(grants.grant(a)).thenThrow(new RuntimeException("boom"));
         assertEquals(1, rec.finishUngranted());
         verify(grants).grant(b);
+    }
+
+    @Test
+    void stale_querydrBadChecksum97_gatewayThrows_noSettle_leftPending() {
+        when(ledger.findStalePending(any(), anyInt())).thenReturn(List.of(stale("T8")));
+        when(gw.queryDr(any())).thenThrow(new GatewayException("querydr rc=97", null));
+        assertEquals(0, rec.reconcileStalePending());
+        verify(ledger, never()).settle(any(), any(), any(), any());
+        verifyNoInteractions(grants);
+    }
+
+    @Test
+    void stale_nonFinalStatus_withinHorizon_leftPending() {
+        for (String ts : List.of("01", "05", "07")) {
+            when(ledger.findStalePending(any(), anyInt())).thenReturn(List.of(stale("N" + ts)));
+            when(gw.queryDr(any())).thenReturn(dr(true, "00", ts, 40_000_000L));
+            assertEquals(0, rec.reconcileStalePending());
+        }
+        verify(ledger, never()).settle(any(), any(), any(), any());
+    }
+
+    @Test
+    void stale_status01_pastHorizon_expired() {
+        PaymentOrder old = stale("OLD1"); old.setCreatedAt(NOW.minusMinutes(1441));
+        when(ledger.findStalePending(any(), anyInt())).thenReturn(List.of(old));
+        when(gw.queryDr(any())).thenReturn(dr(true, "00", "01", 40_000_000L));
+        rec.reconcileStalePending();
+        verify(ledger).settle(eq("OLD1"), eq(OrderStatus.EXPIRED), eq(SettlementSource.RECONCILE), any());
+    }
+
+    @Test
+    void stale_status02_failedEvenWithinHorizon() {
+        when(ledger.findStalePending(any(), anyInt())).thenReturn(List.of(stale("F2")));
+        when(gw.queryDr(any())).thenReturn(dr(true, "00", "02", 40_000_000L));
+        rec.reconcileStalePending();
+        verify(ledger).settle(eq("F2"), eq(OrderStatus.FAILED), eq(SettlementSource.RECONCILE), any());
     }
 }

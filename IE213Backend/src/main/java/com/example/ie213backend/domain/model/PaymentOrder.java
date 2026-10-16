@@ -56,6 +56,8 @@ public class PaymentOrder {
     private String grantedUserPlanId;
     private SettlementSource settledBy;
     private Map<String, String> lastCallbackParams;
+    private Map<String, String> lateSuccessParams;
+    private LocalDateTime lateSuccessAt;
 
     private String orderInfo;
     private String bankCodeRequested;

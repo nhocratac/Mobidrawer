@@ -122,11 +122,15 @@ public class VNPayServiceImpl implements VNPayService {
         try {
             String at = plan.getExpiresAt().format(HUMAN);
             User user = userService.getUserById(plan.getUserId());
+            // The list was loaded before slow SMTP work; re-check against the live plan so a concurrent renewal wins.
+            UserPlans live = userPlansRepository.findById(plan.getId()).orElse(null);
+            if (live == null || !live.isActive()) return;
+            live.setActive(false);
+            userPlansRepository.save(live);
+            if (!plan.getId().equals(user.getUserPlansId())) return;
             user.setPlan(Plans.FREE);
             user.setUserPlansId(null);
-            plan.setActive(false);
             userService.saveUser(user);
-            userPlansRepository.save(plan);
             notificationService.sendNotification("Plan đã hết hạn", "Plan của bạn đã hết hạn vào ngày " + at, List.of(plan.getUserId()));
             emailService.sendExpiredPlanEmail(user.getEmail(), user.getFirstName(), user.getLastName(), at);
         } catch (RuntimeException e) {

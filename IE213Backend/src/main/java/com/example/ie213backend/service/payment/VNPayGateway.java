@@ -32,6 +32,8 @@ public class VNPayGateway {
                         @Value("${vnp.pay.url}") String payUrl, @Value("${vnp.return.url}") String returnUrl,
                         @Value("${vnp.tmn.code}") String tmnCode, @Value("${vnp.api.url}") String apiUrl) {
         this.signer = signer;
+        // Timeouts come from spring.http.client.connect-timeout/read-timeout (Boot 3.4 applies them to the
+        // auto-configured RestClient.Builder). Not unit-testable with MockRestServiceServer.
         this.rest = builder.build();
         this.payUrl = payUrl; this.returnUrl = returnUrl; this.tmnCode = tmnCode; this.apiUrl = apiUrl;
     }
@@ -90,6 +92,9 @@ public class VNPayGateway {
             if (raw == null || raw.isBlank()) throw new GatewayException("empty querydr reply", null);
             Map<String, String> r = json.readValue(raw, new TypeReference<Map<String, String>>() {});
             String rc = r.get("vnp_ResponseCode");
+            // 00 = found, 91 = not found. Anything else (97 bad checksum, 99, 94, 02, 03, missing) is an
+            // inconclusive reply: throw so the reconciler leaves the order PENDING instead of expiring it.
+            if (!"00".equals(rc) && !"91".equals(rc)) throw new GatewayException("querydr rc=" + rc, null);
             boolean found = "00".equals(rc);
             Long amount = r.get("vnp_Amount") == null ? null : Long.parseLong(r.get("vnp_Amount"));
             return new QueryDrResult(found, rc, r.get("vnp_TransactionStatus"), amount,

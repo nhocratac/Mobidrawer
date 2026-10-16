@@ -131,4 +131,21 @@ class PaymentIpnHandlerTest {
         Map<String, String> p = params("00"); p.remove("vnp_TxnRef");
         assertEquals(IpnResponse.ORDER_NOT_FOUND, handler.handle(p));
     }
+
+    @Test
+    void lateSuccess_onExpiredOrder_02_recordsEvidence_noGrant() {
+        pending.setStatus(OrderStatus.EXPIRED);
+        Map<String, String> p = params("00");
+        assertEquals(IpnResponse.ALREADY_CONFIRMED, handler.handle(p));
+        verify(ledger).recordLateSuccess(eq("T1"), argThat(m -> "00".equals(m.get("vnp_ResponseCode"))));
+        verify(ledger, never()).settle(any(), any(), any(), any());
+        verifyNoInteractions(grants);
+    }
+
+    @Test
+    void failureIpn_onExpiredOrder_noLateSuccessEvidence() {
+        pending.setStatus(OrderStatus.EXPIRED);
+        assertEquals(IpnResponse.ALREADY_CONFIRMED, handler.handle(params("24")));
+        verify(ledger, never()).recordLateSuccess(any(), any());
+    }
 }

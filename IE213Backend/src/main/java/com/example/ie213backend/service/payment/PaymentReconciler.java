@@ -25,10 +25,15 @@ public class PaymentReconciler {
     private final SchedulerLock lock;
     private final Clock clock;
     private final int ttlMinutes;
+    private final int graceMinutes;
+    private final int pendingHorizonMinutes;
 
     public PaymentReconciler(OrderLedger ledger, VNPayGateway gateway, PlanGrantService grants, SchedulerLock lock, Clock clock,
-                             @Value("${payment.order.ttl-minutes:15}") int ttlMinutes) {
-        this.ledger = ledger; this.gateway = gateway; this.grants = grants; this.lock = lock; this.clock = clock; this.ttlMinutes = ttlMinutes;
+                             @Value("${payment.order.ttl-minutes:15}") int ttlMinutes,
+                             @Value("${payment.reconcile.grace-minutes:15}") int graceMinutes,
+                             @Value("${payment.reconcile.pending-horizon-minutes:1440}") int pendingHorizonMinutes) {
+        this.ledger = ledger; this.gateway = gateway; this.grants = grants; this.lock = lock; this.clock = clock;
+        this.ttlMinutes = ttlMinutes; this.graceMinutes = graceMinutes; this.pendingHorizonMinutes = pendingHorizonMinutes;
     }
 
     @Scheduled(fixedDelayString = "${payment.reconcile.delay-ms:300000}", initialDelayString = "${payment.reconcile.initial-delay-ms:60000}")
@@ -40,7 +45,9 @@ public class PaymentReconciler {
     }
 
     int reconcileStalePending() {
-        LocalDateTime cutoff = LocalDateTime.now(clock).minusMinutes(ttlMinutes);
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime cutoff = now.minusMinutes((long) ttlMinutes + graceMinutes);
+        LocalDateTime horizon = now.minusMinutes(pendingHorizonMinutes);
         int done = 0;
         for (PaymentOrder o : ledger.findStalePending(cutoff, BATCH)) {
             try {
@@ -59,7 +66,14 @@ public class PaymentReconciler {
                                 new VnpFields(r.transactionNo(), r.bankCode(), "AMOUNT_MISMATCH", r.payDate(), r.raw()));
                     }
                 } else {
-                    settled = ledger.settle(o.getTxnRef(), OrderStatus.FAILED, SettlementSource.RECONCILE, f);
+                    String ts = r.transactionStatus();
+                    boolean nonFinal = "01".equals(ts) || "05".equals(ts) || "07".equals(ts);
+                    if (nonFinal && o.getCreatedAt().isAfter(horizon)) {
+                        log.info("reconcile {}: VNPay status {} not final, left PENDING", o.getTxnRef(), ts);
+                        continue;
+                    }
+                    OrderStatus to = "01".equals(ts) ? OrderStatus.EXPIRED : OrderStatus.FAILED;
+                    settled = ledger.settle(o.getTxnRef(), to, SettlementSource.RECONCILE, f);
                 }
                 if (settled != null) done++;
             } catch (GatewayException e) {

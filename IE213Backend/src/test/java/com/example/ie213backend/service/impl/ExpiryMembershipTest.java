@@ -65,6 +65,7 @@ class ExpiryMembershipTest {
         when(users.getUserById("deleted")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
         User alive = new User(); alive.setId("alive"); alive.setPlan(Plans.PRO); alive.setUserPlansId("p2");
         when(users.getUserById("alive")).thenReturn(alive);
+        when(plans.findById("p2")).thenReturn(java.util.Optional.of(UserPlans.builder().id("p2").userId("alive").active(true).expiresAt(NOW.minusDays(1)).build()));
         service.checkExpiringMemberships();
         verify(users).saveUser(argThat(u -> u.getPlan() == Plans.FREE && u.getUserPlansId() == null));
         verify(plans).save(argThat(p -> "p2".equals(p.getId()) && !p.isActive()));
@@ -80,5 +81,31 @@ class ExpiryMembershipTest {
         verify(plans).save(argThat(p -> "p3".equals(p.getId()) && p.isNotified()));
         verify(notifications).sendNotification(anyString(), anyString(), eq(List.of("u3")));
         verify(emails).sendRenewPlanEmail(eq("e"), any(), any(), anyString());
+    }
+
+    @Test
+    void expired_userAlreadyOnNewerPlan_planDeactivated_userUntouched() {
+        UserPlans stale = UserPlans.builder().id("p1").userId("u").active(true).expiresAt(NOW.minusDays(1)).build();
+        when(plans.findByExpiresAtBeforeAndActive(NOW, true)).thenReturn(List.of(stale));
+        when(plans.findById("p1")).thenReturn(java.util.Optional.of(UserPlans.builder().id("p1").userId("u").active(true).expiresAt(NOW.minusDays(1)).build()));
+        User renewed = new User(); renewed.setId("u"); renewed.setPlan(Plans.PRO); renewed.setUserPlansId("p2");
+        when(users.getUserById("u")).thenReturn(renewed);
+        service.checkExpiringMemberships();
+        verify(plans).save(argThat(p -> "p1".equals(p.getId()) && !p.isActive()));
+        verify(users, never()).saveUser(any());
+        org.junit.jupiter.api.Assertions.assertEquals(Plans.PRO, renewed.getPlan());
+        org.junit.jupiter.api.Assertions.assertEquals("p2", renewed.getUserPlansId());
+    }
+
+    @Test
+    void expired_planAlreadyInactiveOnReload_nothingSaved() {
+        UserPlans stale = UserPlans.builder().id("p1").userId("u").active(true).expiresAt(NOW.minusDays(1)).build();
+        when(plans.findByExpiresAtBeforeAndActive(NOW, true)).thenReturn(List.of(stale));
+        when(plans.findById("p1")).thenReturn(java.util.Optional.of(UserPlans.builder().id("p1").userId("u").active(false).build()));
+        User u = new User(); u.setId("u"); u.setPlan(Plans.PRO); u.setUserPlansId("p1");
+        when(users.getUserById("u")).thenReturn(u);
+        service.checkExpiringMemberships();
+        verify(plans, never()).save(any());
+        verify(users, never()).saveUser(any());
     }
 }

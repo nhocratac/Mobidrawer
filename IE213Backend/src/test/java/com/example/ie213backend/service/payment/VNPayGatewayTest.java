@@ -124,4 +124,25 @@ class VNPayGatewayTest {
                 .andRespond(withSuccess("{\"vnp_ResponseCode\":\"00\",\"vnp_Amount\":\"abc\"}", MediaType.APPLICATION_JSON));
         assertThrows(GatewayException.class, () -> gw.queryDr(order));
     }
+
+    @Test
+    void queryDr_badChecksum_97_throwsGatewayException() {
+        server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"))
+                .andRespond(withSuccess("{\"vnp_ResponseCode\":\"97\",\"vnp_Message\":\"Invalid checksum\"}", MediaType.APPLICATION_JSON));
+        assertThrows(GatewayException.class, () -> gw.queryDr(order));
+    }
+
+    @Test
+    void queryDr_otherError_99_throwsGatewayException() {
+        server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"))
+                .andRespond(withSuccess("{\"vnp_ResponseCode\":\"99\"}", MediaType.APPLICATION_JSON));
+        assertThrows(GatewayException.class, () -> gw.queryDr(order));
+    }
+
+    @Test
+    void queryDr_missingResponseCode_throwsGatewayException() {
+        server.expect(requestTo("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"))
+                .andRespond(withSuccess("{\"vnp_Message\":\"x\"}", MediaType.APPLICATION_JSON));
+        assertThrows(GatewayException.class, () -> gw.queryDr(order));
+    }
 }
