@@ -73,6 +73,10 @@ public class PaymentReconciler {
                         continue;
                     }
                     OrderStatus to = "01".equals(ts) ? OrderStatus.EXPIRED : OrderStatus.FAILED;
+                    if (nonFinal) {
+                        log.warn("reconcile {}: VNPay status {} still not final after {} min, settling {} — review manually if a late IPN arrives",
+                                o.getTxnRef(), ts, pendingHorizonMinutes, to);
+                    }
                     settled = ledger.settle(o.getTxnRef(), to, SettlementSource.RECONCILE, f);
                 }
                 if (settled != null) done++;

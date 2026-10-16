@@ -49,7 +49,7 @@ const PaymentCallback = () => {
       case "timeout":
         return (<>
           <Clock className="text-yellow-500" size={45} />
-          <p className="text-yellow-600 text-2xl text-center">Đang chờ VNPay xác nhận. Gói của bạn sẽ được kích hoạt tự động trong ít phút; vui lòng kiểm tra lại sau.</p>
+          <p className="text-yellow-600 text-2xl text-center">Đang chờ VNPay xác nhận. Nếu thanh toán đã thành công, gói của bạn sẽ được kích hoạt tự động (có thể mất tới 30 phút); vui lòng kiểm tra lại sau.</p>
           <Link href="/user/dashboard"><Button className="w-full max-w-[300px] mt-5 text-xl">Về dashboard</Button></Link>
         </>);
       default:
