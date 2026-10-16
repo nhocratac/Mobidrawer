@@ -14,5 +14,7 @@ public interface UserPlansRepository extends MongoRepository<UserPlans, String> 
 
     Optional<UserPlans> findFirstByUserIdAndActiveTrueOrderByExpiresAtDesc(String userId);
 
+    List<UserPlans> findByUserIdAndActiveTrue(String userId);
+
     Optional<UserPlans> findByOrderTxnRef(String orderTxnRef);
 }

@@ -66,16 +66,17 @@ public class PlanGrantService {
             granted = plans.findByOrderTxnRef(order.getTxnRef())
                     .orElseThrow(() -> new IllegalStateException("UserPlans for " + order.getTxnRef() + " exists but not found", e));
         }
-        ledger.markGranted(order.getTxnRef(), granted.getId());
-
-        if (current != null && !current.getId().equals(granted.getId())) {
-            current.setActive(false);
-            plans.save(current);
+        for (UserPlans other : plans.findByUserIdAndActiveTrue(order.getUserId())) {
+            if (!other.getId().equals(granted.getId())) {
+                other.setActive(false);
+                plans.save(other);
+            }
         }
         User user = users.getUserById(order.getUserId());
         user.setPlan(granted.getPlan());
         user.setUserPlansId(granted.getId());
         users.saveUser(user);
+        ledger.markGranted(order.getTxnRef(), granted.getId());
 
         String until = granted.getExpiresAt().format(HUMAN);
         try {

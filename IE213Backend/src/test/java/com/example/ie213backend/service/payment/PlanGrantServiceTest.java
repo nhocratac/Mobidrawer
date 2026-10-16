@@ -11,6 +11,7 @@ import com.example.ie213backend.service.NotificationService;
 import com.example.ie213backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.dao.DuplicateKeyException;
 
 import java.time.*;
@@ -63,7 +64,9 @@ class PlanGrantServiceTest {
         assertTrue(p.isActive()); assertFalse(p.isNotified());
         assertEquals(Plans.PRO, user.getPlan());
         assertEquals("plan-new", user.getUserPlansId());
-        verify(ledger).markGranted("T1", "plan-new");
+        InOrder order = inOrder(users, ledger);
+        order.verify(users).saveUser(user);
+        order.verify(ledger).markGranted("T1", "plan-new");
         verify(notifications).sendNotification(anyString(), anyString(), eq(List.of(USER)));
         verify(emails).sendConfirmPaymentEmail("a@b.c", "T1");
     }
@@ -72,6 +75,7 @@ class PlanGrantServiceTest {
     void grant_activeSamePlan_stacksOnCurrentExpiry() {
         UserPlans cur = UserPlans.builder().id("plan-old").userId(USER).plan(Plans.PRO).active(true).expiresAt(NOW.plusDays(10)).build();
         when(plans.findFirstByUserIdAndActiveTrueOrderByExpiresAtDesc(USER)).thenReturn(Optional.of(cur));
+        when(plans.findByUserIdAndActiveTrue(USER)).thenReturn(List.of(cur));
         UserPlans p = svc.grant(paid("T2"));
         assertEquals(NOW.plusDays(40), p.getExpiresAt());
         assertFalse(cur.isActive(), "old plan deactivated");
@@ -82,6 +86,7 @@ class PlanGrantServiceTest {
     void grant_expiredCurrent_startsNow() {
         UserPlans cur = UserPlans.builder().id("plan-old").userId(USER).plan(Plans.PRO).active(true).expiresAt(NOW.minusDays(1)).build();
         when(plans.findFirstByUserIdAndActiveTrueOrderByExpiresAtDesc(USER)).thenReturn(Optional.of(cur));
+        when(plans.findByUserIdAndActiveTrue(USER)).thenReturn(List.of(cur));
         assertEquals(NOW.plusDays(30), svc.grant(paid("T3")).getExpiresAt());
         assertFalse(cur.isActive());
     }
@@ -90,6 +95,7 @@ class PlanGrantServiceTest {
     void grant_differentPlan_startsNow() {
         UserPlans cur = UserPlans.builder().id("plan-old").userId(USER).plan(Plans.ENTERPRISE).active(true).expiresAt(NOW.plusDays(100)).build();
         when(plans.findFirstByUserIdAndActiveTrueOrderByExpiresAtDesc(USER)).thenReturn(Optional.of(cur));
+        when(plans.findByUserIdAndActiveTrue(USER)).thenReturn(List.of(cur));
         assertEquals(NOW.plusDays(30), svc.grant(paid("T4")).getExpiresAt());
     }
 
@@ -112,6 +118,19 @@ class PlanGrantServiceTest {
         assertSame(existing, p);
         verify(ledger).markGranted("T6", "plan-prev");
         assertEquals("plan-prev", user.getUserPlansId());
+    }
+
+    @Test
+    void grant_retryAfterCrash_deactivatesOtherActiveButKeepsInserted() {
+        UserPlans stale = UserPlans.builder().id("plan-stale").userId(USER).plan(Plans.PRO).active(true).expiresAt(NOW.plusDays(5)).build();
+        UserPlans inserted = UserPlans.builder().id("plan-new").userId(USER).plan(Plans.PRO).active(true).expiresAt(NOW.plusDays(30)).build();
+        when(plans.findByUserIdAndActiveTrue(USER)).thenReturn(List.of(stale, inserted));
+        UserPlans p = svc.grant(paid("T9"));
+        assertEquals("plan-new", p.getId());
+        assertFalse(stale.isActive());
+        assertTrue(inserted.isActive());
+        verify(plans).save(stale);
+        verify(plans, never()).save(inserted);
     }
 
     @Test
