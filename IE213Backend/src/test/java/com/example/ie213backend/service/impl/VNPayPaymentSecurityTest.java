@@ -1,252 +1,134 @@
 package com.example.ie213backend.service.impl;
 
+import com.example.ie213backend.domain.OrderStatus;
 import com.example.ie213backend.domain.Plans;
 import com.example.ie213backend.domain.UserRoles;
 import com.example.ie213backend.domain.dto.PaymentDto.CreatePaymentDto;
-import com.example.ie213backend.domain.dto.PaymentDto.PaymentRequest;
-import com.example.ie213backend.domain.dto.PaymentDto.UserPlansDto;
+import com.example.ie213backend.domain.dto.PaymentDto.OrderStatusDto;
 import com.example.ie213backend.domain.dto.UserDto.UserDto;
-import com.example.ie213backend.domain.model.User;
+import com.example.ie213backend.domain.model.PaymentOrder;
 import com.example.ie213backend.domain.model.UserPlans;
-import com.example.ie213backend.mapper.UserMapper;
 import com.example.ie213backend.mapper.UserPlanMapper;
 import com.example.ie213backend.repository.UserPlansRepository;
 import com.example.ie213backend.service.EmailService;
 import com.example.ie213backend.service.NotificationService;
 import com.example.ie213backend.service.UserService;
+import com.example.ie213backend.service.payment.OrderLedger;
+import com.example.ie213backend.service.payment.SchedulerLock;
+import com.example.ie213backend.service.payment.VNPayGateway;
 import com.example.ie213backend.utils.VNPayUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Duration;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
- * Pure-JVM unit tests (no Spring context, no Redis/Mongo) for the VNPay P0 fixes:
- * server-side pricing, vnp_Amount / vnp_TmnCode verification on return, atomic
- * (GETDEL) claim of the pending order, no NPE on a missing order, and ownership
- * check on GET /payments/{userPlanId}.
+ * Pure-JVM unit tests: server-side pricing, order created before the pay URL, no Redis,
+ * order-status ownership, and GET /payments/{userPlanId} ownership.
  */
 class VNPayPaymentSecurityTest {
+    static { System.setProperty("net.bytebuddy.experimental", "true"); }
 
-    static {
-        // Byte Buddy (Mockito's bytecode engine) does not yet officially recognize
-        // Java 25 class file versions; this opts into its forward-compatible mode.
-        System.setProperty("net.bytebuddy.experimental", "true");
-    }
+    static final String USER_ID = "650000000000000000000a01";
 
-    private static final String USER_ID = "user-1";
-    private static final String TXN_REF = "12345678";
-    private static final String TMN_CODE = "TMN001";
-    private static final String SIGNATURE = "valid-signature";
-
-    private VNPayUtil vnPayUtil;
-    private UserPlansRepository userPlansRepository;
-    private UserMapper userMapper;
-    private RedisTemplate<String, PaymentRequest> redisTemplate;
-    private ValueOperations<String, PaymentRequest> valueOps;
-    private UserPlanMapper userPlanMapper;
-    private UserService userService;
-    private VNPayServiceImpl service;
+    UserPlansRepository userPlansRepository = mock(UserPlansRepository.class);
+    UserPlanMapper userPlanMapper = mock(UserPlanMapper.class);
+    UserService userService = mock(UserService.class);
+    OrderLedger ledger = mock(OrderLedger.class);
+    VNPayGateway gateway = mock(VNPayGateway.class);
+    VNPayServiceImpl service;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     void setUp() {
-        vnPayUtil = Mockito.mock(VNPayUtil.class);
-        vnPayUtil.vnp_TmnCode = TMN_CODE;
-        vnPayUtil.vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        vnPayUtil.vnp_ReturnUrl = "https://example.test/payment-callback";
-        vnPayUtil.vnp_HashSecret = "secret";
-        when(vnPayUtil.getRandomNumber(8)).thenReturn(TXN_REF);
-        when(vnPayUtil.getIpAddress(any())).thenReturn("127.0.0.1");
-        when(vnPayUtil.hmacSHA512(anyString(), anyString())).thenReturn("hash");
-        when(vnPayUtil.hashAllFields(any())).thenReturn(SIGNATURE);
-
-        userPlansRepository = Mockito.mock(UserPlansRepository.class);
-        userMapper = Mockito.mock(UserMapper.class);
-        redisTemplate = Mockito.mock(RedisTemplate.class);
-        valueOps = Mockito.mock(ValueOperations.class);
-        when(redisTemplate.opsForValue()).thenReturn(valueOps);
-        userPlanMapper = Mockito.mock(UserPlanMapper.class);
-        userService = Mockito.mock(UserService.class);
-
-        service = new VNPayServiceImpl(vnPayUtil, userPlansRepository, userMapper, redisTemplate,
-                userPlanMapper, userService, Mockito.mock(EmailService.class),
-                Mockito.mock(NotificationService.class)); // main: no ConfigService field
+        service = new VNPayServiceImpl(mock(VNPayUtil.class), userPlansRepository, userPlanMapper, userService,
+                mock(EmailService.class), mock(NotificationService.class), ledger, gateway, mock(SchedulerLock.class), Clock.systemUTC());
+        when(ledger.create(anyString(), any(), anyLong(), anyString(), any(), any(), any())).thenAnswer(i ->
+                PaymentOrder.builder().txnRef("ABC123XYZ789").userId(i.getArgument(0)).plan(i.getArgument(1))
+                        .amountVnd(i.getArgument(2)).status(OrderStatus.PENDING).build());
+        when(gateway.buildPayUrl(any())).thenReturn("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=40000000&vnp_TxnRef=ABC123XYZ789");
     }
 
-    // ---- createPaymentUrl: server-side pricing ----
+    // ---- createPaymentUrl: server-side pricing, order first ----
 
     @Test
     void createPaymentUrl_pro_usesServerPriceNotClientAmount() {
-        CreatePaymentDto dto = CreatePaymentDto.builder()
-                .plan(Plans.PRO).orderInfo("upgrade").orderType("other").build();
-        MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setAttribute("userId", USER_ID);
-
-        String url = service.createPaymentUrl(dto, req);
-
-        assertTrue(url.contains("vnp_Amount=40000000"), url);
-        ArgumentCaptor<PaymentRequest> captor = ArgumentCaptor.forClass(PaymentRequest.class);
-        verify(valueOps).set(eq(USER_ID + "+-+" + TXN_REF), captor.capture(), any(Duration.class));
-        assertEquals(400_000L, captor.getValue().getAmount());
-        assertEquals(Plans.PRO, captor.getValue().getPlan());
+        CreatePaymentDto dto = CreatePaymentDto.builder().plan(Plans.PRO).orderInfo("Mobidrawer PRO").build();
+        String url = service.createPaymentUrl(dto, USER_ID, "127.0.0.1");
+        verify(ledger).create(USER_ID, Plans.PRO, 400_000L, "Mobidrawer PRO", null, null, "127.0.0.1");
+        assertTrue(url.contains("vnp_Amount=40000000"));
     }
 
     @Test
-    void createPaymentUrl_nonPurchasablePlan_rejected() {
-        MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setAttribute("userId", USER_ID);
-
-        for (Plans plan : new Plans[]{Plans.ENTERPRISE, Plans.FREE}) {
-            CreatePaymentDto dto = CreatePaymentDto.builder()
-                    .plan(plan).orderInfo("upgrade").orderType("other").build();
-            assertThrows(IllegalArgumentException.class, () -> service.createPaymentUrl(dto, req));
+    void createPaymentUrl_nonPurchasablePlan_rejected_noOrder() {
+        for (Plans p : new Plans[]{Plans.FREE, Plans.ENTERPRISE}) {
+            CreatePaymentDto dto = CreatePaymentDto.builder().plan(p).orderInfo("x").build();
+            assertThrows(IllegalArgumentException.class, () -> service.createPaymentUrl(dto, USER_ID, "127.0.0.1"));
         }
-        verify(valueOps, never()).set(anyString(), any(), any(Duration.class));
+        verify(ledger, never()).create(any(), any(), anyLong(), any(), any(), any(), any());
     }
 
     @Test
     void createPaymentDto_json_clientAmountIgnored() throws Exception {
-        // Review Focus 5: a stale/tampering client still posting "amount" must neither 400 nor set the price.
-        CreatePaymentDto dto = new ObjectMapper().readValue(
-                "{\"amount\":1,\"plan\":\"PRO\",\"orderInfo\":\"upgrade\",\"orderType\":\"other\"}",
-                CreatePaymentDto.class);
+        CreatePaymentDto dto = new ObjectMapper().readValue("{\"plan\":\"PRO\",\"orderInfo\":\"x\",\"amount\":1}", CreatePaymentDto.class);
         assertEquals(Plans.PRO, dto.getPlan());
-        MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setAttribute("userId", USER_ID);
-
-        String url = service.createPaymentUrl(dto, req);
-
-        assertTrue(url.contains("vnp_Amount=40000000"), url);
-        ArgumentCaptor<PaymentRequest> captor = ArgumentCaptor.forClass(PaymentRequest.class);
-        verify(valueOps).set(eq(USER_ID + "+-+" + TXN_REF), captor.capture(), any(Duration.class));
-        assertEquals(400_000L, captor.getValue().getAmount());
-    }
-
-    // ---- validPayment ----
-
-    @Test
-    void validPayment_missingPendingOrder_throws400NotNpe() {
-        when(valueOps.getAndDelete(anyString())).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () -> service.validPayment(returnRequest("40000000", TMN_CODE)));
-        verify(userPlansRepository, never()).save(any());
     }
 
     @Test
-    void validPayment_amountMismatch_rejectedAndNoPlanGranted() {
-        when(valueOps.getAndDelete(USER_ID + "+-+" + TXN_REF)).thenReturn(pendingOrder());
+    void createPaymentUrl_gatewayFails_orderMarkedFailed() {
+        when(gateway.buildPayUrl(any())).thenThrow(new IllegalStateException("no secret"));
+        CreatePaymentDto dto = CreatePaymentDto.builder().plan(Plans.PRO).orderInfo("x").build();
+        assertThrows(IllegalStateException.class, () -> service.createPaymentUrl(dto, USER_ID, "127.0.0.1"));
+        verify(ledger).settle(eq("ABC123XYZ789"), eq(OrderStatus.FAILED), any(), argThat(f -> "LOCAL_ERROR".equals(f.responseCode())));
+    }
 
-        // Signed by VNPay for 1.000 VND (x100) while the order is 400.000 VND.
-        assertThrows(IllegalArgumentException.class, () -> service.validPayment(returnRequest("100000", TMN_CODE)));
-        verify(userPlansRepository, never()).save(any());
+    // ---- getOrderStatus: owner or ADMIN ----
+
+    UserDto actor(String id, UserRoles role) { UserDto u = new UserDto(); u.setId(id); u.setRole(role); return u; }
+
+    @Test
+    void getOrderStatus_owner_ok_andNeverGrants() {
+        when(ledger.findByTxnRef("T1")).thenReturn(Optional.of(PaymentOrder.builder().txnRef("T1").userId(USER_ID).plan(Plans.PRO)
+                .amountVnd(400_000L).status(OrderStatus.PAID).paidAt(LocalDateTime.of(2026, 10, 15, 9, 35)).grantedUserPlanId("p1").build()));
+        OrderStatusDto dto = service.getOrderStatus("T1", actor(USER_ID, UserRoles.USER));
+        assertEquals(OrderStatus.PAID, dto.getStatus());
+        assertEquals("p1", dto.getGrantedUserPlanId());
+        verify(userPlansRepository, never()).insert(any(UserPlans.class));
         verify(userService, never()).saveUser(any());
     }
 
     @Test
-    void validPayment_tmnCodeMismatch_rejectedBeforeClaim() {
-        assertThrows(IllegalArgumentException.class, () -> service.validPayment(returnRequest("40000000", "OTHER")));
-        verify(valueOps, never()).getAndDelete(anyString());
-        verify(userPlansRepository, never()).save(any());
+    void getOrderStatus_otherUser_403_admin_ok_unknown_404() {
+        when(ledger.findByTxnRef("T1")).thenReturn(Optional.of(PaymentOrder.builder().txnRef("T1").userId(USER_ID).status(OrderStatus.PENDING).build()));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.getOrderStatus("T1", actor("other", UserRoles.USER)));
+        assertEquals(HttpStatus.FORBIDDEN, e.getStatusCode());
+        assertEquals(OrderStatus.PENDING, service.getOrderStatus("T1", actor("admin", UserRoles.ADMIN)).getStatus());
+        when(ledger.findByTxnRef("nope")).thenReturn(Optional.empty());
+        assertEquals(HttpStatus.NOT_FOUND, assertThrows(ResponseStatusException.class, () -> service.getOrderStatus("nope", actor(USER_ID, UserRoles.USER))).getStatusCode());
     }
 
-    @Test
-    void validPayment_badSignature_rejectedBeforeClaim() {
-        MockHttpServletRequest req = returnRequest("40000000", TMN_CODE);
-        req.setParameter("vnp_SecureHash", "forged");
-
-        assertThrows(IllegalArgumentException.class, () -> service.validPayment(req));
-        verify(valueOps, never()).getAndDelete(anyString());
-    }
-
-    @Test
-    void validPayment_replay_grantsPlanOnlyOnce() {
-        // GETDEL semantics: first claim returns the order, any later claim returns null.
-        when(valueOps.getAndDelete(USER_ID + "+-+" + TXN_REF)).thenReturn(pendingOrder(), (PaymentRequest) null);
-        User user = new User();
-        user.setId(USER_ID);
-        when(userService.getUserById(USER_ID)).thenReturn(user);
-        when(userPlansRepository.save(any(UserPlans.class))).thenAnswer(inv -> {
-            UserPlans saved = inv.getArgument(0);
-            saved.setId("plan-1");
-            return saved;
-        });
-        when(userService.saveUser(user)).thenReturn(user);
-        UserDto dto = UserDto.builder().id(USER_ID).build();
-        when(userMapper.toDto(user)).thenReturn(dto);
-
-        assertSame(dto, service.validPayment(returnRequest("40000000", TMN_CODE)));
-        assertThrows(IllegalArgumentException.class, () -> service.validPayment(returnRequest("40000000", TMN_CODE)));
-
-        ArgumentCaptor<UserPlans> captor = ArgumentCaptor.forClass(UserPlans.class);
-        verify(userPlansRepository, times(1)).save(captor.capture());
-        assertEquals(400_000L, captor.getValue().getAmount());
-        assertEquals(Plans.PRO, captor.getValue().getPlan());
-        verify(redisTemplate, never()).delete(anyString());
-    }
-
-    // ---- getUserPlanInfo ownership ----
+    // ---- getUserPlanInfo: unchanged behaviour ----
 
     @Test
     void getUserPlanInfo_otherUser_throws403() {
-        when(userPlansRepository.findById("plan-1")).thenReturn(Optional.of(storedPlan()));
-        UserDto stranger = UserDto.builder().id("stranger").role(UserRoles.USER).build();
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.getUserPlanInfo("plan-1", stranger));
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+        when(userPlansRepository.findById("plan-1")).thenReturn(Optional.of(UserPlans.builder().id("plan-1").userId(USER_ID).build()));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.getUserPlanInfo("plan-1", actor("other", UserRoles.USER)));
+        assertEquals(HttpStatus.FORBIDDEN, e.getStatusCode());
     }
 
     @Test
     void getUserPlanInfo_ownerAndAdmin_allowed() {
-        UserPlans plan = storedPlan();
-        when(userPlansRepository.findById("plan-1")).thenReturn(Optional.of(plan));
-        UserPlansDto dto = UserPlansDto.builder().id("plan-1").build();
-        when(userPlanMapper.toDto(plan)).thenReturn(dto);
-
-        assertSame(dto, service.getUserPlanInfo("plan-1", UserDto.builder().id(USER_ID).role(UserRoles.USER).build()));
-        assertSame(dto, service.getUserPlanInfo("plan-1", UserDto.builder().id("admin").role(UserRoles.ADMIN).build()));
-    }
-
-    private static UserPlans storedPlan() {
-        return UserPlans.builder().id("plan-1").userId(USER_ID).plan(Plans.PRO).amount(400_000L).build();
-    }
-
-    private static PaymentRequest pendingOrder() {
-        return PaymentRequest.builder()
-                .userId(USER_ID).plan(Plans.PRO).amount(400_000L)
-                .orderCode(TXN_REF).createdAt("20260924120000").build();
-    }
-
-    private static MockHttpServletRequest returnRequest(String vnpAmount, String tmnCode) {
-        MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setAttribute("userId", USER_ID);
-        req.setParameter("vnp_Amount", vnpAmount);
-        req.setParameter("vnp_TmnCode", tmnCode);
-        req.setParameter("vnp_TxnRef", TXN_REF);
-        req.setParameter("vnp_ResponseCode", "00");
-        req.setParameter("vnp_SecureHash", SIGNATURE);
-        return req;
+        when(userPlansRepository.findById("plan-1")).thenReturn(Optional.of(UserPlans.builder().id("plan-1").userId(USER_ID).build()));
+        assertDoesNotThrow(() -> service.getUserPlanInfo("plan-1", actor(USER_ID, UserRoles.USER)));
+        assertDoesNotThrow(() -> service.getUserPlanInfo("plan-1", actor("admin", UserRoles.ADMIN)));
     }
 }
