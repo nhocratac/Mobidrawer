@@ -5,9 +5,14 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserPlansRepository extends MongoRepository<UserPlans, String> {
     List<UserPlans> findByExpiresAtBetweenAndActiveAndNotified(LocalDateTime expiresAtAfter, LocalDateTime expiresAtBefore, boolean active, boolean notified);
 
     List<UserPlans> findByExpiresAtBeforeAndActive(LocalDateTime expiresAtBefore, boolean active);
+
+    Optional<UserPlans> findFirstByUserIdAndActiveTrueOrderByExpiresAtDesc(String userId);
+
+    Optional<UserPlans> findByOrderTxnRef(String orderTxnRef);
 }

@@ -4,6 +4,7 @@ import com.example.ie213backend.domain.Plans;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -29,6 +30,9 @@ public class UserPlans {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private String orderCode;
+    /** txnRef of the PaymentOrder that produced this plan; unique+sparse = one grant per order, enforced by Mongo. */
+    @Indexed(name = "userplan_order_txnref", unique = true, sparse = true)
+    private String orderTxnRef;
     private boolean active;
     private boolean notified;
 }
