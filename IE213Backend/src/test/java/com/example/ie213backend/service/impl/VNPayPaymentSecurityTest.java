@@ -16,7 +16,6 @@ import com.example.ie213backend.service.UserService;
 import com.example.ie213backend.service.payment.OrderLedger;
 import com.example.ie213backend.service.payment.SchedulerLock;
 import com.example.ie213backend.service.payment.VNPayGateway;
-import com.example.ie213backend.utils.VNPayUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +49,7 @@ class VNPayPaymentSecurityTest {
 
     @BeforeEach
     void setUp() {
-        service = new VNPayServiceImpl(mock(VNPayUtil.class), userPlansRepository, userPlanMapper, userService,
+        service = new VNPayServiceImpl(userPlansRepository, userPlanMapper, userService,
                 mock(EmailService.class), mock(NotificationService.class), ledger, gateway, mock(SchedulerLock.class), Clock.systemUTC());
         when(ledger.create(anyString(), any(), anyLong(), anyString(), any(), any(), any())).thenAnswer(i ->
                 PaymentOrder.builder().txnRef("ABC123XYZ789").userId(i.getArgument(0)).plan(i.getArgument(1))

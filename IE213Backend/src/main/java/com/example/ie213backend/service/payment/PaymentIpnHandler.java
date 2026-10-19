@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,8 +37,7 @@ public class PaymentIpnHandler {
             if (!tmnCode.equals(params.get("vnp_TmnCode"))) return log(txnRef, params, IpnResponse.INVALID_SIGNATURE);
             PaymentOrder order = found.get();
             if (!String.valueOf(order.getAmountVnd() * 100).equals(params.get("vnp_Amount"))) return log(txnRef, params, IpnResponse.INVALID_AMOUNT);
-            boolean success = "00".equals(params.get("vnp_ResponseCode"))
-                    && (params.get("vnp_TransactionStatus") == null || "00".equals(params.get("vnp_TransactionStatus")));
+            boolean success = VnpFields.paid(params.get("vnp_ResponseCode"), params.get("vnp_TransactionStatus"));
             if (!order.getStatus().isOpen()) {
                 if (success && (order.getStatus() == OrderStatus.EXPIRED || order.getStatus() == OrderStatus.FAILED)) {
                     log.error("IPN {}: VNPay reports PAID but order is {} — manual refund/grant needed", txnRef, order.getStatus());
@@ -47,11 +45,7 @@ public class PaymentIpnHandler {
                 }
                 return log(txnRef, params, IpnResponse.ALREADY_CONFIRMED);
             }
-            Map<String, String> audit = new HashMap<>(params);
-            audit.remove("vnp_SecureHash");
-            audit.remove("vnp_SecureHashType");
-            VnpFields fields = new VnpFields(params.get("vnp_TransactionNo"), params.get("vnp_BankCode"),
-                    params.get("vnp_ResponseCode"), params.get("vnp_PayDate"), audit);
+            VnpFields fields = VnpFields.of(params);
             PaymentOrder settled = ledger.settle(txnRef, success ? OrderStatus.PAID : OrderStatus.FAILED, SettlementSource.IPN, fields);
             if (settled == null) return log(txnRef, params, IpnResponse.ALREADY_CONFIRMED);
             if (success) {

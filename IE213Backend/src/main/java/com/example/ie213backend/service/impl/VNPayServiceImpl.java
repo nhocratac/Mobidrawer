@@ -21,7 +21,6 @@ import com.example.ie213backend.service.payment.OrderLedger;
 import com.example.ie213backend.service.payment.SchedulerLock;
 import com.example.ie213backend.service.payment.VNPayGateway;
 import com.example.ie213backend.service.payment.VnpFields;
-import com.example.ie213backend.utils.VNPayUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,7 +45,6 @@ public class VNPayServiceImpl implements VNPayService {
     static final int EXPIRY_LEASE_SECONDS = 3000;
     private static final DateTimeFormatter HUMAN = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
 
-    private final VNPayUtil vnPayUtil;               // kept for getIpAddress in the controller; config lives in VNPayGateway
     private final UserPlansRepository userPlansRepository;
     private final UserPlanMapper userPlanMapper;
     private final UserService userService;

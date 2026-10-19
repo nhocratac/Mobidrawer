@@ -52,7 +52,7 @@ public class PaymentReconciler {
         for (PaymentOrder o : ledger.findStalePending(cutoff, BATCH)) {
             try {
                 QueryDrResult r = gateway.queryDr(o);
-                VnpFields f = new VnpFields(r.transactionNo(), r.bankCode(), r.responseCode(), r.payDate(), r.raw());
+                VnpFields f = VnpFields.of(r.raw());
                 PaymentOrder settled;
                 if (!r.found()) {
                     settled = ledger.settle(o.getTxnRef(), OrderStatus.EXPIRED, SettlementSource.RECONCILE, f);
@@ -63,7 +63,7 @@ public class PaymentReconciler {
                     } else {
                         log.error("reconcile {}: VNPay amount {} != expected {}", o.getTxnRef(), r.amount(), o.getAmountVnd() * 100);
                         settled = ledger.settle(o.getTxnRef(), OrderStatus.FAILED, SettlementSource.RECONCILE,
-                                new VnpFields(r.transactionNo(), r.bankCode(), "AMOUNT_MISMATCH", r.payDate(), r.raw()));
+                                f.withResponseCode("AMOUNT_MISMATCH"));
                     }
                 } else {
                     String ts = r.transactionStatus();

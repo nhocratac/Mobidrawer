@@ -11,7 +11,6 @@ import com.example.ie213backend.service.UserService;
 import com.example.ie213backend.service.payment.OrderLedger;
 import com.example.ie213backend.service.payment.SchedulerLock;
 import com.example.ie213backend.service.payment.VNPayGateway;
-import com.example.ie213backend.utils.VNPayUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -33,7 +32,7 @@ class ExpiryMembershipTest {
     EmailService emails = mock(EmailService.class);
     NotificationService notifications = mock(NotificationService.class);
     SchedulerLock lock = mock(SchedulerLock.class);
-    VNPayServiceImpl service = new VNPayServiceImpl(mock(VNPayUtil.class), plans, mock(UserPlanMapper.class), users, emails, notifications,
+    VNPayServiceImpl service = new VNPayServiceImpl(plans, mock(UserPlanMapper.class), users, emails, notifications,
             mock(OrderLedger.class), mock(VNPayGateway.class), lock, Clock.fixed(NOW.atZone(OrderLedger.VN).toInstant(), OrderLedger.VN));
 
     @BeforeEach

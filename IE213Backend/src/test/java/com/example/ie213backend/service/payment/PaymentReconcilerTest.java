@@ -31,7 +31,11 @@ class PaymentReconcilerTest {
         return PaymentOrder.builder().txnRef(txn).userId("u").plan(Plans.PRO).amountVnd(400_000L).status(OrderStatus.PENDING).createdAt(NOW.minusMinutes(30)).build();
     }
     QueryDrResult dr(boolean found, String rc, String ts, Long amount) {
-        return new QueryDrResult(found, rc, ts, amount, "14000001", "20261015093512", "NCB", Map.of());
+        // raw mirrors the real querydr reply (the gateway passes the parsed JSON as raw), incl. a signature that must not be persisted
+        Map<String, String> raw = new java.util.HashMap<>(Map.of("vnp_TransactionNo", "14000001", "vnp_PayDate", "20261015093512",
+                "vnp_BankCode", "NCB", "vnp_SecureHash", "sig"));
+        if (rc != null) raw.put("vnp_ResponseCode", rc);
+        return new QueryDrResult(found, rc, ts, amount, "14000001", "20261015093512", "NCB", raw);
     }
 
     @BeforeEach
