@@ -35,7 +35,7 @@ class NotFoundServicesVNPayTest {
         ));
 
         VNPayServiceImpl service = new VNPayServiceImpl(
-                null, userPlansRepository, null, null, null, null, null, null); // main: 8 fields, no ConfigService
+                userPlansRepository, null, null, null, null, null, null, null, null); // 9 fields
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.getUserPlanInfo("missing-plan", null));
